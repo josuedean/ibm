@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tower of Hanoi Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        #game {
+            width: 600px;
+            margin: 50px auto;
+            text-align: center;
+        }
+        .peg {
+            display: inline-block;
+            width: 150px;
+            height: 200px;
+            margin: 0 10px;
+            position: relative;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+        }
+        .peg:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 10px;
+            height: 150px;
+            margin-left: -5px;
+            background-color: #8b5a2b;
+        }
+        .disk {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            height: 20px;
+            background-color: #ffa500;
+            border-radius: 3px;
+            cursor: pointer;
+            transform: translateX(-50%);
+        }
+        .disk.selected {
+            background-color: #ff4500;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 24px;
+            color: green;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game">
+    <div class="peg" data-peg="A"></div>
+    <div class="peg" data-peg="B"></div>
+    <div class="peg" data-peg="C"></div>
+    <div id="message">You Win!</div>
+</div>
+
+<script>
+    // Game Initialization
+    const pegs = document.querySelectorAll('.peg');
+    const disks = [
+        { size: 1, element: createDiskElement(1) },
+        { size: 2, element: createDiskElement(2) },
+        { size: 3, element: createDiskElement(3) },
+    ];
+
+    let selectedDisk = null;
+
+    // Place disks on Peg A
+    const pegA = pegs[0];
+    disks.slice().reverse().forEach((disk, index) => {
+        pegA.appendChild(disk.element);
+        positionDisk(disk.element, index);
+    });
+
+    // Event Listeners
+    pegs.forEach(peg => {
+        peg.addEventListener('click', () => {
+            handlePegClick(peg);
+        });
+    });
+
+    function createDiskElement(size) {
+        const disk = document.createElement('div');
+        disk.classList.add('disk');
+        disk.style.width = `${size * 40}px`;
+        disk.dataset.size = size;
+        disk.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleDiskClick(disk);
+        });
+        return disk;
+    }
+
+    function positionDisk(disk, index) {
+        disk.style.bottom = `${index * 22 + 10}px`;
+    }
+
+    function handleDiskClick(disk) {
+        const parentPeg = disk.parentElement;
+        const topDisk = getTopDisk(parentPeg);
+
+        if (disk !== topDisk) {
+            return; // Only top disk can be selected
+        }
+
+        if (selectedDisk) {
+            selectedDisk.classList.remove('selected');
+        }
+
+        selectedDisk = disk;
+        selectedDisk.classList.add('selected');
+    }
+
+    function handlePegClick(peg) {
+        if (!selectedDisk) {
+            return;
+        }
+
+        const topDisk = getTopDisk(peg);
+        const selectedDiskSize = parseInt(selectedDisk.dataset.size);
+
+        if (topDisk && parseInt(topDisk.dataset.size) < selectedDiskSize) {
+            alert('Cannot place a larger disk on top of a smaller one.');
+            return;
+        }
+
+        // Move disk to new peg
+        const oldPeg = selectedDisk.parentElement;
+        peg.appendChild(selectedDisk);
+        selectedDisk.classList.remove('selected');
+        selectedDisk = null;
+
+        // Reposition disks on old peg
+        repositionDisks(oldPeg);
+        // Reposition disks on new peg
+        repositionDisks(peg);
+
+        checkForWin();
+    }
+
+    function getTopDisk(peg) {
+        const disks = Array.from(peg.querySelectorAll('.disk'));
+        return disks.length ? disks[disks.length - 1] : null;
+    }
+
+    function repositionDisks(peg) {
+        const disks = Array.from(peg.querySelectorAll('.disk'));
+        disks.forEach((disk, index) => {
+            positionDisk(disk, index);
+        });
+    }
+
+    function checkForWin() {
+        const pegCDisks = pegs[2].querySelectorAll('.disk');
+        if (pegCDisks.length === 3) {
+            document.getElementById('message').style.display = 'block';
+            pegs.forEach(peg => {
+                peg.removeEventListener('click', handlePegClick);
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

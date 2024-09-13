@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Farmer River Crossing Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Mobile-friendly meta tag -->
+    <style>
+        body {
+            background-color: #87CEEB;
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #river {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(to bottom, #87CEEB 50%, #1E90FF 50%);
+        }
+        .bank {
+            position: absolute;
+            width: 20%;
+            height: 100%;
+            background-color: #228B22;
+        }
+        #leftBank {
+            left: 0;
+        }
+        #rightBank {
+            right: 0;
+        }
+        .item {
+            position: absolute;
+            width: 10%;
+            max-width: 60px;
+            height: auto;
+            transition: left 3s;
+        }
+        #boat {
+            position: absolute;
+            width: 15%;
+            max-width: 100px;
+            height: auto;
+            bottom: 0;
+            transition: left 3s;
+        }
+        #message {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255,255,255,0.8);
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 2vw;
+            max-width: 90%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="river">
+    <div class="bank" id="leftBank"></div>
+    <div class="bank" id="rightBank"></div>
+
+    <!-- Boat SVG (Half-circle with flat side up) -->
+    <svg id="boat" viewBox="0 0 100 50" style="position: absolute; bottom: 45%;">
+        <path d="M25,25 L75,25 A25,25 0 0,1 25,25 Z" fill="#773220" />
+    </svg>
+
+    <!-- Farmer SVG -->
+    <svg id="farmer" class="item" style="bottom: 50%;" viewBox="0 0 60 60">
+        <circle cx="30" cy="15" r="15" fill="#FF8B00" />
+        <g fill="#7B6548">
+            <path d="M30,30 L45,55 H15 Z" />
+        </g>
+    </svg>
+
+    <!-- Fox SVG (Triangle on right side as snout) -->
+    <svg id="fox" class="item" style="bottom: 60%;" viewBox="0 0 60 60">
+        <!-- Square body -->
+        <rect x="5" y="15" width="30" height="30" fill="#FF6600" />
+        <!-- Triangle snout on right side -->
+        <polygon points="55,30 35,20 35,40" fill="#FF3300" />
+    </svg>
+
+    <!-- Hen SVG -->
+    <svg id="hen" class="item" style="bottom: 70%;" viewBox="0 0 60 60">
+        <ellipse cx="30" cy="25" rx="20" ry="15" fill="#FFD004" />
+        <polygon points="30,10 35,20 25,20" fill="#FF4500" />
+        <circle cx="24" cy="12" r="5" fill="#FF0000" />
+    </svg>
+
+    <!-- Grain SVG (Square) -->
+    <svg id="grain" class="item" style="bottom: 80%;" viewBox="0 0 60 60">
+        <rect x="15" y="15" width="30" height="30" fill="#FFAA00" />
+    </svg>
+
+    <div id="message">Tap to Start the Animation</div>
+</div>
+
+<script>
+    // Positions (using percentages for responsiveness)
+    const positions = {
+        leftBank: '10%',    // Position for items on the left bank
+        rightBank: '80%',   // Position for items on the right bank
+        boatLeft: '20%',    // Boat position at the left bank
+        boatRight: '70%',   // Boat position at the right bank
+    };
+
+    const items = {
+        farmer: document.getElementById('farmer'),
+        fox: document.getElementById('fox'),
+        hen: document.getElementById('hen'),
+        grain: document.getElementById('grain'),
+        boat: document.getElementById('boat'),
+        message: document.getElementById('message')
+    };
+
+    // Initial positions
+    items.boat.style.left = positions.boatLeft;
+    items.farmer.style.left = positions.leftBank;
+    items.fox.style.left = positions.leftBank;
+    items.hen.style.left = positions.leftBank;
+    items.grain.style.left = positions.leftBank;
+
+    let step = 0;
+    const steps = [
+        { action: 'move', item: 'hen', from: 'left', to: 'right', message: 'Farmer takes the hen to the right bank.' },
+        { action: 'return', item: 'farmer', from: 'right', to: 'left', message: 'Farmer returns alone to the left bank.' },
+        { action: 'move', item: 'fox', from: 'left', to: 'right', message: 'Farmer takes the fox to the right bank.' },
+        { action: 'move', item: 'hen', from: 'right', to: 'left', message: 'Farmer brings the hen back to the left bank.' },
+        { action: 'move', item: 'grain', from: 'left', to: 'right', message: 'Farmer takes the grain to the right bank.' },
+        { action: 'return', item: 'farmer', from: 'right', to: 'left', message: 'Farmer returns alone to the left bank.' },
+        { action: 'move', item: 'hen', from: 'left', to: 'right', message: 'Farmer takes the hen to the right bank.' },
+        { action: 'end', message: 'All items have been safely transported across the river!' }
+    ];
+
+    document.getElementById('river').addEventListener('click', function() {
+        if (step < steps.length) {
+            executeStep(steps[step]);
+            step++;
+        }
+    });
+
+    function executeStep(stepInfo) {
+        items.message.textContent = stepInfo.message;
+
+        if (stepInfo.action === 'move') {
+            moveBoat(stepInfo.item, stepInfo.from, stepInfo.to);
+        } else if (stepInfo.action === 'return') {
+            returnBoat(stepInfo.from, stepInfo.to);
+        } else if (stepInfo.action === 'end') {
+            items.message.textContent = stepInfo.message;
+        }
+    }
+
+    function moveBoat(itemName, from, to) {
+        const item = items[itemName];
+        const farmer = items.farmer;
+        const boat = items.boat;
+
+        // Ensure boat is at the starting bank
+        boat.style.left = from === 'left' ? positions.boatLeft : positions.boatRight;
+        farmer.style.left = from === 'left' ? positions.leftBank : positions.rightBank;
+        item.style.left = from === 'left' ? positions.leftBank : positions.rightBank;
+
+        // Farmer moves onto the boat
+        setTimeout(() => {
+            farmer.style.left = boat.style.left;
+        }, 100);
+
+        // Wait until farmer is directly above the boat
+        setTimeout(() => {
+            // Item moves onto the boat (if applicable)
+            item.style.left = boat.style.left;
+        }, 500);
+
+        // Boat starts moving after farmer is directly above it
+        setTimeout(() => {
+            boat.style.left = to === 'left' ? positions.boatLeft : positions.boatRight;
+            farmer.style.left = boat.style.left;
+            item.style.left = boat.style.left;
+        }, 800);
+
+        // Disembark farmer and item onto the bank
+        setTimeout(() => {
+            farmer.style.left = to === 'left' ? positions.leftBank : positions.rightBank;
+            item.style.left = to === 'left' ? positions.leftBank : positions.rightBank;
+        }, 2800);
+    }
+
+    function returnBoat(from, to) {
+        const farmer = items.farmer;
+        const boat = items.boat;
+
+        // Ensure boat is at the starting bank
+        boat.style.left = from === 'left' ? positions.boatLeft : positions.boatRight;
+        farmer.style.left = from === 'left' ? positions.leftBank : positions.rightBank;
+
+        // Farmer moves onto the boat
+        setTimeout(() => {
+            farmer.style.left = boat.style.left;
+        }, 100);
+
+        // Wait until farmer is directly above the boat
+        setTimeout(() => {
+            // Boat starts moving after farmer is directly above it
+            boat.style.left = to === 'left' ? positions.boatLeft : positions.boatRight;
+            farmer.style.left = boat.style.left;
+        }, 500);
+
+        // Disembark farmer onto the bank
+        setTimeout(() => {
+            farmer.style.left = to === 'left' ? positions.leftBank : positions.rightBank;
+        }, 2500);
+    }
+</script>
+
+</body>
+</html>
