@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dice Roll Probability Visualizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        #controls {
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .diceIcon {
+            width: 80px;
+            height: 80px;
+            margin: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            background-color: #f0f0f0;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .diceIcon[data-value="2d6"] {
+            width: auto; 
+            height: auto; 
+            padding: 8px;
+            box-sizing: content-box;
+        }
+        .diceIcon:hover {
+            transform: scale(1.1);
+        }
+        .diceIcon.selected {
+            transform: scale(1.1);
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52,152,219,0.5);
+        }
+        .die {
+            width: 60px;
+            height: 60px;
+            background-color: #fff;
+            border: 2px solid #333;
+            border-radius: 6px;
+            display: inline-block;
+            position: relative;
+            margin: 2px;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #333;
+            position: absolute;
+        }
+        /* Dot positions for die faces */
+        .dot-center {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .dot-top-left {
+            top: 20%;
+            left: 20%;
+        }
+        .dot-top-right {
+            top: 20%;
+            right: 20%;
+        }
+        .dot-middle-left {
+            top: 50%;
+            left: 20%;
+            transform: translateY(-50%);
+        }
+        .dot-middle-right {
+            top: 50%;
+            right: 20%;
+            transform: translateY(-50%);
+        }
+        .dot-bottom-left {
+            bottom: 20%;
+            left: 20%;
+        }
+        .dot-bottom-right {
+            bottom: 20%;
+            right: 20%;
+        }
+        /* Positions for die face 6 */
+        .dot-six-1 {
+            top: 20%;
+            left: 25%;
+        }
+        .dot-six-2 {
+            top: 20%;
+            right: 25%;
+        }
+        .dot-six-3 {
+            top: 50%;
+            left: 25%;
+            transform: translateY(-50%);
+        }
+        .dot-six-4 {
+            top: 50%;
+            right: 25%;
+            transform: translateY(-50%);
+        }
+        .dot-six-5 {
+            bottom: 20%;
+            left: 25%;
+        }
+        .dot-six-6 {
+            bottom: 20%;
+            right: 25%;
+        }
+        /* Styles for 20-sided die */
+        .die.d20 {
+            width: 60px;
+            height: 60px;
+            background-color: #ccc;
+            border: 0px solid #333;
+            clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+            position: relative;
+            margin: 2px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .die.d20 .triangle {
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-bottom: 43px solid #fff;
+            position: absolute;
+            top: 2%;
+        }
+        .die.d20 .die-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 20px;
+        }
+        #probability {
+            font-weight: bold;
+            margin: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #grid {
+            display: grid;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px;
+        }
+        .cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            transition: background-color 0.3s;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .cell:hover {
+            background-color: #e0e0e0;
+        }
+        .cell.highlighted {
+            background-color: #f1c40f;
+            color: #333;
+        }
+        .cell.less-than-equal {
+            background-color: #e74c3c;
+            color: #333;
+        }
+        .cell.greater-than-equal {
+            background-color: #2ecc71;
+            color: #333;
+        }
+        .checkbox-container {
+            margin: 10px;
+        }
+        .checkbox-label {
+            margin: 0 10px;
+        }
+        @media (max-width: 600px) {
+            #grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Dice Roll Probability Visualizer</h1>
+    <div id="controls">
+        <div class="diceIcon" data-value="1d6">
+            <div class="die">
+                 <div class="dot dot-six-1"></div>
+        	<div class="dot dot-six-2"></div>
+        	<div class="dot dot-six-3"></div>
+        	<div class="dot dot-six-4"></div>
+        	<div class="dot dot-six-5"></div>
+        	<div class="dot dot-six-6"></div>
+            </div>
+        </div>
+        <div class="diceIcon" data-value="2d6">
+            <div class="die">
+                 <div class="dot dot-six-1"></div>
+        	<div class="dot dot-six-2"></div>
+        	<div class="dot dot-six-3"></div>
+        	<div class="dot dot-six-4"></div>
+        	<div class="dot dot-six-5"></div>
+        	<div class="dot dot-six-6"></div>
+            </div>
+            <div class="die">
+                 <div class="dot dot-six-1"></div>
+        	<div class="dot dot-six-2"></div>
+        	<div class="dot dot-six-3"></div>
+        	<div class="dot dot-six-4"></div>
+        	<div class="dot dot-six-5"></div>
+        	<div class="dot dot-six-6"></div>
+            </div>
+        </div>
+        <div class="diceIcon" data-value="1d20">
+            <div class="die d20">
+                <div class="triangle"></div>
+                <div class="die-value">20</div>
+            </div>
+        </div>
+    </div>
+    <div class="checkbox-container">
+        <label class="checkbox-label">
+            <input type="checkbox" id="lessEqual"> Show values ≤ selected
+        </label>
+        <label class="checkbox-label">
+            <input type="checkbox" id="greaterEqual"> Show values ≥ selected
+        </label>
+    </div>
+    <div id="probability"></div>
+    <div id="grid"></div>
+
+    <script>
+        'use strict';
+
+        const diceIcons = document.querySelectorAll('.diceIcon');
+        const gridContainer = document.getElementById('grid');
+        const probabilityDisplay = document.getElementById('probability');
+        const lessEqualCheckbox = document.getElementById('lessEqual');
+        const greaterEqualCheckbox = document.getElementById('greaterEqual');
+
+        let selectedValue = null;
+        let currentDiceConfig = '1d6';
+        let pmfCache = {};
+
+        function calculatePMF(numDice, sides) {
+            const cacheKey = `${numDice}d${sides}`;
+            if (pmfCache[cacheKey]) {
+                return pmfCache[cacheKey];
+            }
+
+            let pmf = Array(numDice * sides + 1).fill(0);
+            pmf[0] = 1;
+
+            for (let i = 0; i < numDice; i++) {
+                let tempPMF = Array(numDice * sides + 1).fill(0);
+                for (let j = 0; j < pmf.length; j++) {
+                    if (pmf[j] !== 0) {
+                        for (let k = 1; k <= sides; k++) {
+                            tempPMF[j + k] += pmf[j] / sides;
+                        }
+                    }
+                }
+                pmf = tempPMF;
+            }
+
+            pmfCache[cacheKey] = pmf;
+            return pmf;
+        }
+
+        function createDieFace(value, sides) {
+            const die = document.createElement('div');
+
+            if (sides === 6) {
+                die.className = 'die';
+                switch (value) {
+                    case 1:
+                        die.appendChild(createDot('dot-center'));
+                        break;
+                    case 2:
+                        die.appendChild(createDot('dot-top-left'));
+                        die.appendChild(createDot('dot-bottom-right'));
+                        break;
+                    case 3:
+                        die.appendChild(createDot('dot-top-left'));
+                        die.appendChild(createDot('dot-center'));
+                        die.appendChild(createDot('dot-bottom-right'));
+                        break;
+                    case 4:
+                        die.appendChild(createDot('dot-top-left'));
+                        die.appendChild(createDot('dot-top-right'));
+                        die.appendChild(createDot('dot-bottom-left'));
+                        die.appendChild(createDot('dot-bottom-right'));
+                        break;
+                    case 5:
+                        die.appendChild(createDot('dot-top-left'));
+                        die.appendChild(createDot('dot-top-right'));
+                        die.appendChild(createDot('dot-center'));
+                        die.appendChild(createDot('dot-bottom-left'));
+                        die.appendChild(createDot('dot-bottom-right'));
+                        break;
+                    case 6:
+                        die.appendChild(createDot('dot-six-1'));
+                        die.appendChild(createDot('dot-six-2'));
+                        die.appendChild(createDot('dot-six-3'));
+                        die.appendChild(createDot('dot-six-4'));
+                        die.appendChild(createDot('dot-six-5'));
+                        die.appendChild(createDot('dot-six-6'));
+                        break;
+                }
+            } else if (sides === 20) {
+                die.className = 'die d20';
+                const triangle = document.createElement('div');
+                triangle.className = 'triangle';
+                die.appendChild(triangle);
+
+                const dieValue = document.createElement('div');
+                dieValue.className = 'die-value';
+                dieValue.textContent = value;
+                die.appendChild(dieValue);
+            } else {
+                die.className = 'die';
+                die.textContent = value;
+            }
+            return die;
+        }
+
+        function createDot(positionClass) {
+            const dot = document.createElement('div');
+            dot.className = `dot ${positionClass}`;
+            return dot;
+        }
+
+        function generateGrid() {
+            const [numDice, sides] = currentDiceConfig.split('d').map(Number);
+            gridContainer.innerHTML = '';
+            selectedValue = null;
+            probabilityDisplay.textContent = '';
+            pmfCache = {};
+
+            const pmf = calculatePMF(numDice, sides);
+
+            let combinations = [];
+
+            if (numDice === 1) {
+                for (let i = 1; i <= sides; i++) {
+                    combinations.push([i]);
+                }
+            } else {
+                combinations = getDiceCombinations(numDice, sides);
+            }
+
+            combinations.forEach(combination => {
+                const sum = combination.reduce((a, b) => a + b, 0);
+
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.sum = sum;
+
+                combination.forEach(value => {
+                    const dieFace = createDieFace(value, sides);
+                    cell.appendChild(dieFace);
+                });
+
+                cell.addEventListener('click', () => highlightCell(sum));
+                gridContainer.appendChild(cell);
+            });
+
+            const numColumns = Math.min(Math.ceil(Math.sqrt(combinations.length)), 10);
+            gridContainer.style.gridTemplateColumns = `repeat(${numColumns}, auto)`;
+        }
+
+        function getDiceCombinations(numDice, sides) {
+            let results = [];
+
+            function helper(currentDice, combination) {
+                if (currentDice === 0) {
+                    results.push(combination);
+                    return;
+                }
+                for (let i = 1; i <= sides; i++) {
+                    helper(currentDice - 1, combination.concat(i));
+                }
+            }
+
+            helper(numDice, []);
+            return results;
+        }
+
+        function highlightCell(value) {
+            selectedValue = value;
+            updateProbabilityDisplay();
+        }
+
+        function updateProbabilityDisplay() {
+            const [numDice, sides] = currentDiceConfig.split('d').map(Number);
+            const pmf = calculatePMF(numDice, sides);
+            const cells = document.querySelectorAll('.cell');
+
+            cells.forEach(cell => {
+                cell.classList.remove('highlighted', 'less-than-equal', 'greater-than-equal');
+                const cellValue = parseInt(cell.dataset.sum);
+                if (cellValue === selectedValue) {
+                    cell.classList.add('highlighted');
+                }
+                if (lessEqualCheckbox.checked && cellValue <= selectedValue) {
+                    cell.classList.add('less-than-equal');
+                }
+                if (greaterEqualCheckbox.checked && cellValue >= selectedValue) {
+                    cell.classList.add('greater-than-equal');
+                }
+            });
+
+            if (selectedValue === null) {
+                probabilityDisplay.textContent = '';
+                return;
+            }
+
+            let probability = pmf[selectedValue] || 0;
+            let lessEqualProb = 0;
+            let greaterEqualProb = 0;
+
+            for (let i = numDice; i < pmf.length; i++) {
+                if (i <= selectedValue) {
+                    lessEqualProb += pmf[i];
+                }
+                if (i >= selectedValue) {
+                    greaterEqualProb += pmf[i];
+                }
+            }
+
+            let displayText = `Probability of sum ${selectedValue}: ${(probability * 100).toFixed(2)}%`;
+            if (lessEqualCheckbox.checked) {
+                displayText += `<br>Probability of sum ≤ ${selectedValue}: ${(lessEqualProb * 100).toFixed(2)}%`;
+            }
+            if (greaterEqualCheckbox.checked) {
+                displayText += `<br>Probability of sum ≥ ${selectedValue}: ${(greaterEqualProb * 100).toFixed(2)}%`;
+            }
+            probabilityDisplay.innerHTML = displayText;
+        }
+
+        diceIcons.forEach(icon => {
+            icon.addEventListener('click', () => {
+                diceIcons.forEach(i => i.classList.remove('selected'));
+                icon.classList.add('selected');
+                currentDiceConfig = icon.dataset.value;
+                generateGrid();
+            });
+        });
+
+        lessEqualCheckbox.addEventListener('change', updateProbabilityDisplay);
+        greaterEqualCheckbox.addEventListener('change', updateProbabilityDisplay);
+
+        diceIcons[0].classList.add('selected');
+        generateGrid();
+    </script>
+</body>
+</html>
