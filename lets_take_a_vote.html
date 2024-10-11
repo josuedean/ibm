@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take a Vote!</title>
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .vote-buttons { margin-top: 20px; }
+        .vote-buttons button { margin: 10px; padding: 10px 20px; font-size: 16px; }
+        .results { margin-top: 30px; font-size: 24px; }
+    </style>
+</head>
+<body>
+    <h1>Cast Your Vote</h1>
+    <div class="vote-buttons">
+        <button id="yesButton" onclick="castVote('Yes')">Yes</button>
+        <button id="noButton" onclick="castVote('No')">No</button>
+    </div>
+    <div class="results">
+        <h2>Live Results</h2>
+        <p id="yesVotes">Yes: 0 votes</p>
+        <p id="noVotes">No: 0 votes</p>
+    </div>
+
+    <script>
+        // Initialize Gun
+        const gun = Gun();
+
+        // Reference for the voting data
+        const voteData = gun.get('simple_vote');
+
+        // Check if user has already voted
+        function hasVoted() {
+            return localStorage.getItem('hasVoted') === 'true';
+        }
+
+        // Mark the user as having voted
+        function setVoted() {
+            localStorage.setItem('hasVoted', 'true');
+        }
+
+        // Disable voting buttons after voting
+        function disableVoting() {
+            document.getElementById('yesButton').disabled = true;
+            document.getElementById('noButton').disabled = true;
+        }
+
+        // Function to cast a vote
+        function castVote(vote) {
+            if (hasVoted()) {
+                alert('You have already voted!');
+                return;
+            }
+            voteData.get(vote).once(current => {
+                voteData.get(vote).put((current || 0) + 1);
+                setVoted();
+                disableVoting();
+            });
+        }
+
+        // Real-time update of vote counts
+        voteData.get('Yes').on(votes => {
+            document.getElementById('yesVotes').textContent = `Yes: ${votes || 0} votes`;
+        });
+
+        voteData.get('No').on(votes => {
+            document.getElementById('noVotes').textContent = `No: ${votes || 0} votes`;
+        });
+
+        // Disable voting if the user has already voted
+        if (hasVoted()) {
+            disableVoting();
+        }
+    </script>
+</body>
+</html>
