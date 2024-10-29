@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Linear Programming Solver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .input-section, .output-section {
+            margin-bottom: 20px;
+        }
+        .constraint {
+            margin-bottom: 10px;
+        }
+        #graph {
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+        .constraint-type {
+            width: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Linear Programming Solver</h1>
+
+<div class="input-section">
+    <h2>Objective Function</h2>
+    <p>Maximize Z = <input type="number" id="objA" value="30" step="any"> x + <input type="number" id="objB" value="20" step="any"> y</p>
+
+    <h2>Constraints</h2>
+    <div id="constraints">
+        <div class="constraint">
+            Constraint 1: <input type="number" class="conA" value="2" step="any"> x + <input type="number" class="conB" value="1" step="any"> y
+            <select class="conType">
+                <option value="<=">≤</option>
+                <option value=">=">≥</option>
+                <option value="=">=</option>
+            </select>
+            <input type="number" class="conC" value="60" step="any">
+        </div>
+        <div class="constraint">
+            Constraint 2: <input type="number" class="conA" value="1" step="any"> x + <input type="number" class="conB" value="1.5" step="any"> y
+            <select class="conType">
+                <option value="<=">≤</option>
+                <option value=">=">≥</option>
+                <option value="=">=</option>
+            </select>
+            <input type="number" class="conC" value="45" step="any">
+        </div>
+        <button onclick="addConstraint()">Add Constraint</button>
+    </div>
+
+    <button onclick="solveLP()">Solve</button>
+</div>
+
+<div class="output-section">
+    <h2>Solution</h2>
+    <pre id="solution"></pre>
+    <canvas id="graph" width="500" height="500"></canvas>
+</div>
+
+<script>
+    function addConstraint() {
+        const constraintsDiv = document.getElementById('constraints');
+        const constraintCount = constraintsDiv.getElementsByClassName('constraint').length + 1;
+        const div = document.createElement('div');
+        div.className = 'constraint';
+        div.innerHTML = `Constraint ${constraintCount}: <input type="number" class="conA" value="0" step="any"> x + <input type="number" class="conB" value="0" step="any"> y
+            <select class="conType">
+                <option value="<=">≤</option>
+                <option value=">=">≥</option>
+                <option value="=">=</option>
+            </select>
+            <input type="number" class="conC" value="0" step="any">`;
+        constraintsDiv.insertBefore(div, constraintsDiv.lastElementChild);
+    }
+
+    function solveLP() {
+        const objA = parseFloat(document.getElementById('objA').value);
+        const objB = parseFloat(document.getElementById('objB').value);
+
+        const conAs = document.getElementsByClassName('conA');
+        const conBs = document.getElementsByClassName('conB');
+        const conCs = document.getElementsByClassName('conC');
+        const conTypes = document.getElementsByClassName('conType');
+
+        const constraints = [];
+        for (let i = 0; i < conAs.length; i++) {
+            const a = parseFloat(conAs[i].value);
+            const b = parseFloat(conBs[i].value);
+            const c = parseFloat(conCs[i].value);
+            const type = conTypes[i].value;
+            constraints.push({ a: a, b: b, c: c, type: type });
+        }
+
+        // Include non-negativity constraints
+        constraints.push({ a: 1, b: 0, c: 0, type: ">=" });
+        constraints.push({ a: 0, b: 1, c: 0, type: ">=" });
+
+        // Generate feasible region
+        const vertices = [];
+        for (let i = 0; i < constraints.length; i++) {
+            for (let j = i + 1; j < constraints.length; j++) {
+                const point = intersect(constraints[i], constraints[j]);
+                if (point && isFeasible(point, constraints)) {
+                    vertices.push(point);
+                }
+            }
+        }
+
+        // Remove duplicate points
+        const uniqueVertices = [];
+        vertices.forEach(v => {
+            if (!uniqueVertices.some(u => Math.abs(u.x - v.x) < 1e-6 && Math.abs(u.y - v.y) < 1e-6)) {
+                uniqueVertices.push(v);
+            }
+        });
+
+        // Evaluate objective function at each vertex
+        let maxZ = -Infinity;
+        let optimalPoint = null;
+        const solutionText = [];
+
+        uniqueVertices.forEach(v => {
+            const z = objA * v.x + objB * v.y;
+            solutionText.push(`At point (${v.x.toFixed(2)}, ${v.y.toFixed(2)}), Z = ${z.toFixed(2)}`);
+            if (z > maxZ) {
+                maxZ = z;
+                optimalPoint = v;
+            }
+        });
+
+        const solutionDiv = document.getElementById('solution');
+        if (optimalPoint) {
+            solutionDiv.textContent = solutionText.join('\n') + `\n\nOptimal Solution:\nProduce x = ${optimalPoint.x.toFixed(2)}, y = ${optimalPoint.y.toFixed(2)}\nMaximum Z = ${maxZ.toFixed(2)}`;
+        } else {
+            solutionDiv.textContent = 'No feasible solution found.';
+        }
+
+        drawGraph(constraints, uniqueVertices, optimalPoint);
+    }
+
+    function intersect(con1, con2) {
+        const a1 = con1.a, b1 = con1.b, c1 = con1.c;
+        const a2 = con2.a, b2 = con2.b, c2 = con2.c;
+
+        const det = a1 * b2 - a2 * b1;
+        if (Math.abs(det) < 1e-6) {
+            return null; // Lines are parallel
+        }
+        const x = (b2 * c1 - b1 * c2) / det;
+        const y = (a1 * c2 - a2 * c1) / det;
+        return { x: x, y: y };
+    }
+
+    function isFeasible(point, constraints) {
+        return constraints.every(con => {
+            const lhs = con.a * point.x + con.b * point.y;
+            if (con.type === "<=") {
+                return lhs <= con.c + 1e-6;
+            } else if (con.type === ">=") {
+                return lhs >= con.c - 1e-6;
+            } else if (con.type === "=") {
+                return Math.abs(lhs - con.c) < 1e-6;
+            }
+            return false;
+        });
+    }
+
+    function drawGraph(constraints, vertices, optimalPoint) {
+        const canvas = document.getElementById('graph');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Scaling factors
+        const margin = 40;
+        const width = canvas.width - 2 * margin;
+        const height = canvas.height - 2 * margin;
+        const maxX = Math.max(...vertices.map(v => v.x), 10) * 1.2;
+        const maxY = Math.max(...vertices.map(v => v.y), 10) * 1.2;
+        const scaleX = width / maxX;
+        const scaleY = height / maxY;
+
+        // Draw axes
+        ctx.beginPath();
+        ctx.moveTo(margin, canvas.height - margin);
+        ctx.lineTo(canvas.width - margin, canvas.height - margin);
+        ctx.moveTo(margin, canvas.height - margin);
+        ctx.lineTo(margin, margin);
+        ctx.stroke();
+
+        // Draw constraints
+        constraints.forEach(con => {
+            ctx.strokeStyle = '#888';
+            const points = [];
+
+            if (con.b !== 0) {
+                const x_at_y0 = (con.c - con.b * 0) / con.a;
+                const y_at_x0 = (con.c - con.a * 0) / con.b;
+                points.push({ x: x_at_y0, y: 0 });
+                points.push({ x: 0, y: y_at_x0 });
+            } else {
+                const x = con.c / con.a;
+                points.push({ x: x, y: 0 });
+                points.push({ x: x, y: maxY });
+            }
+
+            ctx.beginPath();
+            points.forEach((p, index) => {
+                const px = margin + p.x * scaleX;
+                const py = canvas.height - margin - p.y * scaleY;
+                if (index === 0) {
+                    ctx.moveTo(px, py);
+                } else {
+                    ctx.lineTo(px, py);
+                }
+            });
+            ctx.stroke();
+        });
+
+        // Draw feasible region (optional)
+        // Shading the feasible region is complex and beyond the scope of this tool.
+
+        // Draw vertices
+        ctx.fillStyle = 'blue';
+        vertices.forEach(v => {
+            const px = margin + v.x * scaleX;
+            const py = canvas.height - margin - v.y * scaleY;
+            ctx.beginPath();
+            ctx.arc(px, py, 3, 0, 2 * Math.PI);
+            ctx.fill();
+        });
+
+        // Highlight optimal point
+        if (optimalPoint) {
+            const px = margin + optimalPoint.x * scaleX;
+            const py = canvas.height - margin - optimalPoint.y * scaleY;
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.arc(px, py, 5, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    }
+</script>
+
+</body>
+</html>
