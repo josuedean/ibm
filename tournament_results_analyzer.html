@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Analyzer</title>
+    <style>
+        body {
+            background-color: #2b2b2b;
+            color: #33ff33;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #33ff33;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        select, button {
+            font-family: 'Courier New', Courier, monospace;
+            margin-top: 10px;
+            background: #333;
+            color: #33ff33;
+            border: 1px solid #33ff33;
+            padding: 5px;
+        }
+    </style>
+    <script>
+        let csvData = [];
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const text = e.target.result;
+        csvData = parseCSV(text);
+
+        // Check if both 'Strategy' and 'Score' columns exist
+        const headers = csvData[0].map(header => header.trim().toLowerCase()); // Convert to lowercase for case-insensitive check
+        const strategyIndex = headers.indexOf('strategy');
+        const scoresIndex = headers.indexOf('score');
+
+        if (strategyIndex === -1 || scoresIndex === -1) {
+            alert('The uploaded file must contain both "Strategy" and "Score" columns.');
+            return;
+        }
+
+        // If columns are valid, proceed with displaying the table and other operations
+        displayTable(csvData);
+        populateNumericalColumns(csvData);
+    };
+    reader.readAsText(file);
+}
+
+        function parseCSV(text) {
+            const rows = text.split('\n').map(row => row.split(','));
+            return rows;
+        }
+
+        function displayTable(data) {
+            const table = document.getElementById('data-table');
+            table.innerHTML = '';
+
+            const headerRow = document.createElement('tr');
+            data[0].forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            data.slice(1).forEach(row => {
+                const tr = document.createElement('tr');
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+        }
+
+        function populateNumericalColumns(data) {
+            const select = document.getElementById('column-select');
+            select.innerHTML = '';
+
+            data[0].forEach((header, index) => {
+                const isNumeric = data.slice(1).some(row => !isNaN(parseFloat(row[index])));
+                if (isNumeric) {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = header;
+                    select.appendChild(option);
+                }
+            });
+        }
+
+        function displayStats() {
+            const columnSelect = document.getElementById('column-select');
+            const columnIndex = parseInt(columnSelect.value);
+
+            if (isNaN(columnIndex)) {
+                alert('Invalid column selected');
+                return;
+            }
+
+            const columnData = csvData.slice(1).map(row => parseFloat(row[columnIndex])).filter(val => !isNaN(val));
+
+            if (columnData.length === 0) {
+               document.getElementById('stats-output').textContent = 'No valid data to display.';
+               return;
+            }
+
+            const sum = columnData.reduce((acc, val) => acc + val, 0);
+            const mean = sum / columnData.length;
+            const min = Math.min(...columnData);
+            const max = Math.max(...columnData);
+
+            document.getElementById('stats-output').textContent = `Sum: ${sum}, Mean: ${mean.toFixed(2)}, Min: ${min}, Max: ${max}`;
+        }
+
+       function calculateStrategyScores() {
+    const strategyIndex = csvData[0].indexOf('Strategy');
+    const scoreIndex = csvData[0].findIndex(header => header.trim() === 'Score');
+
+    if (strategyIndex === -1) {
+        alert('Strategy Name column not found');
+        return;
+    }
+
+    if (scoreIndex === -1) {
+        alert('Score column not found');
+        return;
+    }
+
+    const uniqueStrategies = [...new Set(csvData.slice(1).map(row => row[strategyIndex]))];
+    const strategyScores = uniqueStrategies.map(strategy => {
+        const strategyRows = csvData.slice(1).filter(row => row[strategyIndex] === strategy);
+        const totalScore = strategyRows.reduce((acc, row) => {
+            const score = parseFloat(row[scoreIndex]);
+            return acc + (isNaN(score) ? 0 : score);
+        }, 0);
+        return { strategy, totalScore };
+    });
+
+    strategyScores.sort((a, b) => b.totalScore - a.totalScore);
+
+    const scoresTable = document.getElementById('strategy-scores-table');
+    scoresTable.innerHTML = '';
+
+    const headerRow = document.createElement('tr');
+    ['Strategy Name', 'Total Score'].forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
+    });
+    scoresTable.appendChild(headerRow);
+
+    strategyScores.forEach(({ strategy, totalScore }) => {
+        const tr = document.createElement('tr');
+        const tdStrategy = document.createElement('td');
+        tdStrategy.textContent = strategy;
+        const tdScore = document.createElement('td');
+        tdScore.textContent = totalScore;
+        tr.appendChild(tdStrategy);
+        tr.appendChild(tdScore);
+        scoresTable.appendChild(tr);
+    });
+}
+
+        function findExtremes() {
+            const strategyIndex = csvData[0].indexOf('Strategy');
+            const scoreIndex = csvData[0].findIndex(header => header.trim() === 'Score');
+
+            if (strategyIndex === -1) {
+                alert('Strategy Name column not found');
+                return;
+            }
+
+            if (scoreIndex === -1) {
+               alert('Score column not found');
+               return;
+            }
+
+            let highestMatchScore = -Infinity;
+            let lowestMatchScore = Infinity;
+            let highestStrategy = '';
+            let lowestStrategy = '';
+            let highestTotalScore = -Infinity;
+            let highestTotalStrategy = '';
+
+            //csvData.slice(1).forEach(row => {
+                //row.slice(1).forEach((cell, index) => {
+                    //const value = parseFloat(cell);
+                    //if (!isNaN(value)) {
+                        //if (value > highestMatchScore) {
+                           // highestMatchScore = value;
+                           // highestStrategy = row[strategyIndex];
+                       // }
+                       // if (value < lowestMatchScore) {
+                           // lowestMatchScore = value;
+                           // lowestStrategy = row[strategyIndex];
+                       //}
+                    //}
+                //});
+           // });
+
+    // Iterate over rows to find highest and lowest match scores
+    csvData.slice(1).forEach(row => {
+        const value = parseFloat(row[scoreIndex]);
+        if (!isNaN(value)) {
+            if (value > highestMatchScore) {
+                highestMatchScore = value;
+                highestStrategy = row[strategyIndex];
+            }
+            if (value < lowestMatchScore) {
+                lowestMatchScore = value;
+                lowestStrategy = row[strategyIndex];
+            }
+        }
+    });
+
+            const uniqueStrategies = [...new Set(csvData.slice(1).map(row => row[strategyIndex]))];
+            uniqueStrategies.forEach(strategy => {
+                const strategyRows = csvData.slice(1).filter(row => row[strategyIndex] === strategy);
+                const totalScore = strategyRows.reduce((acc, row) => {
+                    const score = parseFloat(row[scoreIndex]);
+                    return acc + (isNaN(score) ? 0 : score);
+                    //return acc + row.slice(1).reduce((scoreAcc, val) => scoreAcc + (parseFloat(val) || 0), 0);
+                }, 0);
+
+                if (totalScore > highestTotalScore) {
+                    highestTotalScore = totalScore;
+                    highestTotalStrategy = strategy;
+                }
+            });
+
+document.getElementById('extremes-output').innerHTML = 
+    `Highest Match Score: ${highestMatchScore} (Strategy: ${highestStrategy})<br>` +
+    `Lowest Match Score: ${lowestMatchScore} (Strategy: ${lowestStrategy})<br>` +
+    `Highest Total Score: ${highestTotalScore} (Strategy: ${highestTotalStrategy})`;
+
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Enhanced Data Tool</h1>
+        <input type="file" accept=".csv" onchange="handleFileUpload(event)">
+
+        <h3>Select Column for Statistics:</h3>
+        <select id="column-select"></select>
+        <button onclick="displayStats()">Show Statistics</button>
+        <p id="stats-output"></p>
+
+        <h3>Find Extremes:</h3>
+        <button onclick="findExtremes()">Find Extremes</button>
+        <p id="extremes-output"></p>
+
+        <h3>Strategy Total Scores:</h3>
+        <button onclick="calculateStrategyScores()">Calculate Strategy Scores</button>
+        <table id="strategy-scores-table"></table>
+
+        <h3>Uploaded Data:</h3>
+        <table id="data-table"></table>
+    </div>
+</body>
+</html>
