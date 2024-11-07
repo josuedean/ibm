@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myth & Mettle - Warriors of Winter Collection</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <style>
+        /* Base styles */
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #0f172a;
+            color: white;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Header styles */
+        .company-header {
+            background-color: #0f172a;
+            border-bottom: 1px solid #991b1b;
+            padding: 1rem 0;
+        }
+
+        .company-name {
+            font-size: 2.25rem;
+            font-style: italic;
+            color: #dc2626;
+            text-align: center;
+            font-family: serif;
+        }
+
+        /* Hero section */
+        .hero {
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        .hero h2 {
+            font-size: 3.75rem;
+            font-weight: bold;
+            margin-bottom: 3rem;
+        }
+
+        .hero-subtitle {
+            display: block;
+            font-size: 1.25rem;
+            font-weight: normal;
+            margin-top: 1rem;
+            color: #94a3b8;
+        }
+
+        .hero-image {
+            max-width: 56rem;
+            margin: 0 auto 3rem;
+        }
+
+        .hero-image img {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .hero-quote {
+            max-width: 36rem;
+            margin: 0 auto;
+        }
+
+        .hero-quote p {
+            font-size: 1.5rem;
+            color: #cbd5e1;
+            font-style: italic;
+            margin-bottom: 2rem;
+        }
+
+        /* Features section */
+        .features {
+            padding: 6rem 0;
+            background-color: #1e293b;
+        }
+
+        .features h2 {
+            font-size: 2.25rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+        }
+
+        .feature {
+            text-align: center;
+        }
+
+        .feature-icon {
+            width: 4rem;
+            height: 4rem;
+            background-color: #b91c1c;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .feature-icon svg {
+            width: 2rem;
+            height: 2rem;
+        }
+
+        .feature h3 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .feature p {
+            color: #cbd5e1;
+        }
+
+        /* Collection section */
+        .collection {
+            padding: 6rem 0;
+        }
+
+        .collection h2 {
+            font-size: 2.25rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .collection-list {
+            max-width: 42rem;
+            margin: 0 auto;
+            list-style: none;
+            padding: 0;
+        }
+
+        .collection-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+            font-size: 1.125rem;
+        }
+
+        .collection-item svg {
+            width: 1.5rem;
+            height: 1.5rem;
+            margin-right: 1rem;
+            color: #ef4444;
+        }
+
+        .limited-release {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .limited-release p:first-child {
+            color: #ef4444;
+            font-weight: bold;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .limited-release p:last-child {
+            color: #cbd5e1;
+        }
+
+        /* Timeline section */
+        .timeline {
+            padding: 6rem 0;
+            background-color: #1e293b;
+        }
+
+        .timeline h2 {
+            font-size: 2.25rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .timeline-container {
+            max-width: 48rem;
+            margin: 0 auto;
+        }
+
+        .timeline-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+        }
+
+        .timeline-point {
+            text-align: center;
+        }
+
+        .timeline-icon {
+            width: 3rem;
+            height: 3rem;
+            background-color: #b91c1c;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+
+        .timeline-icon svg {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .timeline-line {
+            flex: 1;
+            height: 2px;
+            background-color: #b91c1c;
+            margin: 0 1rem;
+        }
+
+        .timeline-date {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-event {
+            font-size: 0.875rem;
+            color: #cbd5e1;
+        }
+
+        /* Pre-order section */
+        .pre-order {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .pre-order-button {
+            background-color: #b91c1c;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            margin-right: 1.5rem;
+        }
+
+        .pre-order-button:hover {
+            background-color: #dc2626;
+        }
+
+        .release-date {
+            color: #94a3b8;
+            display: inline-block;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .footer p:first-child {
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer p:last-child {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h2 {
+                font-size: 2.5rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline-content {
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .timeline-line {
+                width: 2px;
+                height: 3rem;
+                margin: 1rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Company Name Header -->
+    <div class="company-header">
+        <div class="container">
+            <h1 class="company-name">Myth & Mettle</h1>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="container">
+            <h2>
+                Warriors of Winter
+                <span class="hero-subtitle">A Limited Edition Collection</span>
+            </h2>
+            
+            <div class="hero-image">
+                <img src="/api/placeholder/800/600" alt="Warriors of Winter Collection">
+            </div>
+
+            <div class="hero-quote">
+                <p>"Will winter prevail?"</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2>Exclusive Features</h2>
+            <div class="features-grid">
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i data-lucide="crown"></i>
+                    </div>
+                    <h3>Official Collaboration</h3>
+                    <p>Designed in partnership with George R.R. Martin himself</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i data-lucide="shield"></i>
+                    </div>
+                    <h3>Premium Quality</h3>
+                    <p>Sterling Silver (Ag925) with unique house sigils</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i data-lucide="star"></i>
+                    </div>
+                    <h3>Limited Edition</h3>
+                    <p>Only 5,000 units of each exclusive design</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Details -->
+    <section class="collection">
+        <div class="container">
+            <h2>The Collection</h2>
+            <ul class="collection-list">
+                <li class="collection-item">
+                    <i data-lucide="sword"></i>
+                    5 Character-inspired bracelets
+                </li>
+                <li class="collection-item">
+                    <i data-lucide="shield"></i>
+                    5 House-themed designs
+                </li>
+                <li class="collection-item">
+                    <i data-lucide="crown"></i>
+                    Sterling silver with unique charms
+                </li>
+                <li class="collection-item">
+                    <i data-lucide="star"></i>
+                    Matching enamel pins available
+                </li>
+            </ul>
+            <div class="limited-release">
+                <p>Limited Release</p>
+                <p>Each design limited to 5,000 pieces worldwide</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline -->
+    <section class="timeline">
+        <div class="container">
+            <h2>Release Schedule</h2>
+            <div class="timeline-container">
+                <div class="timeline-content">
+                    <div class="timeline-point">
+                        <div class="timeline-icon">
+                            <i data-lucide="clock"></i>
+                        </div>
+                        <p class="timeline-date">Feb 22, 2025</p>
+                        <p class="timeline-event">Bracelet Release</p>
+                    </div>
+                    <div class="timeline-line"></div>
+                    <div class="timeline-point">
+                        <div class="timeline-icon">
+                            <i data-lucide="clock"></i>
+                        </div>
+                        <p class="timeline-date">Mar 1, 2025</p>
+                        <p class="timeline-event">Enamel Pins Release</p>
+                    </div>
+                </div>
+                <!-- Pre-order section moved here -->
+                <div class="pre-order">
+                    <button class="pre-order-button">Pre-order Now</button>
+                    <span class="release-date">Release: Feb 22, 2025</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>A product of Myth & Mettle</p>
+            <p>In collaboration with George R.R. Martin</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
