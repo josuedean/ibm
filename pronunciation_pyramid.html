@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pronunciation Pyramid</title>
+    <!-- Import Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+    <style>
+        /* Modern Style */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .header {
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 36px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        .btn, select {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .btn:hover, select:hover {
+            background-color: #2980b9;
+        }
+
+        .start-btn {
+            background-color: #2ecc71;
+            color: #fff;
+            padding: 15px 30px;
+            font-size: 24px;
+            margin: 30px auto;
+            cursor: pointer;
+            display: inline-block;
+            border: none;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .start-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .pyramid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tree-root {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .word-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .word-btn {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            border: 2px solid #bdc3c7;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 120px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .word-btn:hover {
+            background-color: #bdc3c7;
+        }
+
+        .word-btn.selected {
+            background-color: #3498db;
+            color: #fff;
+            border-color: #2980b9;
+        }
+
+        .children-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .message {
+            background-color: #e74c3c;
+            color: #fff;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 18px;
+            border-radius: 4px;
+        }
+
+        .custom-words {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .custom-words input {
+            margin: 5px;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .word-btn {
+                width: 100px;
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+
+            .title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">Pronunciation Pyramid</h1>
+            <div class="controls">
+                <select id="wordSetSelect" aria-label="Select word set">
+                    <option value="vowelContrasts1">Vowel Contrasts Set 1</option>
+                    <option value="vowelContrasts2">Vowel Contrasts Set 2</option>
+                    <option value="consonantContrasts1">Consonant Contrasts Set 1</option>
+                    <option value="consonantContrasts2">Consonant Contrasts Set 2</option>
+                    <option value="finalConsonants1">Final Consonants Set 1</option>
+                    <option value="finalConsonants2">Final Consonants Set 2</option>
+                    <option value="customSet">Custom Set</option>
+                </select>
+                <button class="btn" id="resetBtn">Reset</button>
+            </div>
+        </header>
+
+        <div class="custom-words" id="customWords" style="display: none;">
+            <h3>Enter Custom Words (4 levels, 2 words per level)</h3>
+            <div>
+                <input type="text" id="customLevel1Word1" placeholder="Level 1 - Word 1">
+                <input type="text" id="customLevel1Word2" placeholder="Level 1 - Word 2">
+            </div>
+            <div>
+                <input type="text" id="customLevel2Word1" placeholder="Level 2 - Word 1">
+                <input type="text" id="customLevel2Word2" placeholder="Level 2 - Word 2">
+            </div>
+            <div>
+                <input type="text" id="customLevel3Word1" placeholder="Level 3 - Word 1">
+                <input type="text" id="customLevel3Word2" placeholder="Level 3 - Word 2">
+            </div>
+            <div>
+                <input type="text" id="customLevel4Word1" placeholder="Level 4 - Word 1">
+                <input type="text" id="customLevel4Word2" placeholder="Level 4 - Word 2">
+            </div>
+            <button class="btn" id="saveCustomWords">Save Custom Words</button>
+        </div>
+
+        <div class="start-btn" id="startBtn">Start</div>
+
+        <div class="pyramid" id="pyramid"></div>
+    </div>
+
+    <script>
+        const WORD_SETS = {
+            vowelContrasts1: {
+                name: 'Vowel Contrasts Set 1',
+                words: {
+                    level1: ['berry', 'very'],
+                    level2: ['ship', 'sheep'],
+                    level3: ['pilot', 'pirate'],
+                    level4: ['rabble', 'rubble']
+                }
+            },
+            vowelContrasts2: {
+                name: 'Vowel Contrasts Set 2',
+                words: {
+                    level1: ['bet', 'bat'],
+                    level2: ['cot', 'caught'],
+                    level3: ['pull', 'pool'],
+                    level4: ['pen', 'pan']
+                }
+            },
+            consonantContrasts1: {
+                name: 'Consonant Contrasts Set 1',
+                words: {
+                    level1: ['pin', 'bin'],
+                    level2: ['thin', 'fin'],
+                    level3: ['rice', 'lice'],
+                    level4: ['wing', 'ring']
+                }
+            },
+            consonantContrasts2: {
+                name: 'Consonant Contrasts Set 2',
+                words: {
+                    level1: ['sip', 'zip'],
+                    level2: ['fan', 'van'],
+                    level3: ['pat', 'bat'],
+                    level4: ['chew', 'shoe']
+                }
+            },
+            finalConsonants1: {
+                name: 'Final Consonants Set 1',
+                words: {
+                    level1: ['cap', 'cat'],
+                    level2: ['pick', 'pig'],
+                    level3: ['back', 'bag'],
+                    level4: ['dock', 'dog']
+                }
+            },
+            finalConsonants2: {
+                name: 'Final Consonants Set 2',
+                words: {
+                    level1: ['cart', 'card'],
+                    level2: ['felt', 'feld'],
+                    level3: ['park', 'part'],
+                    level4: ['mark', 'mart']
+                }
+            },
+            customSet: {
+                name: 'Custom Set',
+                words: {}
+            }
+        };
+
+        class PronunciationGame {
+            constructor() {
+                this.selectedPath = [];
+                this.currentSet = 'vowelContrasts1';
+                this.gameComplete = false;
+                this.lastNumber = null;
+
+                this.initializeElements();
+                this.attachEventListeners();
+            }
+
+            initializeElements() {
+                this.pyramid = document.getElementById('pyramid');
+                this.wordSetSelect = document.getElementById('wordSetSelect');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.startBtn = document.getElementById('startBtn');
+                this.customWords = document.getElementById('customWords');
+                this.saveCustomWords = document.getElementById('saveCustomWords');
+            }
+
+            attachEventListeners() {
+                this.wordSetSelect.addEventListener('change', (e) => {
+                    this.currentSet = e.target.value;
+                    if (this.currentSet === 'customSet') {
+                        this.customWords.style.display = 'block';
+                    } else {
+                        this.customWords.style.display = 'none';
+                    }
+                    this.reset();
+                });
+
+                this.resetBtn.addEventListener('click', () => this.reset());
+                this.startBtn.addEventListener('click', () => {
+                    this.startBtn.style.display = 'none';
+                    this.renderPyramid();
+                });
+
+                this.saveCustomWords.addEventListener('click', () => this.saveCustomWordSet());
+            }
+
+            saveCustomWordSet() {
+                const level1 = [
+                    document.getElementById('customLevel1Word1').value,
+                    document.getElementById('customLevel1Word2').value
+                ];
+                const level2 = [
+                    document.getElementById('customLevel2Word1').value,
+                    document.getElementById('customLevel2Word2').value
+                ];
+                const level3 = [
+                    document.getElementById('customLevel3Word1').value,
+                    document.getElementById('customLevel3Word2').value
+                ];
+                const level4 = [
+                    document.getElementById('customLevel4Word1').value,
+                    document.getElementById('customLevel4Word2').value
+                ];
+
+                WORD_SETS.customSet.words = {
+                    level1,
+                    level2,
+                    level3,
+                    level4
+                };
+
+                alert('Custom words saved successfully!');
+                this.reset();
+            }
+
+            handleWordClick(index, level) {
+                if (this.gameComplete) return;
+
+                const validMoves = this.getValidNextMoves();
+                if (!validMoves.includes(index)) return;
+
+                // Update the selected path up to the current level
+                this.selectedPath = this.selectedPath.slice(0, level - 1);
+                this.selectedPath.push(index);
+
+                if (level === 4) {
+                    this.gameComplete = true;
+                    this.lastNumber = index + 1;
+                }
+
+                this.renderPyramid();
+
+                if (this.gameComplete) {
+                    this.showCompletionMessage();
+                }
+            }
+
+            getValidNextMoves() {
+                if (this.selectedPath.length === 0) return [0, 1];
+
+                const lastIndex = this.selectedPath[this.selectedPath.length - 1];
+                const currentLevel = this.selectedPath.length;
+
+                if (currentLevel >= 4) return [];
+
+                const nextIndices = [lastIndex * 2, lastIndex * 2 + 1];
+                return nextIndices;
+            }
+
+            showCompletionMessage() {
+                const message = document.createElement('div');
+                message.className = 'message';
+                message.textContent = `Game Complete! You finished at number ${this.lastNumber}`;
+                this.pyramid.appendChild(message);
+            }
+
+            reset() {
+                this.selectedPath = [];
+                this.gameComplete = false;
+                this.lastNumber = null;
+                this.startBtn.style.display = 'inline-block';
+                this.pyramid.innerHTML = '';
+            }
+
+            renderPyramid() {
+                if (this.startBtn.style.display !== 'none') return;
+                this.pyramid.innerHTML = '';
+                const root = document.createElement('div');
+                root.className = 'tree-root';
+
+                this.buildLevel(1, [0, 1], root);
+                this.pyramid.appendChild(root);
+            }
+
+            buildLevel(level, indices, parentElement) {
+                if (level > 4) return;
+
+                const wordContainer = document.createElement('div');
+                wordContainer.className = 'word-container';
+
+                indices.forEach((index) => {
+                    const words = WORD_SETS[this.currentSet].words[`level${level}`];
+                    const word = words[index % words.length];
+
+                    const button = document.createElement('button');
+                    button.className = 'word-btn';
+                    button.textContent = word;
+
+                    const isSelected = this.selectedPath[level - 1] === index;
+                    const validMoves = this.getValidNextMoves();
+                    const isValid = validMoves.includes(index);
+
+                    if (isSelected) button.classList.add('selected');
+                    if (!isValid && !isSelected) button.disabled = true;
+
+                    button.addEventListener('click', () => this.handleWordClick(index, level));
+
+                    wordContainer.appendChild(button);
+                });
+
+                parentElement.appendChild(wordContainer);
+
+                if (level < 4 && this.selectedPath[level - 1] !== undefined) {
+                    const selectedIndex = this.selectedPath[level - 1];
+                    const childrenContainer = document.createElement('div');
+                    childrenContainer.className = 'children-container';
+                    childrenContainer.style.flexDirection = 'column';
+                    childrenContainer.style.alignItems = 'center';
+
+                    this.buildLevel(level + 1, [selectedIndex * 2, selectedIndex * 2 + 1], childrenContainer);
+                    parentElement.appendChild(childrenContainer);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new PronunciationGame();
+        });
+    </script>
+</body>
+</html>
