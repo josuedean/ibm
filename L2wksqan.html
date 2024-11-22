@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terra Galactic Force Terminal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            animation: stars 120s linear infinite;
+        }
+
+        @keyframes stars {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: 550px 550px, 350px 350px, 250px 250px; }
+        }
+
+        .terminal {
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            padding: 2rem;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px #0f0;
+        }
+
+        .blinking {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .content {
+            margin: 2rem 0;
+        }
+
+        .story {
+            color: #0f0;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .clue {
+            color: #33ff33;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            padding-left: 10px;
+            border-left: 2px solid #0f0;
+        }
+
+        input {
+            background: #001400;
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 0.5rem;
+            width: 100%;
+            margin: 1rem 0;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        button {
+            background: #003300;
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 0.5rem 2rem;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #004400;
+            box-shadow: 0 0 10px #0f0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 1px solid #0f0;
+            display: none;
+        }
+
+        .access-granted {
+            color: #0f0;
+            border-color: #0f0 !important;
+        }
+
+        .access-denied {
+            color: #f00;
+            border-color: #f00 !important;
+        }
+
+        .classified-link {
+            color: #33ff33;
+            text-decoration: none;
+        }
+
+        .classified-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="header">
+            <div class="logo">
+                [Terra Galactic Force Terminal]<br>
+                === General Access ===
+            </div>
+        </div>
+        
+        <div class="content">
+            <p class="story">STORY UPDATE:<br>The discovery of the classified project has justified your personal investigation. You decide to keep this project to yourself for the time being and continue your investigation. You trust your Senior Data Analyst but you don’t feel that revealing this information now would be warranted until more is understood about the project.</p>
+            <p class="clue">HINT:<br>It may be a good time to see if there has been any communication about the project. Remember who your mentor is if you need guidance.</p>
+            
+            <input type="text" id="userId" placeholder="Enter User ID..." oninput="validateUserId()" maxlength="6">
+            <input type="text" id="answer" placeholder="Clue answer...">
+            <button onclick="checkAnswer()">VERIFY</button>
+            
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        function validateUserId() {
+            const userIdInput = document.getElementById('userId');
+            const userId = userIdInput.value;
+            if (!/^\d{0,6}$/.test(userId)) {
+                userIdInput.value = userId.slice(0, -1); // Keep only valid numeric characters
+            }
+        }
+
+        (function() {
+            const keyParts = [82, 83, 45, 68, 101, 108, 116, 97].map(code => String.fromCharCode(code));
+            const answerCode = keyParts.join('');
+            const urlParts = ['aHR0cHM6Ly9qb3N1ZWRlYW4uZ2l0aHViLmlv', 'L2libS9Rc2RyZWQ3ZS5odG1s'];
+            const classifiedUrl = atob(urlParts.join(''));
+
+
+            function checkAnswer() {
+                const answer = document.getElementById('answer').value.trim();
+                const result = document.getElementById('result');
+                
+                if (answer === answerCode) {
+                    result.innerHTML = `You may proceed to [<a href="${classifiedUrl}" class="classified-link">Clue 4</a>]`;
+                    result.className = 'access-granted';
+                } else {
+                    result.innerHTML = 'ACCESS DENIED - Invalid answer! Check spelling.';
+                    result.className = 'access-denied';
+                }
+                result.style.display = 'block';
+            }
+
+            window.checkAnswer = checkAnswer;
+        })();
+    </script>
+</body>
+</html>

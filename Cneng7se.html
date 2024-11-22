@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terra Galactic Force Terminal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #FFA500; /* Main text color changed to neon orange-yellow */
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(white, rgba(255, 165, 0, 0.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255, 165, 0, 0.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255, 165, 0, 0.1) 2px, transparent 40px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            animation: stars 120s linear infinite;
+        }
+
+        @keyframes stars {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: 550px 550px, 350px 350px, 250px 250px; }
+        }
+
+        .terminal {
+            background: rgba(30, 20, 0, 0.9);
+            border: 2px solid #FFA500; /* Border changed to neon orange-yellow */
+            border-radius: 10px;
+            padding: 2rem;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.2); /* Orange-yellow glow */
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px #FFA500; /* Orange-yellow glow for title */
+        }
+
+        .blinking {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .content {
+            margin: 2rem 0;
+        }
+
+        .story {
+            color: #FFA500; /* Story text color */
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .clue {
+            color: #FFA500; /* Clue text color */
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            padding-left: 10px;
+            border-left: 2px solid #FFA500;
+        }
+
+        input {
+            background: #332200; /* Dark orange background for input */
+            border: 1px solid #FFA500; /* Input border color */
+            color: #FFA500; /* Input text color */
+            padding: 0.5rem;
+            width: 100%;
+            margin: 1rem 0;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        button {
+            background: #663300; /* Darker orange button background */
+            border: 1px solid #FFA500; /* Button border color */
+            color: #FFA500; /* Button text color */
+            padding: 0.5rem 2rem;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #FFB732; /* Brighter orange-yellow for hover effect */
+            box-shadow: 0 0 10px #FFA500; /* Orange-yellow glow for button hover */
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 1px solid #FFA500; /* Result border color */
+            display: none;
+        }
+
+        .access-granted {
+            color: #FFA500; /* Access granted message color */
+            border-color: #FFA500 !important;
+        }
+
+        .access-denied {
+            color: #f00;
+            border-color: #f00 !important;
+        }
+
+        .classified-link {
+            color: #FFA500; /* Classified link color */
+            text-decoration: none;
+        }
+
+        .classified-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="header">
+            <div class="logo">
+                [Terra Galactic Force Terminal]<br>
+                === General Access ===
+            </div>
+        </div>
+        
+        <div class="content">
+            <p class="story">STORY UPDATE:<br>While performing the tasks necessary for your first assignment you decide to keep a copy of the anomalous data to be removed. You are excited to take a closer look at the details of those records.</p>
+            <p class="clue">HINT:<br>With only 100 data records the data should be easier scannable by eye. Check for information that may lead you to other datasets available to you. If you expect to find information but it is lacking, that is your clue.</p>
+            
+            <input type="text" id="userId" placeholder="Enter User ID..." oninput="validateUserId()" maxlength="6">
+            <input type="text" id="answer" placeholder="Clue answer...">
+            <button onclick="checkAnswer()">VERIFY</button>
+            
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        function validateUserId() {
+            const userIdInput = document.getElementById('userId');
+            const userId = userIdInput.value;
+            if (!/^\d{0,6}$/.test(userId)) {
+                userIdInput.value = userId.slice(0, -1); // Keep only valid numeric characters
+            }
+        }
+
+        (function() {
+            // Breaking answer code into individual parts (ASCII values for "Vasquez")
+            const keyParts = [86, 97, 115, 113, 117, 101, 122].map(code => String.fromCharCode(code));
+            const answerCode = keyParts.join('');
+
+            // Breaking the URL into parts for obfuscation
+            const urlParts = ['aHR0cHM6Ly9qb3N1ZWRlYW4uZ2l0aHViLmlv', 'L2libS9KbmMxc3h0ci5odG1s'];
+            const classifiedUrl = atob(urlParts.join(''));
+
+            function checkAnswer() {
+                const answer = document.getElementById('answer').value.trim();
+                const result = document.getElementById('result');
+                
+                if (answer === answerCode) {
+                    result.innerHTML = `You may proceed to [<a href="${classifiedUrl}" class="classified-link">Clue 2</a>]`;
+                    result.className = 'access-granted';
+                } else {
+                    result.innerHTML = 'ACCESS DENIED - Invalid answer! Check spelling.';
+                    result.className = 'access-denied';
+                }
+                result.style.display = 'block';
+            }
+
+            window.checkAnswer = checkAnswer;
+        })();
+    </script>
+</body>
+</html>
