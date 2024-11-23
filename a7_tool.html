@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Outlier Detection Tool</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #FFA500; /* Main text color changed to neon orange-yellow */
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(white, rgba(255, 165, 0, 0.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255, 165, 0, 0.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255, 165, 0, 0.1) 2px, transparent 40px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            animation: stars 120s linear infinite;
+        }
+
+        @keyframes stars {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: 550px 550px, 350px 350px, 250px 250px; }
+        }
+
+        .terminal {
+            background: rgba(30, 20, 0, 0.9);
+            border: 2px solid #FFA500; /* Border changed to neon orange-yellow */
+            border-radius: 10px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 1000px;
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.2); /* Orange-yellow glow */
+            margin: 2rem;
+            overflow: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px #FFA500; /* Orange-yellow glow for title */
+        }
+
+        .content {
+            margin: 2rem 0;
+        }
+
+        input[type="file"], select, button {
+            margin: 10px 0;
+            padding: 5px;
+            background: #332200; /* Dark orange background */
+            border: 1px solid #FFA500; /* Input border color */
+            color: #FFA500; /* Input text color */
+            font-family: 'Share Tech Mono', monospace;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #663300; /* Darker orange button background */
+            padding: 0.5rem 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #FFB732; /* Brighter orange-yellow for hover effect */
+            box-shadow: 0 0 10px #FFA500; /* Orange-yellow glow for button hover */
+        }
+
+        #dataTable, #outlierTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            color: #FFA500; /* Table text color */
+        }
+
+        #dataTable th, #dataTable td, #outlierTable th, #outlierTable td {
+            border: 1px solid #FFA500;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .outlier {
+            background-color: #FF0000;
+            color: #FFF;
+        }
+
+        #outlierDisplay {
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="header">
+            <div class="logo">
+                <h1>Outlier Detection and Data Cleaning Tool</h1>
+            </div>
+        </div>
+        
+        <div class="content">
+            <input type="file" id="fileInput" accept=".csv">
+            
+            <select id="methodSelect">
+                <option value="none">None</option>
+                <option value="zscore">Z-Score Method</option>
+                <option value="iqr">Interquartile Range (IQR) Method</option>
+            </select>
+            
+            <button onclick="detectOutliers()">Detect Outliers</button>
+            <button onclick="deleteOutliers()">Delete Outliers</button>
+            <button onclick="saveCleanedData()">Save Cleaned Data</button>
+            <button onclick="saveOutliersData()">Download Outliers</button>
+            <br>
+            <select id="columnSelect" multiple></select>
+            <button onclick="filterByColumn()">Filter by Column</button>
+            <button onclick="resetTable()">Reset Table</button>
+
+            <div id="outlierDisplay"></div>
+            
+            <table id="dataTable"></table>
+        </div>
+    </div>
+
+    <script>
+        let originalData = [];
+        let outlierIndices = new Set();
+        let currentColumnIndices = null; // Track selected columns
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                const csvData = event.target.result;
+                parseCSV(csvData);
+                populateColumnSelect();
+                currentColumnIndices = null; // Reset column selection
+            };
+            
+            reader.readAsText(file);
+        });
+
+        function parseCSV(csvString) {
+            const rows = csvString.split('\n').map(row => row.trim()).filter(row => row);
+            originalData = rows.map(row => row.split(','));
+            renderTable(originalData);
+        }
+
+        function renderTable(data) {
+            const table = document.getElementById('dataTable');
+            table.innerHTML = '';
+            
+            // Create header row
+            const headerRow = document.createElement('tr');
+
+            // Record Number header
+            const recordNumberTh = document.createElement('th');
+            recordNumberTh.textContent = 'Record Number';
+            headerRow.appendChild(recordNumberTh);
+
+            data[0].forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            // Create data rows
+            for (let i = 1; i < data.length; i++) {
+                const tr = document.createElement('tr');
+
+                // Record Number
+                const recordNumberTd = document.createElement('td');
+                recordNumberTd.textContent = i; // Since i starts from 1
+                tr.appendChild(recordNumberTd);
+
+                data[i].forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            }
+
+            // Re-apply outlier highlighting if any
+            highlightOutliers();
+        }
+
+        function detectOutliers() {
+            if (originalData.length === 0) {
+                alert('Please upload a CSV file first.');
+                return;
+            }
+
+            const method = document.getElementById('methodSelect').value;
+            const headers = originalData[0];
+            const data = originalData.slice(1);
+            
+            // Reset previous outlier markings
+            outlierIndices = new Set();
+            
+            if (method === 'none') {
+                // Clear outlier highlighting and remove outlier table
+                highlightOutliers();
+                const outlierDisplay = document.getElementById('outlierDisplay');
+                outlierDisplay.innerHTML = '';
+                return;
+            }
+
+            // Detect numeric columns
+            const numericColumnIndices = headers.map((header, index) => 
+                isColumnNumeric(data.map(row => row[index])) ? index : -1
+            ).filter(index => index !== -1);
+
+            // Detect outliers for each numeric column
+            numericColumnIndices.forEach(colIndex => {
+                const columnData = data.map(row => parseFloat(row[colIndex]));
+                
+                if (method === 'zscore') {
+                    detectZScoreOutliers(columnData, colIndex);
+                } else if (method === 'iqr') {
+                    detectIQROutliers(columnData, colIndex);
+                }
+            });
+
+            // Highlight outliers in the table
+            highlightOutliers();
+            // Display outliers in separate display
+            renderOutliers();
+        }
+
+        function isColumnNumeric(column) {
+            return column.every(val => !isNaN(parseFloat(val)));
+        }
+
+        function detectZScoreOutliers(data, colIndex) {
+            const mean = calculateMean(data);
+            const stdDev = calculateStandardDeviation(data, mean);
+            
+            data.forEach((value, index) => {
+                const zScore = Math.abs((value - mean) / stdDev);
+                if (zScore > 3) {
+                    outlierIndices.add(index + 1); // +1 to account for header row
+                }
+            });
+        }
+
+        function detectIQROutliers(data, colIndex) {
+            const sortedData = [...data].sort((a, b) => a - b);
+            const q1 = calculateQuantile(sortedData, 0.25);
+            const q3 = calculateQuantile(sortedData, 0.75);
+            const iqr = q3 - q1;
+            const lowerBound = q1 - 1.5 * iqr;
+            const upperBound = q3 + 1.5 * iqr;
+
+            data.forEach((value, index) => {
+                if (value < lowerBound || value > upperBound) {
+                    outlierIndices.add(index + 1); // +1 to account for header row
+                }
+            });
+        }
+
+        function calculateMean(data) {
+            return data.reduce((sum, val) => sum + val, 0) / data.length;
+        }
+
+        function calculateStandardDeviation(data, mean) {
+            const variance = data.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / data.length;
+            return Math.sqrt(variance);
+        }
+
+        function calculateQuantile(sortedData, q) {
+            const pos = (sortedData.length - 1) * q;
+            const base = Math.floor(pos);
+            const rest = pos - base;
+            
+            if (sortedData[base + 1] !== undefined) {
+                return sortedData[base] + rest * (sortedData[base + 1] - sortedData[base]);
+            }
+            return sortedData[base];
+        }
+
+        function highlightOutliers() {
+            const table = document.getElementById('dataTable');
+            for (let i = 1; i < table.rows.length; i++) {
+                if (outlierIndices.has(i)) {
+                    table.rows[i].classList.add('outlier');
+                } else {
+                    table.rows[i].classList.remove('outlier');
+                }
+            }
+        }
+
+        function renderOutliers() {
+            const outlierDisplay = document.getElementById('outlierDisplay');
+            outlierDisplay.innerHTML = '';
+
+            if (outlierIndices.size === 0) {
+                outlierDisplay.textContent = 'No outliers detected.';
+                return;
+            }
+
+            const count = outlierIndices.size;
+
+            const countParagraph = document.createElement('p');
+            countParagraph.textContent = `Total Outliers: ${count}`;
+            outlierDisplay.appendChild(countParagraph);
+
+            const table = document.createElement('table');
+            table.id = 'outlierTable';
+
+            // Create header row
+            const headerRow = document.createElement('tr');
+
+            // Record Number header
+            const recordNumberTh = document.createElement('th');
+            recordNumberTh.textContent = 'Record Number';
+            headerRow.appendChild(recordNumberTh);
+
+            // Determine headers to display
+            let headers;
+            if (currentColumnIndices) {
+                headers = currentColumnIndices.map(index => originalData[0][index]);
+            } else {
+                headers = originalData[0];
+            }
+
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            // Add outlier rows
+            outlierIndices.forEach(index => {
+                const tr = document.createElement('tr');
+
+                // Record Number
+                const recordNumberTd = document.createElement('td');
+                recordNumberTd.textContent = index; // Since indices start from 1
+                tr.appendChild(recordNumberTd);
+
+                let rowData;
+                if (currentColumnIndices) {
+                    rowData = currentColumnIndices.map(colIndex => originalData[index][colIndex]);
+                } else {
+                    rowData = originalData[index];
+                }
+
+                rowData.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+
+                table.appendChild(tr);
+            });
+
+            outlierDisplay.appendChild(table);
+        }
+
+        function deleteOutliers() {
+            if (outlierIndices.size === 0) {
+                alert('No outliers to delete. Detect outliers first.');
+                return;
+            }
+
+            // Create a new dataset without outliers
+            const cleanedData = [originalData[0]]; // Keep header
+            for (let i = 1; i < originalData.length; i++) {
+                if (!outlierIndices.has(i)) {
+                    cleanedData.push(originalData[i]);
+                }
+            }
+
+            originalData = cleanedData;
+            outlierIndices.clear();
+            renderTable(originalData);
+
+            // Clear outlier display
+            const outlierDisplay = document.getElementById('outlierDisplay');
+            outlierDisplay.innerHTML = '';
+        }
+
+        function saveCleanedData() {
+            if (originalData.length === 0) {
+                alert('No data to save.');
+                return;
+            }
+
+            const csvContent = originalData.map(row => row.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            
+            const fileInput = document.getElementById('fileInput');
+            const originalFileName = fileInput.files[0].name;
+            const cleanedFileName = originalFileName.replace(/\.csv$/, '-cleaned.csv');
+
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', cleanedFileName);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function saveOutliersData() {
+            if (outlierIndices.size === 0) {
+                alert('No outliers to save. Detect outliers first.');
+                return;
+            }
+
+            let dataToSave = [];
+
+            // Include headers
+            let headers;
+            if (currentColumnIndices) {
+                headers = currentColumnIndices.map(index => originalData[0][index]);
+            } else {
+                headers = originalData[0];
+            }
+
+            dataToSave.push(headers);
+
+            // Include outlier rows
+            outlierIndices.forEach(index => {
+                let rowData;
+                if (currentColumnIndices) {
+                    rowData = currentColumnIndices.map(colIndex => originalData[index][colIndex]);
+                } else {
+                    rowData = originalData[index];
+                }
+                dataToSave.push(rowData);
+            });
+
+            const csvContent = dataToSave.map(row => row.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            
+            const fileInput = document.getElementById('fileInput');
+            const originalFileName = fileInput.files[0].name;
+            const outliersFileName = originalFileName.replace(/\.csv$/, '-outliers.csv');
+
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', outliersFileName);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function populateColumnSelect() {
+            const columnSelect = document.getElementById('columnSelect');
+            columnSelect.innerHTML = '';
+
+            const headers = originalData[0];
+
+            headers.forEach((header, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = header;
+                columnSelect.appendChild(option);
+            });
+        }
+
+        function filterByColumn() {
+            const columnSelect = document.getElementById('columnSelect');
+            const selectedOptions = Array.from(columnSelect.selectedOptions);
+            const selectedIndices = selectedOptions.map(option => parseInt(option.value));
+
+            if (selectedIndices.length === 0) {
+                alert('Please select at least one column.');
+                return;
+            }
+
+            currentColumnIndices = selectedIndices; // Update current columns
+
+            // Create a new data array containing only the selected columns
+            const filteredData = [];
+
+            // Include header
+            const headerRow = selectedIndices.map(index => originalData[0][index]);
+            filteredData.push(headerRow);
+
+            // Include data rows
+            for (let i = 1; i < originalData.length; i++) {
+                const row = selectedIndices.map(index => originalData[i][index]);
+                filteredData.push(row);
+            }
+
+            // Render table
+            renderFilteredTable(filteredData);
+
+            // Re-apply outlier highlighting if any
+            highlightOutliers();
+
+            // Update outlier table if displayed
+            if (outlierIndices.size > 0) {
+                renderOutliers();
+            }
+        }
+
+        function renderFilteredTable(data) {
+            const table = document.getElementById('dataTable');
+            table.innerHTML = '';
+            
+            // Create header row
+            const headerRow = document.createElement('tr');
+
+            // Record Number header
+            const recordNumberTh = document.createElement('th');
+            recordNumberTh.textContent = 'Record Number';
+            headerRow.appendChild(recordNumberTh);
+
+            // Column headers
+            data[0].forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            // Data rows
+            for (let i = 1; i < data.length; i++) {
+                const tr = document.createElement('tr');
+
+                // Record Number
+                const recordNumberTd = document.createElement('td');
+                recordNumberTd.textContent = i; // Since i starts from 1
+                tr.appendChild(recordNumberTd);
+
+                data[i].forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            }
+        }
+
+        function resetTable() {
+            currentColumnIndices = null; // Reset to show all columns
+            renderTable(originalData);
+
+            // Update outlier table if displayed
+            if (outlierIndices.size > 0) {
+                renderOutliers();
+            }
+        }
+    </script>
+</body>
+</html>
