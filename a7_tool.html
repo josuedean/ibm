@@ -14,7 +14,7 @@
             font-family: 'Share Tech Mono', monospace;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; /* Changed to flex-start to align content at the top */
             min-height: 100vh;
             background-image: 
                 radial-gradient(white, rgba(255, 165, 0, 0.2) 2px, transparent 40px),
@@ -56,7 +56,7 @@
             margin: 2rem 0;
         }
 
-        input[type="file"], select, button {
+        input[type="file"], select {
             margin: 10px 0;
             padding: 5px;
             background: #332200; /* Dark orange background */
@@ -67,11 +67,21 @@
             box-sizing: border-box;
         }
 
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
         button {
             background: #663300; /* Darker orange button background */
-            padding: 0.5rem 2rem;
+            padding: 0.5rem 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            border: 1px solid #FFA500;
+            color: #FFA500;
+            font-family: 'Share Tech Mono', monospace;
         }
 
         button:hover {
@@ -79,14 +89,16 @@
             box-shadow: 0 0 10px #FFA500; /* Orange-yellow glow for button hover */
         }
 
-        #dataTable, #outlierTable {
+        #dataTable, #outlierTable, #statsTable {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
             color: #FFA500; /* Table text color */
         }
 
-        #dataTable th, #dataTable td, #outlierTable th, #outlierTable td {
+        #dataTable th, #dataTable td, 
+        #outlierTable th, #outlierTable td,
+        #statsTable th, #statsTable td {
             border: 1px solid #FFA500;
             padding: 8px;
             text-align: left;
@@ -97,8 +109,18 @@
             color: #FFF;
         }
 
-        #outlierDisplay {
+        #outlierDisplay, #statsDisplay {
             margin-top: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -119,15 +141,21 @@
                 <option value="iqr">Interquartile Range (IQR) Method</option>
             </select>
             
-            <button onclick="detectOutliers()">Detect Outliers</button>
-            <button onclick="deleteOutliers()">Delete Outliers</button>
-            <button onclick="saveCleanedData()">Save Cleaned Data</button>
-            <button onclick="saveOutliersData()">Download Outliers</button>
-            <br>
+            <div class="button-row">
+                <button onclick="detectOutliers()">Detect Outliers</button>
+                <button onclick="deleteOutliers()">Delete Outliers</button>
+                <button onclick="saveCleanedData()">Save Cleaned Data</button>
+                <button onclick="saveOutliersData()">Download Outliers</button>
+            </div>
+            
             <select id="columnSelect" multiple></select>
-            <button onclick="filterByColumn()">Filter by Column</button>
-            <button onclick="resetTable()">Reset Table</button>
+            <div class="button-row">
+                <button onclick="filterByColumn()">Filter by Column</button>
+                <button onclick="resetTable()">Reset Table</button>
+                <button onclick="toggleStatistics()">Show/Hide Descriptive Statistics</button>
+            </div>
 
+            <div id="statsDisplay"></div>
             <div id="outlierDisplay"></div>
             
             <table id="dataTable"></table>
@@ -138,6 +166,7 @@
         let originalData = [];
         let outlierIndices = new Set();
         let currentColumnIndices = null; // Track selected columns
+        let statsVisible = true; // Track visibility of statistics
 
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -148,6 +177,7 @@
                 parseCSV(csvData);
                 populateColumnSelect();
                 currentColumnIndices = null; // Reset column selection
+                computeStatistics(); // Compute stats after loading data
             };
             
             reader.readAsText(file);
@@ -277,6 +307,16 @@
             return data.reduce((sum, val) => sum + val, 0) / data.length;
         }
 
+        function calculateMedian(data) {
+            const sorted = [...data].sort((a, b) => a - b);
+            const mid = Math.floor(sorted.length / 2);
+            if (sorted.length % 2 === 0) {
+                return (sorted[mid - 1] + sorted[mid]) / 2;
+            } else {
+                return sorted[mid];
+            }
+        }
+
         function calculateStandardDeviation(data, mean) {
             const variance = data.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / data.length;
             return Math.sqrt(variance);
@@ -316,6 +356,7 @@
             const count = outlierIndices.size;
 
             const countParagraph = document.createElement('p');
+            countParagraph.className = 'section-title';
             countParagraph.textContent = `Total Outliers: ${count}`;
             outlierDisplay.appendChild(countParagraph);
 
@@ -394,6 +435,9 @@
             // Clear outlier display
             const outlierDisplay = document.getElementById('outlierDisplay');
             outlierDisplay.innerHTML = '';
+
+            // Recompute statistics after deletion
+            computeStatistics();
         }
 
         function saveCleanedData() {
@@ -514,6 +558,9 @@
             if (outlierIndices.size > 0) {
                 renderOutliers();
             }
+
+            // Recompute statistics after filtering
+            computeStatistics();
         }
 
         function renderFilteredTable(data) {
@@ -562,6 +609,100 @@
             if (outlierIndices.size > 0) {
                 renderOutliers();
             }
+
+            // Recompute statistics after reset
+            computeStatistics();
+        }
+
+        function computeStatistics() {
+            if (originalData.length === 0) {
+                return;
+            }
+
+            const statsDisplay = document.getElementById('statsDisplay');
+            statsDisplay.innerHTML = '';
+
+            // Determine columns to compute statistics on
+            const headers = currentColumnIndices ? currentColumnIndices.map(i => originalData[0][i]) : originalData[0];
+            const data = originalData.slice(1).map(row => currentColumnIndices ? currentColumnIndices.map(i => row[i]) : row);
+
+            const statsTable = document.createElement('table');
+            statsTable.id = 'statsTable';
+
+            // Create header row
+            const headerRow = document.createElement('tr');
+            const columnHeader = document.createElement('th');
+            columnHeader.textContent = 'Column';
+            headerRow.appendChild(columnHeader);
+
+            const typeHeader = document.createElement('th');
+            typeHeader.textContent = 'Type';
+            headerRow.appendChild(typeHeader);
+
+            const statsHeader = document.createElement('th');
+            statsHeader.textContent = 'Statistics';
+            headerRow.appendChild(statsHeader);
+
+            statsTable.appendChild(headerRow);
+
+            // Iterate over columns
+            headers.forEach((header, index) => {
+                const columnData = data.map(row => row[index]);
+                const isNumeric = isColumnNumeric(columnData);
+
+                const rowElement = document.createElement('tr');
+
+                // Column Name
+                const nameCell = document.createElement('td');
+                nameCell.textContent = header;
+                rowElement.appendChild(nameCell);
+
+                // Type
+                const typeCell = document.createElement('td');
+                typeCell.textContent = isNumeric ? 'Numeric' : 'Categorical';
+                rowElement.appendChild(typeCell);
+
+                // Statistics
+                const statsCell = document.createElement('td');
+                if (isNumeric) {
+                    const numericData = columnData.map(val => parseFloat(val));
+                    const mean = calculateMean(numericData).toFixed(2);
+                    const median = calculateMedian(numericData).toFixed(2);
+                    const stdDev = calculateStandardDeviation(numericData, calculateMean(numericData)).toFixed(2);
+                    const min = Math.min(...numericData).toFixed(2);
+                    const max = Math.max(...numericData).toFixed(2);
+                    statsCell.textContent = `Mean: ${mean}, Median: ${median}, Std Dev: ${stdDev}, Min: ${min}, Max: ${max}`;
+                } else {
+                    const counts = {};
+                    columnData.forEach(val => {
+                        counts[val] = (counts[val] || 0) + 1;
+                    });
+                    const uniqueValues = Object.entries(counts)
+                        .map(([key, value]) => `${key}: ${value}`)
+                        .join('; ');
+                    statsCell.textContent = uniqueValues;
+                }
+                rowElement.appendChild(statsCell);
+
+                statsTable.appendChild(rowElement);
+            });
+
+            // Add title
+            const statsTitle = document.createElement('p');
+            statsTitle.className = 'section-title';
+            statsTitle.textContent = 'Descriptive Statistics';
+            statsDisplay.appendChild(statsTitle);
+
+            statsDisplay.appendChild(statsTable);
+
+            // Initially show or hide based on statsVisible
+            statsDisplay.style.display = statsVisible ? 'block' : 'none';
+        }
+
+        function toggleStatistics() {
+            const statsDisplay = document.getElementById('statsDisplay');
+            statsVisible = !statsVisible;
+            statsDisplay.style.display = statsVisible ? 'block' : 'none';
         }
     </script>
 </body>
