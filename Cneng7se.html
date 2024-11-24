@@ -146,7 +146,7 @@
             <p class="story">STORY UPDATE:<br>While performing the tasks necessary for your first assignment you decide to keep a copy of the anomalous data to be removed. You are excited to take a closer look at the details of those records. Who knows what you'll find.</p>
             <p class="clue">HINT:<br>With only 100 anomalous records the data should be easier to scan by eye. Check for information that may point to other datasets available to you. If you expect to find information but it is lacking, that is your clue.</p>
             
-            //<input type="text" id="userId" placeholder="Enter User ID..." oninput="validateUserId()" maxlength="6">
+            <!-- input type="text" id="userId" placeholder="Enter User ID..." oninput="validateUserId()" maxlength="6" -->
             <input type="text" id="answer" placeholder="Clue answer...">
             <button onclick="checkAnswer()">VERIFY</button>
             
@@ -155,13 +155,13 @@
     </div>
 
     <script>
-        //function validateUserId() {
-            //const userIdInput = document.getElementById('userId');
-            //const userId = userIdInput.value;
-            //if (!/^\d{0,7}$/.test(userId)) {
-                //userIdInput.value = userId.slice(0, -1); // Keep only valid numeric characters
-            //}
-        //}
+        <!-- function validateUserId() {
+            const userIdInput = document.getElementById('userId');
+            const userId = userIdInput.value;
+            if (!/^\d{0,7}$/.test(userId)) {
+                userIdInput.value = userId.slice(0, -1); // Keep only valid numeric characters
+            }
+        } -->
 
         (function() {
             const keyParts = [86, 97, 115, 113, 117, 101, 122].map(code => String.fromCharCode(code));
