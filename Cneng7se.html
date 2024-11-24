@@ -159,11 +159,11 @@
             const userIdInput = document.getElementById('userId');
             const userId = userIdInput.value;
             if (!/^\d{0,7}$/.test(userId)) {
-                userIdInput.value = userId.slice(0, -1); // Keep only valid numeric characters
+                userIdInput.value = userId.slice(0, -1);
             }
         }
 
-        (function() {
+        function() {
             const keyParts = [86, 97, 115, 113, 117, 101, 122].map(code => String.fromCharCode(code));
             const answerCode = keyParts.join('');
 
