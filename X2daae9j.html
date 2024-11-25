@@ -174,7 +174,7 @@
                 const result = document.getElementById('result');
                 
                 if (answer === answerCode) {
-                    result.innerHTML = `Knowing what you now know, will you <a href="[KEEP_LINK]" class="classified-link">KEEP</a> or <a href="[SHARE_LINK]" class="classified-link">SHARE</a> this information? Your choice may determine humanity's future existance.`;
+                    result.innerHTML = `You realize this technology will give TGF the upperhand in humanity's quest to expand throughout the galaxy and beyond. With the level 2 encyption code you have the ability to send an encypted message to OSA relaying everything you know. You have a choice; will you <a href="[KEEP_LINK]" class="classified-link">[KEEP]</a> or <a href="[SHARE_LINK]" class="classified-link">[SHARE]</a> this information with OSA? Your choice may determine the whole of humanity's future existance.`;
                     result.className = 'access-granted';
                 } else {
                     result.innerHTML = 'ACCESS DENIED - Invalid answer! Check spelling.';
