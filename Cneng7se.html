@@ -131,6 +131,25 @@
         .classified-link:hover {
             text-decoration: underline;
         }
+
+        .music-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #663300; /* Darker orange button background */
+            border: 1px solid #FFA500; /* Button border color */
+            color: #FFA500; /* Button text color */
+            padding: 0.5rem 1.5rem;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .music-toggle:hover {
+            background: #FFB732; /* Brighter orange-yellow for hover effect */
+            box-shadow: 0 0 10px #FFA500; /* Glow effect */
+        }
     </style>
 </head>
 <body>
@@ -154,6 +173,15 @@
         </div>
     </div>
 
+    <!-- Add audio element -->
+    <audio id="backgroundMusic" loop>
+        <source src="clue1.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Add toggle button -->
+    <button class="music-toggle" onclick="toggleMusic()">Play Music</button>
+    
     <script>
         function validateUserId() {
             const userIdInput = document.getElementById('userId');
@@ -186,6 +214,29 @@
 
             window.checkAnswer = checkAnswer;
         })();
+
+                // JavaScript for music toggle
+        const music = document.getElementById('backgroundMusic');
+        const musicButton = document.querySelector('.music-toggle');
+
+        function toggleMusic() {
+            if (music.paused) {
+                music.play();
+                musicButton.textContent = 'Pause Music';
+            } else {
+                music.pause();
+                musicButton.textContent = 'Play Music';
+            }
+        }
+
+        // Ensure button text is correct if music ends or page loads
+        music.addEventListener('pause', () => {
+            musicButton.textContent = 'Play Music';
+        });
+
+        music.addEventListener('play', () => {
+            musicButton.textContent = 'Pause Music';
+        });
     </script>
 </body>
 </html>
