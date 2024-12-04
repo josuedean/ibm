@@ -143,8 +143,12 @@
         </div>
         
         <div class="content">
-            <p class="story">STORY UPDATE:<br>The discovery of the classified project has justified your personal investigation. You decide to keep this project to yourself for the time being and continue your investigation. You trust your Senior Data Analyst but you don’t feel that revealing this information now would be warranted until more is understood about the project.</p>
-            <p class="clue">HINT:<br>It may be a good time to see if there has been any communication about the project. Remember who your mentor is if you need guidance.</p>
+            <p class="story">
+                STORY UPDATE:<br>The discovery of the classified project name has justified your personal investigation. 
+                You decide to keep your investigation to yourself for the time being and continue looking for more connections. 
+                You trust your Senior Data Analyst but you don’t feel that revealing this information now would be warranted until more is understood about this project connected to this unregistered person. 
+            </p>
+            <p class="clue">HINT:<br>It may be a good time to see if there has been any communication about the Project Slipstream. You know that some communications are encrypted. Remember who your mentor is if you need guidance.</p>
             
             <!-- input type="text" id="userId" placeholder="Enter User ID..." oninput="validateUserId()" maxlength="7" -->
             <input type="text" id="answer" placeholder="Clue answer...">
@@ -164,7 +168,7 @@
         }
 
         (function() {
-            const keyParts = [82, 83, 45, 68, 101, 108, 116, 97].map(code => String.fromCharCode(code));
+            const keyParts = [82, 45, 68, 101, 108, 116, 97].map(code => String.fromCharCode(code));
             const answerCode = keyParts.join('');
             const urlParts = ['aHR0cHM6Ly9qb3N1ZWRlYW4uZ2l0aHViLmlv', 'L2libS9Rc2RyZWQ3ZS5odG1s'];
             const classifiedUrl = atob(urlParts.join(''));
