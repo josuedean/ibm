@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Terra Galactic Force Terminal - CSV Encrypt/Decrypt Tool</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #FFA500; /* Main text color changed to neon orange-yellow */
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(white, rgba(255, 165, 0, 0.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255, 165, 0, 0.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255, 165, 0, 0.1) 2px, transparent 40px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            animation: stars 120s linear infinite;
+        }
+
+        @keyframes stars {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: 550px 550px, 350px 350px, 250px 250px; }
+        }
+
+        .terminal {
+            background: rgba(30, 20, 0, 0.9);
+            border: 2px solid #FFA500; /* Border changed to neon orange-yellow */
+            border-radius: 10px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.2); /* Orange-yellow glow */
+            margin: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px #FFA500; /* Orange-yellow glow for title */
+        }
+
+        .content {
+            margin: 2rem 0;
+        }
+
+        label {
+            display: block;
+            margin-top: 1rem;
+            font-weight: bold;
+            color: #FFA500;
+        }
+
+        input[type="file"],
+        input[type="text"],
+        select {
+            background: #332200; /* Dark orange background */
+            border: 1px solid #FFA500; /* Border color */
+            color: #FFA500; /* Text color */
+            padding: 0.5rem;
+            width: 100%;
+            margin-top: 0.5rem;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        button {
+            background: #663300; /* Darker orange button background */
+            border: 1px solid #FFA500; /* Button border color */
+            color: #FFA500; /* Button text color */
+            padding: 0.5rem 2rem;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background: #FFB732; /* Brighter orange-yellow for hover effect */
+            box-shadow: 0 0 10px #FFA500; /* Orange-yellow glow for button hover */
+        }
+
+        .output {
+            white-space: pre-wrap;
+            background-color: #1E1400;
+            padding: 1rem;
+            border: 1px solid #FFA500;
+            max-height: 400px;
+            overflow-y: auto;
+            color: #FFA500;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        #downloadBtn {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .checkbox-group {
+            max-height: 150px;
+            overflow-y: auto;
+            background: #1E1400;
+            padding: 0.5rem;
+            border: 1px solid #FFA500;
+        }
+
+        .checkbox-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: normal;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="header">
+            <div class="logo">
+                [Terra Galactic Force Terminal]<br>
+                === CSV Encrypt/Decrypt Tool ===
+            </div>
+        </div>
+        
+        <div class="content">
+            <form id="csv-form">
+                <label for="csvFile">Upload CSV File:</label>
+                <input type="file" id="csvFile" accept=".csv" required>
+
+                <div id="dynamic-fields" style="display: none;">
+                    <label for="encryptionLevel">Filter by EncryptionLevel:</label>
+                    <select id="encryptionLevel">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+
+                    <label for="columnName">Select Column to Process:</label>
+                    <select id="columnName">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+
+                    <label for="method">Choose Method:</label>
+                    <select id="method">
+                        <option value="encrypt">Encrypt</option>
+                        <option value="decrypt">Decrypt</option>
+                    </select>
+
+                    <label for="cipher">Choose Cipher:</label>
+                    <select id="cipher">
+                        <option value="caesar">Caesar Cipher</option>
+                        <option value="vigenere">Vigenère Cipher</option>
+                    </select>
+
+                    <label for="shiftKey">Shift (for Caesar) or Key (for Vigenère):</label>
+                    <input type="text" id="shiftKey" placeholder=>
+
+                    <label>Select Columns to View:</label>
+                    <div id="columnCheckboxes" class="checkbox-group">
+                        <!-- Checkboxes will be populated dynamically -->
+                    </div>
+
+                    <button type="submit">Process CSV</button>
+                </div>
+            </form>
+
+            <h2>Processed Data:</h2>
+            <div id="output" class="output"></div>
+
+            <a id="downloadBtn" href="#" download="processed_data.csv">
+                <button>Download Processed CSV</button>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const csvFileInput = document.getElementById('csvFile');
+        const dynamicFields = document.getElementById('dynamic-fields');
+        const columnNameSelect = document.getElementById('columnName');
+        const encryptionLevelSelect = document.getElementById('encryptionLevel');
+        const columnCheckboxesDiv = document.getElementById('columnCheckboxes');
+        let csvDataGlobal = '';
+        let headersGlobal = [];
+        let dataRowsGlobal = [];
+
+        csvFileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const csvData = event.target.result;
+                csvDataGlobal = csvData;
+                processCSVHeaders(csvData);
+            };
+            reader.readAsText(file);
+        });
+
+        function processCSVHeaders(data) {
+            const lines = data.split('\n');
+            const headers = parseCSVLine(lines[0]);
+            headersGlobal = headers;
+
+            // Populate columnNameSelect and columnCheckboxesDiv
+            columnNameSelect.innerHTML = '';
+            columnCheckboxesDiv.innerHTML = '';
+
+            headers.forEach(header => {
+                const option = document.createElement('option');
+                option.value = header;
+                option.textContent = header;
+                columnNameSelect.appendChild(option);
+
+                const checkboxLabel = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = header;
+                checkbox.checked = true;
+                checkboxLabel.appendChild(checkbox);
+                checkboxLabel.appendChild(document.createTextNode(header));
+                columnCheckboxesDiv.appendChild(checkboxLabel);
+            });
+
+            // Process data rows to get EncryptionLevel values
+            dataRowsGlobal = [];
+            const encryptionLevels = new Set();
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const row = parseCSVLine(lines[i]);
+                if (row.length < headers.length) continue;
+                const rowData = {};
+                headers.forEach((header, idx) => {
+                    rowData[header] = row[idx];
+                });
+                dataRowsGlobal.push(rowData);
+                if (rowData['EncryptionLevel']) {
+                    encryptionLevels.add(rowData['EncryptionLevel']);
+                }
+            }
+
+            // Populate encryptionLevelSelect
+            encryptionLevelSelect.innerHTML = '';
+            encryptionLevels.forEach(level => {
+                const option = document.createElement('option');
+                option.value = level;
+                option.textContent = level;
+                encryptionLevelSelect.appendChild(option);
+            });
+
+            dynamicFields.style.display = 'block';
+        }
+
+        document.getElementById('csv-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const columnName = document.getElementById('columnName').value;
+            const method = document.getElementById('method').value;
+            const cipher = document.getElementById('cipher').value;
+            const shiftKey = document.getElementById('shiftKey').value.trim();
+            const encryptionLevel = document.getElementById('encryptionLevel').value;
+
+            if (!columnName || !shiftKey) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            // Get selected columns to display
+            const selectedColumns = [];
+            const checkboxes = columnCheckboxesDiv.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedColumns.push(checkbox.value);
+                }
+            });
+
+            if (selectedColumns.length === 0) {
+                alert('Please select at least one column to view.');
+                return;
+            }
+
+            processCSVData(columnName, method, cipher, shiftKey, encryptionLevel, selectedColumns);
+        });
+
+        function processCSVData(columnName, method, cipher, shiftKey, encryptionLevel, selectedColumns) {
+            const processedData = [selectedColumns]; // Include headers
+            dataRowsGlobal.forEach(rowData => {
+                if (rowData['EncryptionLevel'] !== encryptionLevel) return; // Filter by EncryptionLevel
+
+                let cellContent = rowData[columnName];
+
+                if (method === 'encrypt') {
+                    if (cipher === 'caesar') {
+                        cellContent = caesarCipherEncrypt(cellContent, parseInt(shiftKey));
+                    } else {
+                        cellContent = vigenereCipherEncrypt(cellContent, shiftKey);
+                    }
+                } else {
+                    if (cipher === 'caesar') {
+                        cellContent = caesarCipherDecrypt(cellContent, parseInt(shiftKey));
+                    } else {
+                        cellContent = vigenereCipherDecrypt(cellContent, shiftKey);
+                    }
+                }
+
+                rowData[columnName] = cellContent;
+
+                // Collect selected columns
+                const rowToDisplay = selectedColumns.map(col => rowData[col] || '');
+                processedData.push(rowToDisplay);
+            });
+
+            // Convert processedData to CSV format
+            const csvContent = processedData.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')).join('\n');
+
+            document.getElementById('output').textContent = csvContent;
+            enableDownload(csvContent);
+        }
+
+        // Updated parseCSVLine function
+        function parseCSVLine(text) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                if (char === '"' && (i === 0 || text[i - 1] !== '\\')) {
+                    inQuotes = !inQuotes;
+                    current += char;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+
+            // Remove surrounding quotes and unescape double quotes
+            return result.map(field => {
+                field = field.trim();
+                if (field.startsWith('"') && field.endsWith('"')) {
+                    field = field.slice(1, -1).replace(/""/g, '"');
+                }
+                return field;
+            });
+        }
+
+        // Encryption and Decryption Functions
+        function caesarCipherEncrypt(text, shift) {
+            if (isNaN(shift)) {
+                alert('Shift must be a number.');
+                return text;
+            }
+            return text.replace(/[a-z]/gi, function (char) {
+                const base = char <= 'Z' ? 65 : 97;
+                return String.fromCharCode(((char.charCodeAt(0) - base + shift) % 26) + base);
+            });
+        }
+
+        function caesarCipherDecrypt(text, shift) {
+            if (isNaN(shift)) {
+                alert('Shift must be a number.');
+                return text;
+            }
+            return caesarCipherEncrypt(text, (26 - shift) % 26);
+        }
+
+        function vigenereCipherEncrypt(text, key) {
+            key = key.toUpperCase();
+            let result = '';
+            let keyIndex = 0;
+            for (const char of text) {
+                if (char.match(/[a-z]/i)) {
+                    const base = char <= 'Z' ? 65 : 97;
+                    const charCode = char.charCodeAt(0) - base;
+                    const keyCharCode = key[keyIndex % key.length].charCodeAt(0) - 65;
+                    result += String.fromCharCode(((charCode + keyCharCode) % 26) + base);
+                    keyIndex++;
+                } else {
+                    result += char;
+                }
+            }
+            return result;
+        }
+
+        function vigenereCipherDecrypt(text, key) {
+            key = key.toUpperCase();
+            let result = '';
+            let keyIndex = 0;
+            for (const char of text) {
+                if (char.match(/[a-z]/i)) {
+                    const base = char <= 'Z' ? 65 : 97;
+                    const charCode = char.charCodeAt(0) - base;
+                    const keyCharCode = key[keyIndex % key.length].charCodeAt(0) - 65;
+                    result += String.fromCharCode(((charCode - keyCharCode + 26) % 26) + base);
+                    keyIndex++;
+                } else {
+                    result += char;
+                }
+            }
+            return result;
+        }
+
+        function enableDownload(data) {
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.style.display = 'inline-block';
+            const blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            downloadBtn.href = url;
+            downloadBtn.onclick = function () {
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+            };
+        }
+    </script>
+</body>
+</html>
