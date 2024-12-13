@@ -131,6 +131,30 @@
         .classified-link:hover {
             text-decoration: underline;
         }
+
+.music-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #202020; /* Dark gray background */
+    border: 1px solid #FFFFFF; /* White border */
+    color: #FFFFFF; /* White text */
+    padding: 0.5rem 1.5rem;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); /* Subtle white glow */
+}
+
+.music-toggle:hover {
+    background: #444444; /* Slightly lighter gray for hover */
+    box-shadow: 0 0 20px #FFFFFF; /* Bright white glow on hover */
+    transform: scale(1.1); /* Slight scaling effect */
+}
+
+
     </style>
 </head>
 <body>
@@ -146,7 +170,7 @@
             <p class="story">STORY UPDATE:<br>You believe you finally have enough evidence to present your findings to your Senior Data Analyst. You believe there is vital information in the communication logs with higher encryption levels. You decide to write a report for your supervisor outlining what you have discovered and how you discovered it in order to convince him to release the Level 2 encryption key to decrypt the rest of the communication logs.</p>
             <p class="clue">HINT:<br>Making a decryption tool may be of help. Be ready to read.</p>
             
-            <!-- input type="text" id="userId" placeholder="Enter User ID..." oninput="validateUserId()" maxlength="7" -->
+            <!-- input type="text" id="userId" placeholder="Enter User ID..." oninput="validateUserId()" maxlength="6" -->
             <input type="text" id="answer" placeholder="Clue answer...">
             <button onclick="checkAnswer()">VERIFY</button>
             
@@ -154,11 +178,20 @@
         </div>
     </div>
 
+    <!-- Add audio element -->
+    <audio id="backgroundMusic" loop>
+        <source src="clue5.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Add toggle button -->
+    <button class="music-toggle" onclick="toggleMusic()">Play Music</button>
+
     <script>
         function validateUserId() {
             const userIdInput = document.getElementById('userId');
             const userId = userIdInput.value;
-            if (!/^\d{0,7}$/.test(userId)) {
+            if (!/^\d{0,6}$/.test(userId)) {
                 userIdInput.value = userId.slice(0, -1); // Keep only valid numeric characters
             }
         }
@@ -174,7 +207,7 @@
                 const result = document.getElementById('result');
                 
                 if (answer === answerCode) {
-                    result.innerHTML = `You realize this technology will give TGF the upperhand in humanity's quest to expand throughout the galaxy and beyond. With the level 2 encyption code you have the ability to send an encypted message to OSA relaying everything you know. You have a choice; will you <a href="https://youtu.be/dQw4w9WgXcQ?si=6sJf98apsgFQvDW5" class="classified-link">[KEEP]</a> or <a href="the_right_choice.html" class="classified-link">[SHARE]</a> this information with OSA? Your choice may determine the whole of humanity's future existance.`;
+                    result.innerHTML = `Knowing what you now know, will you <a href="[KEEP_LINK]" class="classified-link">KEEP</a> or <a href="[SHARE_LINK]" class="classified-link">SHARE</a> this information? Your choice may determine humanity's future existance.`;
                     result.className = 'access-granted';
                 } else {
                     result.innerHTML = 'ACCESS DENIED - Invalid answer! Check spelling.';
@@ -185,6 +218,29 @@
 
             window.checkAnswer = checkAnswer;
         })();
+
+        // JavaScript for music toggle
+        const music = document.getElementById('backgroundMusic');
+        const musicButton = document.querySelector('.music-toggle');
+
+        function toggleMusic() {
+            if (music.paused) {
+                music.play();
+                musicButton.textContent = 'Pause Music';
+            } else {
+                music.pause();
+                musicButton.textContent = 'Play Music';
+            }
+        }
+
+        // Ensure button text is correct if music ends or page loads
+        music.addEventListener('pause', () => {
+            musicButton.textContent = 'Play Music';
+        });
+
+        music.addEventListener('play', () => {
+            musicButton.textContent = 'Pause Music';
+        });
     </script>
 </body>
 </html>
