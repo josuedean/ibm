@@ -132,27 +132,27 @@
             text-decoration: underline;
         }
 
-.music-toggle {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #001400; /* Dark green background */
-    border: 1px solid #0f0; /* Bright green border */
-    color: #0f0; /* Bright green text */
-    padding: 0.5rem 1.5rem;
-    cursor: pointer;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    z-index: 1000;
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.2); /* Subtle glow */
-}
-
-.music-toggle:hover {
-    background: #003300; /* Lighter green for hover */
-    box-shadow: 0 0 20px #0f0; /* Bright green glow on hover */
-    transform: scale(1.1); /* Slight scaling effect */
-}
+        .music-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #001400; /* Dark green background */
+            border: 1px solid #0f0; /* Bright green border */
+            color: #0f0; /* Bright green text */
+            padding: 0.5rem 1.5rem;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2); /* Subtle glow */
+        }
+        
+        .music-toggle:hover {
+            background: #003300; /* Lighter green for hover */
+            box-shadow: 0 0 20px #0f0; /* Bright green glow on hover */
+            transform: scale(1.1); /* Slight scaling effect */
+        }
     </style>
 </head>
 <body>
@@ -167,10 +167,10 @@
         <div class="content">
             <p class="story">STORY UPDATE:<br>The discovery of the classified project name has justified your personal investigation. 
                 You decide to keep your investigation to yourself for the time being and continue looking for more connections. 
-                You trust your Senior Data Analyst but you don’t feel that revealing this information now would be warranted until more is understood about this project connected to this unregistered person. </p>
+                You trust your Senior Data Analyst but you don’t feel that revealing this information now would be warranted until more is understood about this project connected to this unregistered person.</p>
             <p class="clue">HINT:<br>It may be a good time to see if there has been any communication about the Project Slipstream. You know that some communications are encrypted. Remember who your mentor is if you need guidance.</p>
             
-            <input type="text" id="userId" placeholder="Enter User ID..." oninput="validateUserId()" maxlength="6">
+            <!-- input type="text" id="userId" placeholder="Enter User ID..." oninput="validateUserId()" maxlength="6" -->
             <input type="text" id="answer" placeholder="Clue answer...">
             <button onclick="checkAnswer()">VERIFY</button>
             
