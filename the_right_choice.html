@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSA/TGF Joint Terminal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    color: #FFFFFF;
+    font-family: 'Share Tech Mono', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: 
+        radial-gradient(white, rgba(255, 255, 255, 0.2) 2px, transparent 40px),
+        radial-gradient(white, rgba(255, 255, 255, 0.15) 1px, transparent 30px),
+        radial-gradient(white, rgba(255, 255, 255, 0.1) 2px, transparent 40px);
+    background-size: 550px 550px, 350px 350px, 250px 250px;
+    animation: stars 120s linear infinite;
+}
+
+@keyframes stars {
+    0% { background-position: 0 0, 0 0, 0 0; }
+    100% { background-position: 550px 550px, 350px 350px, 250px 250px; }
+}
+
+.terminal {
+    background: rgba(20, 20, 20, 0.9);
+    border: 2px solid #FFFFFF;
+    border-radius: 10px;
+    width: 70vw;
+    /* height: 80vh; */
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    position: relative;
+    padding: 2rem;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+/*
+.story-line {
+    font-family: 'Orbitron', sans-serif;
+}
+*/
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+.logo {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 10px #FFFFFF;
+    text-align: center;
+}
+
+.blinking {
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+.message-line {
+    margin: 0.5rem 0;
+    white-space: pre-wrap;
+    line-height: 1.5;
+    padding-left: 2rem;
+}
+
+.OSA-id-tag {
+    color: #ffb380;
+}
+
+.OSA-AI-tag {
+    color: #b388ff;
+}
+
+.TGF-id-tag {
+    color: #a0f0ff;
+}
+
+.system-tag {
+    color: #ffffff;
+}
+
+.TGF-message {
+    color: #d0ffff; /* A lighter cyan shade related to #a0f0ff */
+}
+
+.OSA-message {
+    color: #ffe0c2; /* A lighter shade related to #ffb380 */
+}
+
+.OSA-AI-message {
+    color: #dcc0ff; /* A lighter shade related to #b388ff */
+}
+
+.clickable {
+    color: #FFFFFF;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.hidden {
+    display: none !important;
+    visibility: hidden;
+    opacity: 0;
+}
+
+.sparkle-text {
+    display: block;
+    text-align: center;
+    font-size: 1.5rem;
+    color: #ffd700; /* Gold color */
+    animation: sparkle 2s infinite alternate;
+    text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 15px #ffae42, 0 0 20px #ffae42;
+}
+
+@keyframes sparkle {
+    0% { text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 15px #ffae42, 0 0 20px #ffae42; }
+    50% { text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 25px #ffae42, 0 0 30px #ffae42; }
+    100% { text-shadow: 0 0 5px #ffd700, 0 0 15px #ffd700, 0 0 20px #ffae42, 0 0 25px #ffae42; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="terminal" id="commWindow">
+    <div class="header" id="terminalHeader">
+        <div class="logo" id="terminalLogo">
+            [OSA/TGF JOINT TERMINAL]<br>
+            === CLASSIFIED ACCESS ===
+        </div>
+        <div class="blinking" id="terminalSubtitle">SECURITY CLEARANCE REQUIRED</div>
+    </div>
+</div>
+
+<script>
+const correctKey = 'SECRET';
+
+const commWindow = document.getElementById('commWindow');
+const terminalHeader = document.getElementById('terminalHeader');
+const terminalLogo = document.getElementById('terminalLogo');
+const terminalSubtitle = document.getElementById('terminalSubtitle');
+
+const typingSpeed = 45;   // ms per character
+const systemDelay = 2000; // after SYSTEM message
+const tgfDelay = 4000;    // after TGF message
+const osaDelay = 5000;    // after OSA message
+
+const messages = [
+    {from:'SYSTEM', text: "&gt;<span class='system-tag'>SYSTEM</span>: <span class='SYSTEM-message'>Enter Level 2 encryption key... <span class='blinking'>_</span></span> <input type='text' id='encryptionKey' autocomplete='off' style='background: transparent; border: none; color: #FFFFFF; font-family: \"Share Tech Mono\", monospace; outline: none;'>", typed: false, delay: 0 },
+    {from:'SYSTEM', text: "&gt;<span class='system-tag'>SYSTEM</span>: <span class='SYSTEM-message'>Establishing secure connection with nearest OSA ship...</span>", typed: false, delay: systemDelay },
+    {from:'SYSTEM', text: "&gt;<span class='system-tag'>SYSTEM</span>: <span class='SYSTEM-message'>Connection established with Unity Beyond Stars. Begin transmission with OSA Inter Agency Liasion.</span>", typed: false, delay: systemDelay },
+    {from:'TGF', text: "&gt;<span class='TGF-id-tag'>TGF-0980</span>: <span class='TGF-message'>Transmitting encrypted data packet <strong style='color: #00bfff'>[project_slipstream]</strong>. This file contains full details and performance logs of the Quantum Slipstream Drive. Consider this a formal debrief, OSA.</span>", typed: true, delay: tgfDelay },
+    {from:'OSA', text: "&gt;<span class='OSA-id-tag'>OSA-IAL00</span>: <span class='OSA-message'>Received <strong style='color: #00bfff'>[project_slipstream]</strong>. Initial analysis by Unity Beyond Stars AI confirms advanced quantum FTL capabilities. This is… unexpected. TGF, you've guarded this secret closely. Why reveal it to us now?</span>", typed: false, delay: osaDelay },
+    {from:'TGF', text: "&gt;<span class='TGF-id-tag'>TGF-0980</span>: <span class='TGF-message'>The galaxy grows smaller each day. Cooperation, not secrecy, ensures our collective prosperity. We trust OSA to handle this responsibly.</span>", typed: true, delay: tgfDelay },
+    {from:'OSA', text: "&gt;<span class='OSA-id-tag'>OSA-IAL00</span>: <span class='OSA-message'>Your transparency is noted and appreciated. Thank you, TGF. We will review and integrate this knowledge with utmost care.</span>", typed: false, delay: osaDelay },
+    {from:'OSA', text: "&gt;<span class='OSA-AI-tag'>Unity Beyond Stars</span>: <span class='OSA-AI-message'>I usually stay silent during these communications but... Oh, my luminous quarks! You’ve delivered quite the sparkly data parcel. I’ve securely relayed the core insights to my nearest OSA siblings, and they’re already buzzing with excitement. Consider your grand secret thoroughly aired out and filed under cooperative galactic advancements. Let’s hope this marks the start of a more transparent and tastefully collaborative epoch.</span>", typed: false, delay: osaDelay },
+    {from:'TGF', text: "&gt;<span class='TGF-id-tag'>TGF-0980</span>: <span class='TGF-message clickable' id='closeSession'>[CLOSE SESSION]</span>", typed: false, delay: 0 }
+];
+
+let currentMessage = 0;
+
+function showInitialMessage() {
+    const msg = messages[currentMessage];
+    const line = document.createElement('p');
+    line.className = 'message-line';
+    line.innerHTML = msg.text;
+    commWindow.appendChild(line);
+    currentMessage++;
+    scrollToBottom();
+}
+
+showInitialMessage();
+
+commWindow.addEventListener('keyup', (e) => {
+    if (e.target && e.target.id === 'encryptionKey' && e.key === 'Enter') {
+        checkKey();
+    }
+});
+
+function checkKey() {
+    const encryptionInput = document.getElementById('encryptionKey');
+    const val = encryptionInput.value.trim();
+    if (val === correctKey) {
+        terminalSubtitle.classList.add('hidden');
+        encryptionInput.disabled = true;  // Disable the input instead of hiding it
+        startCommunication();
+    } else {
+        const errorMsg = document.createElement('p');
+        errorMsg.className = 'message-line';
+        errorMsg.style.color = '#f00';
+        errorMsg.innerText = 'ACCESS DENIED - Invalid key! Please try again.';
+        commWindow.appendChild(errorMsg);
+        scrollToBottom();
+        encryptionInput.value = '';
+    }
+}
+
+function startCommunication() {
+    showNextMessage();
+}
+
+function showNextMessage() {
+    if (currentMessage < messages.length) {
+        const msg = messages[currentMessage];
+        const line = document.createElement('p');
+        line.className = 'message-line';
+        commWindow.appendChild(line);
+
+        if (msg.typed) {
+            let typedText = msg.text;
+            let prefix = '';
+
+            // Check if this is a TGF message
+            // and extract the prefix.
+            if (msg.from === 'TGF') {
+                const prefixRegex = /^(&gt;<span class='TGF-id-tag'>TGF-0980<\/span>:\s*)/;
+                const match = typedText.match(prefixRegex);
+                if (match) {
+                    prefix = match[0];
+                    typedText = typedText.replace(prefixRegex, '');
+                }
+            }
+
+            // Set the prefix instantly
+            line.innerHTML = prefix;
+            // Type out the remainder
+            typeLine(line, prefix, typedText, () => {
+                currentMessage++;
+                scrollToBottom();
+                if (msg.delay > 0) {
+                    setTimeout(showNextMessage, msg.delay);
+                } else {
+                    showNextMessage();
+                }
+            });
+        } else {
+            // Not typed or no special condition
+            line.innerHTML = msg.text;
+            currentMessage++;
+            scrollToBottom();
+            setTimeout(showNextMessage, msg.delay);
+        }
+    } else {
+        const closeBtn = document.getElementById('closeSession');
+        closeBtn.addEventListener('click', closeSession);
+    }
+}
+
+function typeLine(element, prefix, text, callback, i=0) {
+    if (i < text.length) {
+        element.innerHTML = prefix + text.substring(0, i+1);
+        setTimeout(() => typeLine(element, prefix, text, callback, i+1), typingSpeed);
+    } else {
+        callback();
+    }
+}
+
+function scrollToBottom() {
+    commWindow.scrollTop = commWindow.scrollHeight;
+}
+
+function closeSession() {
+    // Clear commWindow
+    commWindow.innerHTML = '';
+
+    // Add a background video
+    const video = document.createElement('video');
+    video.src = 'ftl.mp4'; // Replace with your video file path
+    video.loop = true;
+    video.autoplay = true;
+    video.muted = true;
+    video.style.position = 'fixed';
+    video.style.top = 0;
+    video.style.left = 0;
+    video.style.width = '100%';
+    video.style.height = '100%';
+    video.style.objectFit = 'cover';
+    video.style.zIndex = -1; // Ensures the video is behind the content
+    document.body.appendChild(video);
+
+    // Recreate the story update frame
+    const terminalHeader = document.createElement('div');
+    terminalHeader.className = 'header';
+    terminalHeader.id = 'terminalHeader';
+    terminalHeader.innerHTML = `
+        <div class="logo" id="terminalLogo">
+            [STORY UPDATE]
+        </div>
+    `;
+    commWindow.appendChild(terminalHeader);
+    // Type out the story
+    const storyText = [
+        "As the agencies embraced transparency, the centuries that followed saw the gradual convergence of TGF and OSA policies.",
+        "By the dawn of the 23rd century, their borders and bureaucracies intertwined, culminating in the formation of a single unified agency:",
+        "<span class='sparkle-text'>The Collaborative</span>",
+        "",
+        "The Collaborative ensured equitable resource allocation, shared knowledge, and ethical advancement.",
+        "Your role in revealing the truth sparked this transformative era, forging a lasting legacy among the stars.",
+        "",
+        "The Collaborative became a beacon of hope for countless civilizations, turning focus toward knowledge, peace, and the betterment of all sentient beings.",
+        "The Ship, Unity Beyond Stars, became a critical partner in advancing science and diplomacy, connecting distant worlds through wisdom and compassion.",
+        "",
+        "Faster-than-light travel became accessible to all, and once-dangerous frontiers turned into new homes for thriving communities.",
+        "",
+        "Though challenges arose, the ideals you sparked reminded every member world that unity was the ultimate strength.",
+        "",
+        "And so, centuries from now, your name is remembered. Celebrated in stories told to children gazing up at the stars.",
+        "The dream of a united galaxy was no longer just a dream—it was a reality forged by your courage to expose the truth.",
+        "",
+        "As the stars continued to expand into infinity, so did the hope you ignited—a hope that, as long as there were stars, unity would prevail."
+    ];
+
+
+    typeStory(storyText, 0);
+}
+
+function typeStory(lines, index) {
+    if (index < lines.length) {
+        const p = document.createElement('p');
+        p.className = 'message-line  story-line';
+        commWindow.appendChild(p);
+        typeLine(p, '', lines[index], () => {
+            scrollToBottom();
+            setTimeout(() => typeStory(lines, index+1), 1000);
+        });
+    } else {
+        // Story fully typed
+    }
+}
+</script>
+</body>
+</html>
