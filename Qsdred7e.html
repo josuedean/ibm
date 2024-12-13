@@ -131,28 +131,28 @@
         .classified-link:hover {
             text-decoration: underline;
         }
-
-.music-toggle {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #001414; /* Dark teal background */
-    border: 1px solid #00FFFF; /* Neon blue border */
-    color: #00FFFF; /* Neon blue text */
-    padding: 0.5rem 1.5rem;
-    cursor: pointer;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    z-index: 1000;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); /* Neon blue subtle glow */
-}
-
-.music-toggle:hover {
-    background: #003333; /* Slightly lighter teal for hover */
-    box-shadow: 0 0 20px #00FFFF; /* Neon blue bright glow on hover */
-    transform: scale(1.1); /* Slight scaling effect */
-}
+        
+        .music-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #001414; /* Dark teal background */
+            border: 1px solid #00FFFF; /* Neon blue border */
+            color: #00FFFF; /* Neon blue text */
+            padding: 0.5rem 1.5rem;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); /* Neon blue subtle glow */
+        }
+        
+        .music-toggle:hover {
+            background: #003333; /* Slightly lighter teal for hover */
+            box-shadow: 0 0 20px #00FFFF; /* Neon blue bright glow on hover */
+            transform: scale(1.1); /* Slight scaling effect */
+        }
     </style>
 </head>
 <body>
@@ -168,7 +168,7 @@
             <p class="story">STORY UPDATE:<br>RS-Delta seems like a frequented place due to its strategic location. Maybe there is something in the details. You wonder if you overlooked something...</p>
             <p class="clue">HINT:<br>Single anomalies are usually mistakes in the data. Usually…</p>
             
-            <input type="text" id="userId" placeholder="Enter User ID..." oninput="validateUserId()" maxlength="6">
+            <!-- input type="text" id="userId" placeholder="Enter User ID..." oninput="validateUserId()" maxlength="6" -->
             <input type="text" id="answer" placeholder="Clue answer...">
             <button onclick="checkAnswer()">VERIFY</button>
             
