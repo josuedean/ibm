@@ -131,6 +131,28 @@
         .classified-link:hover {
             text-decoration: underline;
         }
+
+.music-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #001400; /* Dark green background */
+    border: 1px solid #0f0; /* Bright green border */
+    color: #0f0; /* Bright green text */
+    padding: 0.5rem 1.5rem;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.2); /* Subtle glow */
+}
+
+.music-toggle:hover {
+    background: #003300; /* Lighter green for hover */
+    box-shadow: 0 0 20px #0f0; /* Bright green glow on hover */
+    transform: scale(1.1); /* Slight scaling effect */
+}
     </style>
 </head>
 <body>
@@ -143,14 +165,12 @@
         </div>
         
         <div class="content">
-            <p class="story">
-                STORY UPDATE:<br>The discovery of the classified project name has justified your personal investigation. 
+            <p class="story">STORY UPDATE:<br>The discovery of the classified project name has justified your personal investigation. 
                 You decide to keep your investigation to yourself for the time being and continue looking for more connections. 
-                You trust your Senior Data Analyst but you don’t feel that revealing this information now would be warranted until more is understood about this project connected to this unregistered person. 
-            </p>
+                You trust your Senior Data Analyst but you don’t feel that revealing this information now would be warranted until more is understood about this project connected to this unregistered person. </p>
             <p class="clue">HINT:<br>It may be a good time to see if there has been any communication about the Project Slipstream. You know that some communications are encrypted. Remember who your mentor is if you need guidance.</p>
             
-            <!-- input type="text" id="userId" placeholder="Enter User ID..." oninput="validateUserId()" maxlength="7" -->
+            <input type="text" id="userId" placeholder="Enter User ID..." oninput="validateUserId()" maxlength="6">
             <input type="text" id="answer" placeholder="Clue answer...">
             <button onclick="checkAnswer()">VERIFY</button>
             
@@ -158,17 +178,27 @@
         </div>
     </div>
 
+    <!-- Add audio element -->
+    <audio id="backgroundMusic" loop>
+        <source src="clue3.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Add toggle button -->
+    <button class="music-toggle" onclick="toggleMusic()">Play Music</button>
+
+
     <script>
         function validateUserId() {
             const userIdInput = document.getElementById('userId');
             const userId = userIdInput.value;
-            if (!/^\d{0,7}$/.test(userId)) {
+            if (!/^\d{0,6}$/.test(userId)) {
                 userIdInput.value = userId.slice(0, -1); // Keep only valid numeric characters
             }
         }
 
         (function() {
-            const keyParts = [82, 45, 68, 101, 108, 116, 97].map(code => String.fromCharCode(code));
+            const keyParts = [82, 83, 45, 68, 101, 108, 116, 97].map(code => String.fromCharCode(code));
             const answerCode = keyParts.join('');
             const urlParts = ['aHR0cHM6Ly9qb3N1ZWRlYW4uZ2l0aHViLmlv', 'L2libS9Rc2RyZWQ3ZS5odG1s'];
             const classifiedUrl = atob(urlParts.join(''));
@@ -190,6 +220,30 @@
 
             window.checkAnswer = checkAnswer;
         })();
+
+                // JavaScript for music toggle
+        const music = document.getElementById('backgroundMusic');
+        const musicButton = document.querySelector('.music-toggle');
+
+        function toggleMusic() {
+            if (music.paused) {
+                music.play();
+                musicButton.textContent = 'Pause Music';
+            } else {
+                music.pause();
+                musicButton.textContent = 'Play Music';
+            }
+        }
+
+        // Ensure button text is correct if music ends or page loads
+        music.addEventListener('pause', () => {
+            musicButton.textContent = 'Play Music';
+        });
+
+        music.addEventListener('play', () => {
+            musicButton.textContent = 'Pause Music';
+        });
+
     </script>
 </body>
 </html>
