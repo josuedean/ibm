@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxy of Mission Sites</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        body {
+            margin: 0;
+            background-color: black;
+            color: white;
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(white, rgba(255, 255, 255, 0.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255, 255, 255, 0.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255, 255, 255, 0.1) 2px, transparent 40px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            animation: stars 120s linear infinite;
+        }
+
+        @keyframes stars {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: 550px 550px, 350px 350px, 250px 250px; }
+        }
+
+        #controls-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            color: white;
+            padding: 1rem;
+            background: rgba(20, 20, 20, 0.9);
+            border: 2px solid white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: none;
+            pointer-events: none;
+            font-size: 12px;
+        }
+
+        input, select {
+            background: #333333;
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        button {
+            background: #333333;
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 2rem;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #CCCCCC;
+            box-shadow: 0 0 10px white;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .twinkling {
+            animation: twinkle 1.5s infinite;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="controls-container">
+        <label for="fileInput">Upload mission_sites.csv:</label>
+        <input type="file" id="fileInput" accept=".csv">
+        <br>
+        <label for="starSelector">Choose a star system:</label>
+        <select id="starSelector"></select>
+    </div>
+    <canvas id="galaxyCanvas"></canvas>
+    <div id="tooltip"></div>
+
+    <script>
+        const canvas = document.getElementById('galaxyCanvas');
+        const ctx = canvas.getContext('2d');
+        const tooltip = document.getElementById('tooltip');
+        const fileInput = document.getElementById('fileInput');
+        const starSelector = document.getElementById('starSelector');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        let missionData = [];
+
+        fileInput.addEventListener('change', handleFileUpload);
+        starSelector.addEventListener('change', () => drawStarSystem(starSelector.value));
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const text = e.target.result;
+                const rows = text.split('\n').slice(1);
+
+                missionData = rows
+                    .map(row => row.split(','))
+                    .filter(columns => columns.length >= 2)
+                    .map(columns => ({
+                        id: columns[0],
+                        distance: parseInt(columns[1], 10),
+                        prefix: columns[0].split('-')[0]
+                    }));
+
+                populateStarSelector();
+                drawStarSystem(starSelector.value);
+            };
+
+            reader.readAsText(file);
+        }
+
+        function populateStarSelector() {
+            const uniquePrefixes = [...new Set(missionData.map(site => site.prefix))];
+            starSelector.innerHTML = uniquePrefixes
+                .map(prefix => `<option value="${prefix}">${prefix}</option>`)
+                .join('');
+        }
+
+        function drawStarSystem(prefix) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const starSystem = {
+                name: prefix,
+                x: centerX,
+                y: centerY
+            };
+
+            // Draw the selected star system (twinkling starburst)
+            drawStarburst(starSystem.x, starSystem.y, 'yellow');
+
+            // Draw system name farther from the star
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Arial';
+            ctx.fillText(starSystem.name, starSystem.x + 35, starSystem.y + 35);
+
+            // Filter mission sites for the selected prefix
+            const filteredSites = missionData.filter(site => site.prefix === prefix);
+            const sitePositions = [];
+
+            // Calculate evenly spaced angles
+            const angleStep = (2 * Math.PI) / filteredSites.length;
+
+            filteredSites.forEach((site, index) => {
+                const angle = index * angleStep;
+                const siteX = starSystem.x + (site.distance / 10) * Math.cos(angle); // Scale distance
+                const siteY = starSystem.y + (site.distance / 10) * Math.sin(angle);
+
+                sitePositions.push({ siteX, siteY, id: site.id, distance: site.distance });
+
+                // Draw line from star to site
+                ctx.beginPath();
+                ctx.moveTo(starSystem.x, starSystem.y);
+                ctx.lineTo(siteX, siteY);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Draw the mission site (asteroid effect)
+                drawAsteroid(siteX, siteY);
+            });
+
+            // Add hover tooltip functionality
+            canvas.addEventListener('mousemove', function handleMouseMove(event) {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = event.clientX - rect.left;
+                const mouseY = event.clientY - rect.top;
+
+                let found = false;
+                sitePositions.forEach(site => {
+                    const dx = mouseX - site.siteX;
+                    const dy = mouseY - site.siteY;
+                    if (Math.sqrt(dx * dx + dy * dy) < 5) {
+                        tooltip.style.left = event.clientX + 'px';
+                        tooltip.style.top = event.clientY + 'px';
+                        tooltip.style.display = 'block';
+                        tooltip.innerText = `${site.id} - Distance: ${site.distance}`;
+                        found = true;
+                    }
+                });
+
+                if (!found) {
+                    tooltip.style.display = 'none';
+                }
+            });
+        }
+
+        function drawStarburst(x, y, color) {
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, 30);
+            gradient.addColor
+            gradient.addColorStop(0, 'rgba(255, 255, 200, 1)');
+            gradient.addColorStop(0.5, color);
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            function twinkle() {
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.beginPath();
+                ctx.arc(x, y, 30 + Math.random() * 5, 0, 2 * Math.PI);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            setInterval(twinkle, 500);
+        }
+
+        function drawAsteroid(x, y) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(x, y, 8, 5, Math.PI / 4, 0, 2 * Math.PI);
+            ctx.fillStyle = 'gray';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(200, 200, 200, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.restore();
+        }
+    </script>
+</body>
+</html>
