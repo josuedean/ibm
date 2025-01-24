@@ -91,14 +91,14 @@
       border-radius: 5px;
       user-select: none;
       touch-action: none; /* Needed for pointer events on mobile */
-      position: relative; /* default position (static -> relative for layering) */
+      position: relative;
     }
 
-    /* While dragging, we'll set a higher z-index. */
+    /* While dragging, we'll set a higher z-index and absolute positioning. */
     .dragging {
       opacity: 0.8;
       background: #bbb;
-      position: absolute !important; /* Absolutely position while dragging */
+      position: absolute !important;
       z-index: 999;
     }
 
@@ -190,6 +190,7 @@
     /* ======== Embedded JavaScript ======== */
 
     // Example data structure for units and sentences
+    // (Includes your updated "Unit 5" sentences)
     let unitsData = {
       "Unit 5": [
         "Did she meet someone new?",
@@ -422,29 +423,31 @@
     let draggedElement   = null;
     let offsetX          = 0;
     let offsetY          = 0;
-    let originalNextElem = null;
     let originalParent   = null;
+    let originalNextElem = null;
 
     function onPointerDown(e) {
+      e.preventDefault(); // Prevent default to avoid text selection on mobile
+
       // The element that was touched or clicked
       draggedElement = e.currentTarget;
-
-      // Add a style class
       draggedElement.classList.add('dragging');
 
-      // Remember its initial position
+      // Position / bounding info
       const rect = draggedElement.getBoundingClientRect();
-      offsetX = e.clientX - rect.left;
-      offsetY = e.clientY - rect.top;
 
-      // Save its original parent & next sibling (in case we need to re-insert)
+      // Use pageX/pageY to calculate offset
+      offsetX = e.pageX - rect.left;
+      offsetY = e.pageY - rect.top;
+
+      // Save its original parent & next sibling (so we can re-insert if needed)
       originalParent = draggedElement.parentNode;
       originalNextElem = draggedElement.nextSibling;
 
-      // Move it to the end of parent so it’s on top of siblings
+      // Move it to the end of parent so it’s "on top" among siblings
       draggedElement.parentNode.appendChild(draggedElement);
 
-      // Start listening for pointer moves & up on the entire document
+      // Listen for pointer moves & pointer up on the entire document
       document.addEventListener('pointermove', onPointerMove);
       document.addEventListener('pointerup', onPointerUp);
     }
@@ -453,8 +456,8 @@
       if (!draggedElement) return;
 
       // Position the draggedElement under the pointer
-      draggedElement.style.left = (e.clientX - offsetX) + 'px';
-      draggedElement.style.top  = (e.clientY - offsetY) + 'px';
+      draggedElement.style.left = (e.pageX - offsetX) + 'px';
+      draggedElement.style.top  = (e.pageY - offsetY) + 'px';
     }
 
     function onPointerUp(e) {
@@ -465,14 +468,14 @@
       draggedElement.style.removeProperty('left');
       draggedElement.style.removeProperty('top');
 
-      // Figure out which word-box (if any) we dropped on
+      // Check if we dropped on another word-box
       const dropTarget = document.elementFromPoint(e.clientX, e.clientY);
 
-      // If we dropped on another word-box, insert draggedElement before it
       if (dropTarget && dropTarget !== draggedElement && dropTarget.classList.contains('word-box')) {
+        // Insert draggedElement before the dropTarget
         dropTarget.parentNode.insertBefore(draggedElement, dropTarget);
       } else {
-        // Otherwise, restore it to its original position or keep it at the end
+        // Otherwise, restore to original position or keep at end
         if (originalNextElem) {
           originalParent.insertBefore(draggedElement, originalNextElem);
         } else {
@@ -485,7 +488,6 @@
       document.removeEventListener('pointerup', onPointerUp);
 
       // Re-validate the scrambled sentence’s correctness
-      // (Give a small delay so the DOM fully updates)
       setTimeout(() => {
         const sentenceWrapper = draggedElement.closest('.scrambled-sentence');
         if (sentenceWrapper) validateSentence(sentenceWrapper);
