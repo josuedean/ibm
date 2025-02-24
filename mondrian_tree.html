@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>3D Tree Simulation</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      background: rgba(255,255,255,0.8);
+      padding: 10px;
+      border-radius: 5px;
+      font-family: sans-serif;
+    }
+    #ui label { display: block; margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <label>
+      Branch Scaling Exponent: <span id="exponentValue">2.8</span>
+      <input type="range" id="exponentSlider" min="1.0" max="4.0" step="0.1" value="2.8">
+    </label>
+    <button id="generateTree">Generate New Tree</button>
+  </div>
+  
+  <!-- Three.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <!-- OrbitControls for easy 3D navigation -->
+  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+  
+  <script>
+    let scene, camera, renderer, controls;
+    let treeGroup;
+    let scalingExponent = 2.8;
+
+    init();
+    generateTree();
+
+    function init() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xeeeeee);
+
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 20, 40);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Lights
+      const ambientLight = new THREE.AmbientLight(0xaaaaaa);
+      scene.add(ambientLight);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(0, 50, 50);
+      scene.add(directionalLight);
+
+      // Orbit Controls for 3D navigation
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+      window.addEventListener('resize', onWindowResize, false);
+
+      // UI event listeners
+      document.getElementById('exponentSlider').addEventListener('input', function(e) {
+        scalingExponent = parseFloat(e.target.value);
+        document.getElementById('exponentValue').textContent = scalingExponent.toFixed(1);
+      });
+      document.getElementById('generateTree').addEventListener('click', function() {
+        generateTree();
+      });
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // Recursive function to create tree branches.
+    // At each branch, we compute the child radius such that:
+    //    (parentRadius)^exponent ≈ 2 * (childRadius)^exponent
+    // which implies: childRadius = parentRadius * (0.5)^(1/exponent)
+    function createBranch(position, direction, length, radius, depth) {
+      if (depth === 0 || radius < 0.02) return;
+
+      const childRadius = radius * Math.pow(0.5, 1 / scalingExponent);
+
+      // Create a cylinder for this branch.
+      // CylinderGeometry by default extends from -height/2 to height/2 along Y.
+      // We translate it so the base is at (0, 0, 0) and the tip at (0, length, 0).
+      const geometry = new THREE.CylinderGeometry(childRadius, radius, length, 8);
+      geometry.translate(0, length/2, 0);
+      const material = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+      const branchMesh = new THREE.Mesh(geometry, material);
+
+      // Rotate the branch so that it points in the 'direction'.
+      const up = new THREE.Vector3(0, 1, 0);
+      const quaternion = new THREE.Quaternion().setFromUnitVectors(up, direction.clone().normalize());
+      branchMesh.quaternion.copy(quaternion);
+      branchMesh.position.copy(position);
+      treeGroup.add(branchMesh);
+
+      // Compute the new starting point for child branches.
+      const newPosition = position.clone().add(direction.clone().normalize().multiplyScalar(length));
+
+      // For simplicity, generate two child branches.
+      const numBranches = 2;
+      for (let i = 0; i < numBranches; i++) {
+        // Random branch angle between 20° and 40°
+        const angle = THREE.MathUtils.degToRad(20 + Math.random() * 20);
+        // Choose a random axis perpendicular to the current branch direction.
+        const axis = new THREE.Vector3(
+          Math.random() - 0.5,
+          Math.random() - 0.5,
+          Math.random() - 0.5
+        ).normalize();
+        axis.cross(direction).normalize();
+        if (axis.length() === 0) { axis.set(1, 0, 0); }
+        // Create new branch direction by rotating the parent's direction.
+        const newDirection = direction.clone().applyAxisAngle(axis, angle).normalize();
+        // Slight variation in length.
+        const newLength = length * (0.7 + Math.random() * 0.2);
+        createBranch(newPosition, newDirection, newLength, childRadius, depth - 1);
+      }
+    }
+
+    function generateTree() {
+      // Remove the previous tree (if any)
+      if (treeGroup) {
+        scene.remove(treeGroup);
+      }
+      treeGroup = new THREE.Group();
+      scene.add(treeGroup);
+
+      // Tree parameters
+      const maxDepth = 8;
+      const initialLength = 10;
+      const initialRadius = 1;
+      const startPosition = new THREE.Vector3(0, 0, 0);
+      const startDirection = new THREE.Vector3(0, 1, 0);
+
+      createBranch(startPosition, startDirection, initialLength, initialRadius, maxDepth);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
