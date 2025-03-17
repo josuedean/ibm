@@ -395,9 +395,17 @@ function handleTitle(args) {
     print("Usage: title <text>");
     return;
   }
+
   const titleText = args.join(" ");
-  document.getElementById('window-title').textContent = newTitle;
-  print(`Window title set to "${titleText}" `);
+
+  // Change the CLI window title (if the element exists)
+  const titleElement = document.getElementById('window-title');
+  if (titleElement) {
+    titleElement.textContent = titleText;
+    print(`Window title set to "${titleText}"`);
+  } else {
+    print("Error: CLI window title element not found.");
+  }
 }
 
 /**
