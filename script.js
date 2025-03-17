@@ -490,12 +490,11 @@ function handleHelp() {
   ];
 
   print("");
-  // Pad commands so they align
-lines.forEach(([cmd, desc]) => {
-  const cmdPadded = cmd.padEnd(18, " "); // Apply padding first
-  const cmdEscaped = cmdPadded.replace(/</g, "&lt;").replace(/>/g, "&gt;"); // Then escape
-  print(`  ${cmdEscaped} - ${desc}`);
-});
+  // Apply padding correctly
+  lines.forEach(([cmd, desc]) => {
+    const cmdPadded = cmd.padEnd(18, " ");
+    print(`  ${cmdPadded} - ${desc}`);
+  });
 
   print("");
 }
