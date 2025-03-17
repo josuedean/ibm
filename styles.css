@@ -1,0 +1,92 @@
+/* Body & General */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: monospace;
+  background: #eee; /* Some neutral background behind our faux window */
+}
+
+/* CLI Window Container */
+#cli-window {
+  width: 800px;
+  margin: 50px auto; /* Center horizontally */
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+  border: 1px solid #222;
+  background: #000; /* Default to black terminal background */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Title Bar */
+#title-bar {
+  background: #ccc;
+  padding: 5px 10px;
+  cursor: move; /* just a visual cue, not actually draggable by default */
+}
+
+#window-title {
+  font-weight: bold;
+  color: #000;
+}
+
+/* Terminal section */
+#terminal {
+  height: 500px;
+  overflow-y: auto; /* Scrollable area */
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* Terminal text defaults */
+#terminal, #output, #prompt, #command-input {
+  font-size: 1rem;  /* Uniform font size */
+  line-height: 1.2;
+  color: #00ff00;   /* Green text by default */
+}
+
+/* The output region */
+#output {
+  white-space: pre-wrap;
+}
+
+/* The input line */
+#input-line {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+}
+
+#prompt {
+  margin-right: 5px;
+}
+
+#command-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* UI Panel for color/theme buttons */
+#ui-panel {
+  width: 800px;
+  margin: 10px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+#ui-panel > div {
+  display: flex;
+  gap: 5px;
+}
+
+button {
+  cursor: pointer;
+  padding: 5px 10px;
+  font-family: monospace;
+  font-size: 1rem;
+}

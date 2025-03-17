@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Windows CLI Dungeon Crawl</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Faux window container with title bar -->
+  <div id="cli-window">
+    <div id="title-bar">
+      <span id="window-title">CMD.exe</span>
+    </div>
+    <!-- Terminal region -->
+    <div id="terminal">
+      <div id="output"></div>
+      <div id="input-line">
+        <span id="prompt">C:\></span>
+        <input type="text" id="command-input" autofocus />
+      </div>
+    </div>
+  </div>
+
+  <!-- UI Buttons for color/theme switching -->
+  <div id="ui-panel">
+    <div>
+      <button id="darkModeGreenBtn">Dark Mode (Green Text)</button>
+      <button id="darkModeWhiteBtn">Dark Mode (White Text)</button>
+    </div>
+    <div>
+      <button id="lightModeBlackBtn">Light Mode (Black Text)</button>
+      <button id="lightModeBlueBtn">Light Mode (Blue Text)</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
