@@ -16,116 +16,6 @@ let currentColor = "green"; // or "white", "black", "blue"
 let commandHistory = [];
 let historyIndex = -1;
 
-/**
- * Build a mock file system structure using the JSON data
- * so that the textual content is not in the code.
- *  We have directories, each with:
- *    { name, type:'dir', children: [sub-items], hidden?:bool, locked?:bool, ... }
- *  For files: 
- *    { name, type:'file', content:'...', hidden?:bool, locked?:bool, attributeFlags?:{}}
- */
-function buildFileSystem(contents) {
-  // Example structure:
-  return {
-    name: "C:\\",
-    type: "dir",
-    attributeFlags: {},
-    children: [
-      {
-        name: "README.md",
-        type: "file",
-        content: contents.readmeMd,
-        attributeFlags: { readOnly: false, hidden: false },
-      },
-      {
-        name: "Atrium",
-        type: "dir",
-        attributeFlags: {},
-        children: [
-          {
-            name: "Hint.txt",
-            type: "file",
-            content: contents.atriumHint,
-            attributeFlags: { hidden: false, readOnly: false }
-          },
-          {
-            name: "FakeTrap.txt",
-            type: "file",
-            content: contents.fakeTrap,
-            attributeFlags: { hidden: false, readOnly: false }
-          },
-          {
-            name: "Corridor",
-            type: "dir",
-            attributeFlags: { hidden: true },
-            children: [
-              {
-                name: "CorridorClue.txt",
-                type: "file",
-                content: contents.corridorClue,
-                attributeFlags: { hidden: false, readOnly: false }
-              },
-              {
-                name: "SecretRoom",
-                type: "dir",
-                attributeFlags: { hidden: false },
-                children: [
-                  {
-                    name: "HiddenNote.txt",
-                    type: "file",
-                    content: contents.secretRoomHiddenNote,
-                    attributeFlags: { hidden: false, readOnly: false }
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        name: "Vault",
-        type: "dir",
-        attributeFlags: {},
-        children: [
-          {
-            name: "LockedDoor.txt",
-            type: "file",
-            content: contents.vaultLocked,
-            locked: true,
-            attributeFlags: { hidden: false, readOnly: true }
-          },
-          {
-            name: "SecretArtifact.exe",
-            type: "file",
-            content: contents.secretArtifactExe,
-            attributeFlags: { hidden: false, readOnly: false }
-          },
-          {
-            name: "FalseLead.txt",
-            type: "file",
-            content: contents.falseLeadClue,
-            attributeFlags: { hidden: false, readOnly: false }
-          },
-          {
-            name: "UnlockedDoor.txt",
-            type: "file",
-            content: contents.vaultUnlocked,
-            attributeFlags: { hidden: true, readOnly: false }
-          },
-          {
-            name: "Treasure.txt",
-            type: "file",
-            // This is the obfuscated content
-            content: contents.treasureTxtObfuscated,
-            attributeFlags: { hidden: true, readOnly: false }
-          }
-        ]
-      }
-    ]
-  };
-}
-
-
 // DOM references
 const outputEl = document.getElementById('output');
 const inputEl = document.getElementById('command-input');
@@ -694,7 +584,7 @@ inputEl.addEventListener('keydown', function(e) {
     }
 
     const pathString = getCurrentPathString().split("\\").slice(1).join("\\");
-    print(`C:\\${pathString} ${command}`);
+    print(`C:\\${pathString}> ${command}`);
     handleCommand(command);
     inputEl.value = "";
   }else if (e.key === "ArrowUp") {
@@ -716,10 +606,10 @@ inputEl.addEventListener('keydown', function(e) {
 });
 
 // INITIAL SETUP: fetch the JSON, build the fileSystem, set currentDirectory
-fetch("file_contents.JSON")
+fetch("fileSystem.json")
   .then(res => res.json())
   .then(contents => {
-    fileSystem = buildFileSystem(contents);
+    fileSystem = contents;
     currentDirectory = fileSystem;
     print("Welcome to the Dungeon Crawl CLI! Type 'help' for commands.");
   })
