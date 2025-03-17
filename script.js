@@ -12,6 +12,10 @@ const fileIndex = {};
 let currentMode = "dark"; // or "light"
 let currentColor = "green"; // or "white", "black", "blue"
 
+// Command history storage
+let commandHistory = [];
+let historyIndex = -1;
+
 /**
  * Build a mock file system structure using the JSON data
  * so that the textual content is not in the code.
@@ -129,9 +133,15 @@ const promptEl = document.getElementById('prompt');
 
 // ----- Utility Functions -----
 function print(text) {
-  outputEl.innerHTML += text + "\n";
-  outputEl.scrollTop = outputEl.scrollHeight;
+  const line = document.createElement("div");
+  line.textContent = text;
+  outputEl.appendChild(line);
+
+  // Ensure the terminal always scrolls to the bottom
+  const terminalEl = document.getElementById("terminal");
+  terminalEl.scrollTop = terminalEl.scrollHeight;
 }
+
 
 function getCurrentPathString() {
   return promptEl.textContent.replace('>', '');
@@ -142,10 +152,11 @@ function getCurrentPathString() {
  * Return the entry or null
  */
 function findEntryInDir(dir, name) {
-  if (!dir.children) return null;
-  return dir.children.find(
-    (child) => child.name.toLowerCase() === name.toLowerCase()
-  );
+  if (!dir || !dir.children) {
+    console.warn("findEntryInDir: Directory is null or has no children.");
+    return null;
+  }
+  return dir.children.find((child) => child.name.toLowerCase() === name.toLowerCase()) || null;
 }
 
 /**
@@ -444,24 +455,37 @@ function handleMove(args) {
  *  usage: del <filename>
  */
 function handleDel(args) {
+  console.log("handleDel called with args:", args); // Debugging line
+
   if (!args.length) {
     print("Usage: del <filename>");
+    inputEl.value = ""; // Ensure input clears
     return;
   }
+
+  // Ensure `currentDirectory` is valid before using it
+  if (!currentDirectory || !currentDirectory.children) {
+    print("Error: Current directory is undefined or invalid.");
+    inputEl.value = ""; // Ensure input clears
+    return;
+  }
+
   const filename = args[0];
   const found = findEntryInDir(currentDirectory, filename);
+
   if (!found) {
-    print("File not found: " + filename);
-    return;
+    print(`File not found: ${filename}`);
+  } else if (found.type !== "file") {
+    print(`${filename} is not a file and cannot be deleted.`);
+  } else {
+    // Remove file from the directory
+    currentDirectory.children = currentDirectory.children.filter(c => c.name !== filename);
+    print(`Deleted ${filename}`);
   }
-  if (found.type !== 'file') {
-    print("Cannot delete a directory this way.");
-    return;
-  }
-  // remove from children
-  currentDirectory.children = currentDirectory.children.filter(c => c !== found);
-  print(`Deleted ${filename}`);
+
+  inputEl.value = ""; // Ensure input clears
 }
+
 
 /**
  * Additional Command: "echo" 
@@ -498,18 +522,45 @@ function handleColor(args) {
     return;
   }
   const code = args[0].toUpperCase();
-  // We'll do a minimal interpretation:
-  // If code = "0A", we do black background, green text
-  if (code === "0A") {
-    setDarkMode("green");
-    print("Color changed to green on black.");
-  } else if (code === "0F") {
-    setDarkMode("white");
-    print("Color changed to white on black.");
-  } else {
-    print("Color code not recognized in this demo. Try 0A or 0F.");
+  let textColor = "";
+  let backgroundColor = "";
+
+  // Interpret the color codes
+  switch (code) {
+    case "0A": // Green text on black background
+      backgroundColor = "black";
+      textColor = "#00ff00";
+      print("Color changed to green on black.");
+      break;
+    case "0F": // White text on black
+      backgroundColor = "black";
+      textColor = "#ffffff";
+      print("Color changed to white on black.");
+      break;
+    case "07": // Default gray text on black (Windows default)
+      backgroundColor = "black";
+      textColor = "#c0c0c0";
+      print("Color changed to default gray on black.");
+      break;
+    default:
+      print("Color code not recognized in this demo. Try 0A, 0F, or 07.");
+      return;
   }
+
+  // Apply changes **only** to the CLI window, not the whole body
+  document.getElementById("cli-window").style.backgroundColor = backgroundColor;
+  document.getElementById("terminal").style.backgroundColor = backgroundColor;
+
+  // Apply text color to output, prompt, and input
+  document.querySelectorAll("#output div").forEach(el => {
+    el.style.color = textColor;
+  });
+  document.getElementById("output").style.color = textColor;
+  document.getElementById("prompt").style.color = textColor;
+  document.getElementById("command-input").style.color = textColor;
 }
+
+
 
 /**
  * "cls" command
@@ -606,6 +657,9 @@ function handleCommand(line) {
     default:
       print(`'${cmd}' is not recognized as an internal or external command,\noperable program or batch file.`);
   }
+
+  // ** Ensure input is cleared after every command **
+  inputEl.value = "";
 }
 
 // ----- THEME / COLOR HANDLING -----
@@ -628,28 +682,36 @@ function setLightMode(textColor) {
   document.getElementById("terminal").style.color = textColor;
 }
 
-// Attach to buttons
-document.getElementById("darkModeGreenBtn").addEventListener("click", () => {
-  setDarkMode("green");
-});
-document.getElementById("darkModeWhiteBtn").addEventListener("click", () => {
-  setDarkMode("white");
-});
-document.getElementById("lightModeBlackBtn").addEventListener("click", () => {
-  setLightMode("black");
-});
-document.getElementById("lightModeBlueBtn").addEventListener("click", () => {
-  setLightMode("blue");
-});
-
 // Event: user pressed ENTER
 inputEl.addEventListener('keydown', function(e) {
   if (e.key === "Enter") {
     const command = inputEl.value;
+
+    if (command !== "") {
+      commandHistory.push(command);
+      if (commandHistory.length > 50) commandHistory.shift(); // Limit history size
+      historyIndex = commandHistory.length;
+    }
+
     const pathString = getCurrentPathString().split("\\").slice(1).join("\\");
     print(`C:\\${pathString} ${command}`);
     handleCommand(command);
     inputEl.value = "";
+  }else if (e.key === "ArrowUp") {
+    if (historyIndex > 0) {
+      historyIndex--;
+      inputEl.value = commandHistory[historyIndex];
+    }
+    e.preventDefault();
+  } else if (e.key === "ArrowDown") {
+    if (historyIndex < commandHistory.length - 1) {
+      historyIndex++;
+      inputEl.value = commandHistory[historyIndex];
+    } else {
+      historyIndex = commandHistory.length;
+      inputEl.value = "";
+    }
+    e.preventDefault();
   }
 });
 
