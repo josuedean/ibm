@@ -4,91 +4,130 @@
   "attributeFlags": {},
   "children": [
     {
-      "name": "README.md",
+      "name": "Lore.txt",
       "type": "file",
-      "content": "# Welcome to the Dungeon Crawl CLI\n\nThis game simulates a Windows command line. Your objective is to find the hidden treasure!",
-      "attributeFlags": { "readOnly": false, "hidden": false }
+      "content": "Legends speak of an ancient digital fortress built by the mysterious CLI Wizard, a brilliant mind from a forgotten digital era. Within this fortress lies the ASCII Chalice, an artifact said to bestow eternal command-line mastery. Many adventurers have tried—and failed—to retrieve it. Your journey begins now.",
+      "attributeFlags": { "hidden": false, "readOnly": true }
     },
     {
-      "name": "Atrium",
+      "name": "README.md",
+      "type": "file",
+      "content": "# Welcome to the Abandoned Digital Fortress!\n\nYour goal is simple but challenging:  \n**Find the legendary ASCII Chalice.**\n\n- Navigate using commands: `dir`, `cd`, `type`, `rename`, etc.  \n- Uncover hidden secrets with commands like `dir /A`, `attrib`.  \n- Solve puzzles carefully—think twice before acting.\n\nGood luck, adventurer.",
+      "attributeFlags": { "hidden": false, "readOnly": false }
+    },
+    {
+      "name": "Gatehouse",
       "type": "dir",
       "attributeFlags": {},
       "children": [
         {
-          "name": "Hint.txt",
+          "name": "SentinelNote.txt",
           "type": "file",
-          "content": "You found a small note: \"Mysterious corridors lie hidden. Perhaps `dir /A` or `attrib` might reveal them.\"",
+          "content": "Beware: The fortress conceals its secrets behind attributes unseen by ordinary eyes.",
           "attributeFlags": { "hidden": false, "readOnly": false }
         },
         {
-          "name": "FakeTrap.txt",
-          "type": "file",
-          "content": "Caution: You stepped on a trap! It's just a decoy.\n\n(There's nothing important here, but thanks for checking!)",
-          "attributeFlags": { "hidden": false, "readOnly": false }
-        },
-        {
-          "name": "Corridor",
+          "name": "Archive",
           "type": "dir",
           "attributeFlags": { "hidden": true },
           "children": [
             {
-              "name": "CorridorClue.txt",
+              "name": "Echoes.txt",
               "type": "file",
-              "content": "An echoing voice says: \"Look for locked doors in the Vault. If it's locked, you might need to fix permissions.\"",
+              "content": "The CLI Wizard whispers: Use echo wisely, for not all is visible.",
               "attributeFlags": { "hidden": false, "readOnly": false }
             },
             {
-              "name": "SecretRoom",
-              "type": "dir",
-              "attributeFlags": { "hidden": false },
-              "children": [
-                {
-                  "name": "HiddenNote.txt",
-                  "type": "file",
-                  "content": "So you found my secret hideout!\nThe next path awaits in the Vault, but you'll need to 'unlock' a certain file.",
-                  "attributeFlags": { "hidden": false, "readOnly": false }
-                }
-              ]
+              "name": "AncientLog.txt",
+              "type": "file",
+              "content": "Day 432: I've hidden keys within my logs. Searching (`findstr`) may uncover my past intentions.",
+              "attributeFlags": { "hidden": false, "readOnly": true }
+            }
+          ]
+        },
+        {
+          "name": "Passageway",
+          "type": "dir",
+          "attributeFlags": { "hidden": true },
+          "children": [
+            {
+              "name": "Whisper.txt",
+              "type": "file",
+              "content": "You hear faint whispers: the true path lies beneath the record keeper's gaze in the Inner Sanctum.",
+              "attributeFlags": { "hidden": false, "readOnly": false }
             }
           ]
         }
       ]
     },
     {
-      "name": "Vault",
+      "name": "InnerSanctum",
       "type": "dir",
       "attributeFlags": {},
       "children": [
         {
-          "name": "LockedDoor.txt",
+          "name": "HallOfRecords",
+          "type": "dir",
+          "attributeFlags": {},
+          "children": [
+            {
+              "name": "RecordKeeper.exe",
+              "type": "file",
+              "content": "[Binary gibberish—students may try type but find nonsense.]",
+              "attributeFlags": { "hidden": false, "readOnly": false }
+            },
+            {
+              "name": "Notes.txt",
+              "type": "file",
+              "content": "The Keeper once moved (`move`) important files deeper within, guarding them from careless explorers.",
+              "attributeFlags": { "hidden": false, "readOnly": false }
+            },
+            {
+              "name": "ConcealedChamber",
+              "type": "dir",
+              "attributeFlags": { "hidden": true },
+              "children": [
+                {
+                  "name": "EncryptedRune.txt",
+                  "type": "file",
+                  "content": "c29tZXRpbWVzIHRoZSB0cnV0aCBsaWVzIGhpZGRlbiBiZW5lYXRoIGZhbHNlIG5hbWVzLg==",
+                  "attributeFlags": { "hidden": false, "readOnly": false }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "VaultDoor.txt",
           "type": "file",
-          "content": "The door is locked.\nUse `attrib -r` or `icacls` style commands… or rename me if you must.\nBut be warned: it won't be so easy.",
-          "locked": true,
+          "content": "The door resists your attempts. Only those who master attributes (`attrib`) or can skillfully rename the door may pass.",
           "attributeFlags": { "hidden": false, "readOnly": true }
-        },
+        }
+      ]
+    },
+    {
+      "name": "CoreVault",
+      "type": "dir",
+      "attributeFlags": { "hidden": true },
+      "children": [
         {
-          "name": "SecretArtifact.exe",
+          "name": "GuardianMessage.txt",
           "type": "file",
-          "content": "This .exe does nothing. It's a decoy. Sorry, adventurer!",
+          "content": "You've done well to arrive here. One final hidden (`attrib`) chamber lies ahead, bearing your reward.",
           "attributeFlags": { "hidden": false, "readOnly": false }
         },
         {
-          "name": "FalseLead.txt",
-          "type": "file",
-          "content": "You open a dusty file: \"Use `del` on everything! That must be the solution!\" (Probably not the best idea...)",
-          "attributeFlags": { "hidden": false, "readOnly": false }
-        },
-        {
-          "name": "UnlockedDoor.txt",
-          "type": "file",
-          "content": "You have unlocked the door. Another note says:\n\"There is a worthless 'SecretArtifact.exe' file here (fake!) and a real path to the Treasure hidden deeper.\"",
-          "attributeFlags": { "hidden": true, "readOnly": false }
-        },
-        {
-          "name": "Treasure.txt",
-          "type": "file",
-          "content": "WW91IGZvdW5kIHRoZSB0cmVhc3VyZSEgCldlbGwgZG9uZSEgVmlzaXQgaHR0cHM6Ly95b3VyX3RlYWNoZXJfc19zaXRlL3RyZWFzdXJlLmh0bWwgdG8gY29tcGxldGUgdGhlIGZpbmFsIGNoYWxsZW5nZSE=",
-          "attributeFlags": { "hidden": true, "readOnly": false }
+          "name": "ChaliceChamber",
+          "type": "dir",
+          "attributeFlags": { "hidden": true },
+          "children": [
+            {
+              "name": "Treasure.txt",
+              "type": "file",
+              "content": "WW91IGFyZSB3b3J0aHkuIFRoZSBBU0NJSSBDaGFsaWNlIGF3YWl0cyEgR28gdG8gaHR0cHM6Ly95b3VyX3RlYWNoZXJfc19zaXRlL3RyZWFzdXJlLmh0bWw=",
+              "attributeFlags": { "hidden": false, "readOnly": false }
+            }
+          ]
         }
       ]
     }
