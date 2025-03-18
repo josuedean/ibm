@@ -13,7 +13,7 @@ let currentMode = "dark"; // or "light"
 let currentColor = "green"; // or "white", "black", "blue"
 
 // Command history storage
-let commandHistory = [];
+const commandHistory = [];
 let historyIndex = -1;
 
 // DOM references
@@ -22,7 +22,7 @@ const inputEl = document.getElementById('command-input');
 const promptEl = document.getElementById('prompt');
 
 // ----- Utility Functions -----
-function print(text) {
+const print = (text) => {
   const line = document.createElement("div");
   line.textContent = text;
   outputEl.appendChild(line);
@@ -32,8 +32,7 @@ function print(text) {
   terminalEl.scrollTop = terminalEl.scrollHeight;
 }
 
-
-function getCurrentPathString() {
+const getCurrentPathString = () => {
   return promptEl.textContent.replace('>', '');
 }
 
@@ -41,7 +40,7 @@ function getCurrentPathString() {
  * Recursively search within 'dir' for an entry matching 'name' (case-insensitive)
  * Return the entry or null
  */
-function findEntryInDir(dir, name) {
+const findEntryInDir = (dir, name) => {
   if (!dir || !dir.children) {
     console.warn("findEntryInDir: Directory is null or has no children.");
     return null;
@@ -52,7 +51,7 @@ function findEntryInDir(dir, name) {
 /**
  * parse command line input
  */
-function parseInput(input) {
+const parseInput = (input) => {
   const parts = input.trim().split(' ');
   const cmd = parts[0].toLowerCase();
   const args = parts.slice(1);
@@ -64,7 +63,7 @@ function parseInput(input) {
  *  usage: dir [options]
  *  - /A or /A:H or /ah to show hidden
  */
-function handleDir(args) {
+const handleDir = (args) => {
   const showHidden = args.some(a => a.toLowerCase().includes('a'));
   if (!currentDirectory.children) {
     print("No items.");
@@ -80,10 +79,10 @@ function handleDir(args) {
   const files = items.filter(i => i.type === 'file');
 
   dirs.forEach(d => {
-    print("<DIR>          " + d.name);
+    print(`<DIR>          ${d.name}`);
   });
   files.forEach(f => {
-    print("               " + f.name);
+    print(`               ${f.name}`);
   });
 }
 
@@ -91,7 +90,7 @@ function handleDir(args) {
  * "cd" command
  *  usage: cd <foldername> or cd .. to go up (we might limit or do partial)
  */
-function handleCd(args) {
+const handleCd = (args) => {
   if (args.length === 0) {
     // cd with no arg -> root
     currentDirectory = fileSystem;
@@ -100,14 +99,14 @@ function handleCd(args) {
   }
   const target = args[0];
   if (target === "..") {
-    // If we want to implement going up:
-    //   you'd store a "parent" reference. Let's do a quick check if we are at root or not:
+    // Go up to parent directory if not at root
     if (currentDirectory === fileSystem) {
       print("Already at root.");
+    } else if (currentDirectory.parent) {
+      currentDirectory = currentDirectory.parent;
+      updatePrompt();
     } else {
-      // You would do: currentDirectory = currentDirectory.parent
-      // For simplicity, let's just say not implemented.
-      print("Going up is not implemented in this demo!");
+      print("Cannot navigate to parent directory.");
     }
     return;
   }
@@ -115,25 +114,24 @@ function handleCd(args) {
   // find a subdirectory with the given name
   const found = findEntryInDir(currentDirectory, target);
   if (!found) {
-    print("Directory not found: " + target);
+    print(`Directory not found: ${target}`);
     return;
   }
   if (found.type !== 'dir') {
-    print(found.name + " is not a directory.");
+    print(`${found.name} is not a directory.`);
     return;
   }
 
   // move in
   currentDirectory = found;
-  const currentPath = getCurrentPathString().replace(/\\>$/, '');
-  promptEl.textContent = currentPath + "\\" + found.name + ">";
+  updatePrompt();
 }
 
 /**
  * "type" command
  *  usage: type <filename>
  */
-function handleType(args) {
+const handleType = (args) => {
   if (!args.length) {
     print("Usage: type <filename>");
     return;
@@ -141,11 +139,11 @@ function handleType(args) {
   const filename = args[0];
   const found = findEntryInDir(currentDirectory, filename);
   if (!found) {
-    print("File not found: " + filename);
+    print(`File not found: ${filename}`);
     return;
   }
   if (found.type !== 'file') {
-    print(found.name + " is not a file.");
+    print(`${found.name} is not a file.`);
     return;
   }
   // locked?
@@ -174,7 +172,7 @@ function handleType(args) {
  * "rename" command
  *  usage: rename <oldName> <newName>
  */
-function handleRename(args) {
+const handleRename = (args) => {
   if (args.length < 2) {
     print("Usage: rename <oldName> <newName>");
     return;
@@ -200,14 +198,14 @@ function handleRename(args) {
  * Additional Command: "tree"
  *  Recursively shows directory structure
  */
-function handleTree(dir = currentDirectory, prefix = "") {
-  print(prefix + dir.name);
+const handleTree = (dir = currentDirectory, prefix = "") => {
+  print(`${prefix}${dir.name}`);
   if (dir.children) {
     for (const child of dir.children) {
       if (child.type === 'dir') {
-        handleTree(child, prefix + "   ");
+        handleTree(child, `${prefix}   `);
       } else {
-        print(prefix + "   " + child.name);
+        print(`${prefix}   ${child.name}`);
       }
     }
   }
@@ -217,9 +215,9 @@ function handleTree(dir = currentDirectory, prefix = "") {
  * Additional Command: "findstr"
  *  usage: findstr <text> <files...>
  */
-function handleFindstr(args) {
+const handleFindstr = (args) => {
   if (args.length < 2) {
-    print("Usage: findstr <text> <filename> [filename2] ...");
+    print(`Usage: findstr <text> <filename> [filename2] ...`);
     return;
   }
   const searchText = args[0].toLowerCase();
@@ -246,7 +244,7 @@ function handleFindstr(args) {
  *  usage: attrib <filename> to show attributes
  *         attrib +/-h +/-r <filename> to set/unset hidden or readOnly
  */
-function handleAttrib(args) {
+const handleAttrib = (args) => {
   if (!args.length) {
     print("Usage: attrib [options] <filename>");
     return;
@@ -278,7 +276,7 @@ function handleAttrib(args) {
   }
 }
 
-function showAttributes(fileOrDir) {
+const showAttributes = (fileOrDir) => {
   let flags = "";
   if (fileOrDir.attributeFlags.hidden) flags += "H ";
   if (fileOrDir.attributeFlags.readOnly) flags += "R ";
@@ -289,7 +287,7 @@ function showAttributes(fileOrDir) {
  * Additional Command: "copy" (just duplicating the file in the same dir for demo)
  *  usage: copy <source> <dest>
  */
-function handleCopy(args) {
+const handleCopy = (args) => {
   if (args.length < 2) {
     print("Usage: copy <source> <destination>");
     return;
@@ -315,7 +313,7 @@ function handleCopy(args) {
  * Additional Command: "move" (same logic as copy, but remove original)
  *  usage: move <source> <destination>
  */
-function handleMove(args) {
+const handleMove = (args) => {
   if (args.length < 2) {
     print("Usage: move <source> <destination>");
     return;
@@ -344,7 +342,7 @@ function handleMove(args) {
  * Additional Command: "del"
  *  usage: del <filename>
  */
-function handleDel(args) {
+const handleDel = (args) => {
   console.log("handleDel called with args:", args); // Debugging line
 
   if (!args.length) {
@@ -376,11 +374,10 @@ function handleDel(args) {
   inputEl.value = ""; // Ensure input clears
 }
 
-
 /**
  * Additional Command: "echo" 
  */
-function handleEcho(args) {
+const handleEcho = (args) => {
   // Just print whatever arguments they pass
   const message = args.join(" ");
   print(message);
@@ -389,7 +386,7 @@ function handleEcho(args) {
 /**
  * Additional Command: "title"
  */
-function handleTitle(args) {
+const handleTitle = (args) => {
   // We won't actually change the browser tab, but let's pretend
   if (!args.length) {
     print("Usage: title <text>");
@@ -414,7 +411,7 @@ function handleTitle(args) {
  *  but let's parse "color XY" or something. 
  *  We'll do something minimal here:
  */
-function handleColor(args) {
+const handleColor = (args) => {
   if (!args.length) {
     print("Usage: color <code>  (e.g. 0A for green on black, etc.)");
     return;
@@ -458,51 +455,198 @@ function handleColor(args) {
   document.getElementById("command-input").style.color = textColor;
 }
 
-
-
 /**
  * "cls" command
  */
-function handleCls() {
+const handleCls = () => {
   outputEl.innerHTML = "";
 }
 
 /**
  * "help" command
  */
-function handleHelp() {
+const handleHelp = () => {
   const lines = [
     ["dir [options]",       "Displays a list of files and subdirectories in a directory."],
-    ["cd <dir>",     "Change directory"],
-    ["type <file>",     "Displays the contents of a text file."],
+    ["cd <dir>",            "Change directory. Use cd .. to go up one level."],
+    ["type <file>",         "Displays the contents of a text file."],
     ["rename <old> <new>",  "Renames a file or files."],
-    ["tree",            "Graphically displays the directory structure of a drive or path."],
-    ["cls",            "Clears the screen."],
-    ["findstr",   "Searches for strings in files."],
-    ["attrib",   "Displays or changes file attributes."],
-    ["copy",   "Copies one or more files to another location."],
-    ["move",   "Moves one or more files from one directory to another directory."],
-    ["del",   "Deletes one or more files."],
-    ["echo",   "Displays messages, or turns command echoing on or off."],
-    ["title",   "Sets the window title for a CMD.EXE session."],
-    ["color",   "Sets the default console foreground and background colors."],
-    ["help",            "Show this help"]
+    ["tree",                "Graphically displays the directory structure."],
+    ["cls",                 "Clears the screen."],
+    ["findstr",             "Searches for strings in files."],
+    ["attrib",              "Displays or changes file attributes."],
+    ["copy",                "Copies one or more files to another location."],
+    ["move",                "Moves files from one directory to another."],
+    ["del",                 "Deletes one or more files."],
+    ["echo",                "Displays messages."],
+    ["title",               "Sets the window title."],
+    ["color",               "Sets console foreground and background colors."],
+    ["help",                "Show this help"]
   ];
 
-  print("");
+  printStyled("", {});
+  printStyled("COMMAND REFERENCE", { color: "#00ff00", bold: true });
+  printStyled("=================", { color: "#00ff00" });
+
   // Apply padding correctly
   lines.forEach(([cmd, desc]) => {
     const cmdPadded = cmd.padEnd(18, " ");
-    print(`  ${cmdPadded} - ${desc}`);
+    printStyled(`  ${cmdPadded} - ${desc}`, {});
   });
 
-  print("");
+  printStyled("", {});
+  printStyled("TIP: Press Tab for command auto-completion", { color: "#ffff00", italic: true });
+  printStyled("", {});
 }
 
-// ----- MAIN COMMAND HANDLER -----
-function handleCommand(line) {
+// Function to recursively index files for quick access
+const indexFiles = (dir) => {
+  if (!dir || !dir.children) return;
+  
+  dir.children.forEach(item => {
+    // Add a parent reference to enable easier navigation
+    item.parent = dir;
+    
+    // Index files by name for quick lookup
+    if (item.type === 'file') {
+      fileIndex[item.name.toLowerCase()] = item;
+    }
+    
+    // Recursively process subdirectories
+    if (item.type === 'dir') {
+      indexFiles(item);
+    }
+  });
+}
+
+// Helper function to update the prompt based on current directory
+const updatePrompt = () => {
+  // Build path by traversing up the parent chain
+  let path = [];
+  let current = currentDirectory;
+  
+  while (current !== fileSystem && current.parent) {
+    path.unshift(current.name);
+    current = current.parent;
+  }
+  
+  if (path.length === 0) {
+    promptEl.textContent = "C:\\>";
+  } else {
+    promptEl.textContent = `C:\\${path.join("\\")}\\>`;
+  }
+}
+
+// Add command auto-completion functionality
+inputEl.addEventListener('keydown', (e) => {
+  if (e.key === "Tab") {
+    e.preventDefault(); // Prevent default tab behavior
+    
+    const input = inputEl.value.trim();
+    const parts = input.split(' ');
+    
+    // If we're at the beginning of a command, auto-complete commands
+    if (parts.length === 1 && !input.includes(' ')) {
+      const partialCmd = parts[0].toLowerCase();
+      if (partialCmd) {
+        const commands = [
+          'dir', 'cd', 'type', 'rename', 'tree', 'findstr', 'attrib', 
+          'copy', 'move', 'del', 'echo', 'title', 'color', 'cls', 'help'
+        ];
+        
+        const matches = commands.filter(cmd => cmd.startsWith(partialCmd));
+        if (matches.length === 1) {
+          inputEl.value = matches[0] + ' ';
+        } else if (matches.length > 1) {
+          // Show possible completions
+          print(`\nPossible commands: ${matches.join(', ')}`);
+        }
+      }
+    } 
+    // Auto-complete filenames and directories
+    else if (parts.length > 1) {
+      const partialName = parts[parts.length - 1].toLowerCase();
+      if (partialName && currentDirectory.children) {
+        const matches = currentDirectory.children
+          .filter(item => !item.attributeFlags?.hidden)
+          .filter(item => item.name.toLowerCase().startsWith(partialName));
+        
+        if (matches.length === 1) {
+          parts[parts.length - 1] = matches[0].name;
+          inputEl.value = parts.join(' ');
+          // Add trailing space for files, slash for directories
+          if (matches[0].type === 'dir') {
+            inputEl.value += '\\';
+          } else {
+            inputEl.value += ' ';
+          }
+        } else if (matches.length > 1) {
+          // Show possible completions
+          print(`\nPossible completions: ${matches.map(m => m.name).join(', ')}`);
+        }
+      }
+    }
+  }
+});
+
+// Enhance the print function to support different styles
+const printStyled = (text, style = {}) => {
+  const line = document.createElement("div");
+  
+  // Apply styling
+  if (style.color) line.style.color = style.color;
+  if (style.bold) line.style.fontWeight = 'bold';
+  if (style.italic) line.style.fontStyle = 'italic';
+  if (style.underline) line.style.textDecoration = 'underline';
+  
+  line.textContent = text;
+  outputEl.appendChild(line);
+
+  // Ensure the terminal always scrolls to the bottom
+  const terminalEl = document.getElementById("terminal");
+  terminalEl.scrollTop = terminalEl.scrollHeight;
+}
+
+// Enhance help command with better formatting
+// Removed duplicate handleHelp function
+
+// ----- THEME / COLOR HANDLING -----
+const setDarkMode = (textColor) => {
+  currentMode = "dark";
+  currentColor = textColor;
+  document.body.style.backgroundColor = "black";
+  document.getElementById("terminal").style.backgroundColor = "black";
+  document.body.style.color = textColor === "green" ? "#00ff00" : "#ffffff";
+  document.getElementById("terminal").style.color = document.body.style.color;
+}
+
+const setLightMode = (textColor) => {
+  currentMode = "light";
+  currentColor = textColor;
+  document.body.style.backgroundColor = "white";
+  document.getElementById("terminal").style.backgroundColor = "white";
+  document.body.style.color = textColor;
+  document.getElementById("terminal").style.color = textColor;
+}
+
+// Enhance the handleCommand function to support command aliases
+const handleCommand = (line) => {
   const { cmd, args } = parseInput(line);
-  switch(cmd) {
+  
+  // Command aliases
+  const commandMap = {
+    'ls': 'dir',
+    'cat': 'type',
+    'mv': 'move',
+    'cp': 'copy',
+    'rm': 'del',
+    'clear': 'cls'
+  };
+  
+  // Use the mapped command if it exists, otherwise use the original
+  const resolvedCmd = commandMap[cmd] || cmd;
+  
+  switch(resolvedCmd) {
     case 'dir':
       handleDir(args);
       break;
@@ -555,32 +699,12 @@ function handleCommand(line) {
       print(`'${cmd}' is not recognized as an internal or external command,\noperable program or batch file.`);
   }
 
-  // ** Ensure input is cleared after every command **
+  // Ensure input is cleared after every command
   inputEl.value = "";
 }
 
-// ----- THEME / COLOR HANDLING -----
-
-function setDarkMode(textColor) {
-  currentMode = "dark";
-  currentColor = textColor;
-  document.body.style.backgroundColor = "black";
-  document.getElementById("terminal").style.backgroundColor = "black";
-  document.body.style.color = textColor === "green" ? "#00ff00" : "#ffffff";
-  document.getElementById("terminal").style.color = document.body.style.color;
-}
-
-function setLightMode(textColor) {
-  currentMode = "light";
-  currentColor = textColor;
-  document.body.style.backgroundColor = "white";
-  document.getElementById("terminal").style.backgroundColor = "white";
-  document.body.style.color = textColor;
-  document.getElementById("terminal").style.color = textColor;
-}
-
-// Event: user pressed ENTER
-inputEl.addEventListener('keydown', function(e) {
+// ----- MAIN COMMAND HANDLER -----
+inputEl.addEventListener('keydown', (e) => {
   if (e.key === "Enter") {
     const command = inputEl.value;
 
@@ -594,7 +718,7 @@ inputEl.addEventListener('keydown', function(e) {
     print(`C:\\${pathString}> ${command}`);
     handleCommand(command);
     inputEl.value = "";
-  }else if (e.key === "ArrowUp") {
+  } else if (e.key === "ArrowUp") {
     if (historyIndex > 0) {
       historyIndex--;
       inputEl.value = commandHistory[historyIndex];
@@ -619,6 +743,9 @@ fetch("fileSystem.json")
     fileSystem = contents;
     currentDirectory = fileSystem;
     print("Welcome to the Dungeon Crawl CLI! Type 'help' for commands.");
+    
+    // Index important files for quick access
+    indexFiles(fileSystem);
   })
   .catch(err => {
     console.error("Error loading file contents:", err);
