@@ -4,128 +4,188 @@
   "attributeFlags": {},
   "children": [
     {
-      "name": "Lore.txt",
+      "name": "FortressLore.txt",
       "type": "file",
-      "content": "Legends speak of an ancient digital fortress built by the mysterious CLI Wizard, a brilliant mind from a forgotten digital era. Within this fortress lies the ASCII Chalice, an artifact said to bestow eternal command-line mastery. Many adventurers have tried—and failed—to retrieve it. Your journey begins now.",
-      "attributeFlags": { "hidden": false, "readOnly": true }
+      "content": "Legends speak of an abandoned fortress once ruled by a brilliant CLI Wizard. Within its depths lies a relic said to grant eternal command mastery: the ASCII Chalice. Many have ventured here, few returned. Will you succeed?",
+      "attributeFlags": {
+        "hidden": false,
+        "readOnly": false
+      }
     },
     {
       "name": "README.md",
       "type": "file",
-      "content": "# Welcome to the Abandoned Digital Fortress!\n\nYour goal is simple but challenging:  \n**Find the legendary ASCII Chalice.**\n\n- Navigate using commands: `dir`, `cd`, `type`, `rename`, etc.  \n- Uncover hidden secrets with commands like `dir /A`, `attrib`.  \n- Solve puzzles carefully—think twice before acting.\n\nGood luck, adventurer.",
-      "attributeFlags": { "hidden": false, "readOnly": false }
+      "content": "# Abandoned Fortress\n\n**Objective:** Retrieve the legendary ASCII Chalice hidden within these ancient walls.\n\n- Explore folders (like levels of the fortress) using `dir` and `cd`.\n- Some rooms or files may be hidden; use `dir /A` or `attrib`.\n- You may need to rename, move, or delete certain files to progress.\n- Use `findstr` to search large text for hidden clues.\n- `attrib -r` might be needed on read-only files before deletion.\n\nProceed carefully, adventurer... Good luck!",
+      "attributeFlags": {
+        "hidden": false,
+        "readOnly": false
+      }
     },
     {
-      "name": "Gatehouse",
+      "name": "EntranceGrounds",
       "type": "dir",
       "attributeFlags": {},
       "children": [
         {
-          "name": "SentinelNote.txt",
+          "name": "Gatehouse.txt",
           "type": "file",
-          "content": "Beware: The fortress conceals its secrets behind attributes unseen by ordinary eyes.",
-          "attributeFlags": { "hidden": false, "readOnly": false }
+          "content": "You stand before the Entrance Grounds. The gate creaks open. Rumors say the OuterWalls lie ahead, and hidden paths might exist nearby.",
+          "attributeFlags": {
+            "hidden": false,
+            "readOnly": false
+          }
         },
         {
-          "name": "Archive",
+          "name": "SidePath",
           "type": "dir",
-          "attributeFlags": { "hidden": true },
+          "attributeFlags": {
+            "hidden": true
+          },
           "children": [
             {
-              "name": "Echoes.txt",
+              "name": "DiscardedNote.txt",
               "type": "file",
-              "content": "The CLI Wizard whispers: Use echo wisely, for not all is visible.",
-              "attributeFlags": { "hidden": false, "readOnly": false }
-            },
-            {
-              "name": "AncientLog.txt",
-              "type": "file",
-              "content": "Day 432: I've hidden keys within my logs. Searching (`findstr`) may uncover my past intentions.",
-              "attributeFlags": { "hidden": false, "readOnly": true }
+              "content": "A weathered note reading: 'We thought the chalice was here... We were so wrong.'",
+              "attributeFlags": {
+                "hidden": false,
+                "readOnly": false
+              }
             }
           ]
         },
         {
-          "name": "Passageway",
-          "type": "dir",
-          "attributeFlags": { "hidden": true },
-          "children": [
-            {
-              "name": "Whisper.txt",
-              "type": "file",
-              "content": "You hear faint whispers: the true path lies beneath the record keeper's gaze in the Inner Sanctum.",
-              "attributeFlags": { "hidden": false, "readOnly": false }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "InnerSanctum",
-      "type": "dir",
-      "attributeFlags": {},
-      "children": [
-        {
-          "name": "HallOfRecords",
+          "name": "OuterWalls",
           "type": "dir",
           "attributeFlags": {},
           "children": [
             {
-              "name": "RecordKeeper.exe",
+              "name": "CrumblingTower.txt",
               "type": "file",
-              "content": "[Binary gibberish—students may try type but find nonsense.]",
-              "attributeFlags": { "hidden": false, "readOnly": false }
+              "content": "From atop the tower, you glimpse the InnerKeep in the distance. Old stories hint that a special key is hidden here, essential for opening deeper doors.",
+              "attributeFlags": {
+                "hidden": false,
+                "readOnly": false
+              }
             },
             {
-              "name": "Notes.txt",
-              "type": "file",
-              "content": "The Keeper once moved (`move`) important files deeper within, guarding them from careless explorers.",
-              "attributeFlags": { "hidden": false, "readOnly": false }
-            },
-            {
-              "name": "ConcealedChamber",
+              "name": "StorageRoom",
               "type": "dir",
-              "attributeFlags": { "hidden": true },
+              "attributeFlags": {
+                "hidden": true
+              },
               "children": [
                 {
-                  "name": "EncryptedRune.txt",
+                  "name": "StoneKey.key",
                   "type": "file",
-                  "content": "c29tZXRpbWVzIHRoZSB0cnV0aCBsaWVzIGhpZGRlbiBiZW5lYXRoIGZhbHNlIG5hbWVzLg==",
-                  "attributeFlags": { "hidden": false, "readOnly": false }
+                  "content": "A heavy stone key. Possibly needed to unlock a barrier in the keep.",
+                  "attributeFlags": {
+                    "hidden": false,
+                    "readOnly": false
+                  }
                 }
               ]
-            }
-          ]
-        },
-        {
-          "name": "VaultDoor.txt",
-          "type": "file",
-          "content": "The door resists your attempts. Only those who master attributes (`attrib`) or can skillfully rename the door may pass.",
-          "attributeFlags": { "hidden": false, "readOnly": true }
-        }
-      ]
-    },
-    {
-      "name": "CoreVault",
-      "type": "dir",
-      "attributeFlags": { "hidden": true },
-      "children": [
-        {
-          "name": "GuardianMessage.txt",
-          "type": "file",
-          "content": "You've done well to arrive here. One final hidden (`attrib`) chamber lies ahead, bearing your reward.",
-          "attributeFlags": { "hidden": false, "readOnly": false }
-        },
-        {
-          "name": "ChaliceChamber",
-          "type": "dir",
-          "attributeFlags": { "hidden": true },
-          "children": [
+            },
             {
-              "name": "Treasure.txt",
-              "type": "file",
-              "content": "WW91IGFyZSB3b3J0aHkuIFRoZSBBU0NJSSBDaGFsaWNlIGF3YWl0cyEgR28gdG8gaHR0cHM6Ly95b3VyX3RlYWNoZXJfc19zaXRlL3RyZWFzdXJlLmh0bWw=",
-              "attributeFlags": { "hidden": false, "readOnly": false }
+              "name": "InnerKeep",
+              "type": "dir",
+              "attributeFlags": {},
+              "children": [
+                {
+                  "name": "GreatHall.txt",
+                  "type": "file",
+                  "content": "The Great Hall resonates with echoes of a long-departed wizard. A locked doorway stands further in.",
+                  "attributeFlags": {
+                    "hidden": false,
+                    "readOnly": false
+                  }
+                },
+                {
+                  "name": "OldRecords.txt",
+                  "type": "file",
+                  "content": "Load of apparently random text. Possibly containing a hidden code...\n\n--- Excerpt from dusty annals ---\nLorem ipsum dolor sit amet, fortress scribbles, gate illusions...\nThe code is 1987.\nVestibulum ligula massa, convallis a, semper vel, bibendum at, eros.\nCurabitur eu libero ligula. Quisque id risus. Sed vulputate metus eget metus.",
+                  "attributeFlags": {
+                    "hidden": false,
+                    "readOnly": false
+                  }
+                },
+                {
+                  "name": "LockedDoor.txt",
+                  "type": "file",
+                  "content": "A reinforced door stands here. Inscribed upon it: 'Only with a StoneKey in this Keep can the way forward be revealed.'",
+                  "attributeFlags": {
+                    "hidden": false,
+                    "readOnly": true
+                  }
+                },
+                {
+                  "name": "Armory",
+                  "type": "dir",
+                  "attributeFlags": {
+                    "hidden": true
+                  },
+                  "children": [
+                    {
+                      "name": "RustySword.txt",
+                      "type": "file",
+                      "content": "An ancient sword, too corroded to be of any use.",
+                      "attributeFlags": {
+                        "hidden": false,
+                        "readOnly": false
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "ForbiddenLibrary",
+                  "type": "dir",
+                  "attributeFlags": {},
+                  "children": [
+                    {
+                      "name": "CursedBook.txt",
+                      "type": "file",
+                      "content": "You sense dark energy from this tome. Perhaps removing (`del`) it is necessary to clear the path. But it resists attempts unless its read-only attribute is removed...",
+                      "attributeFlags": {
+                        "hidden": false,
+                        "readOnly": true
+                      }
+                    },
+                    {
+                      "name": "DeepVault",
+                      "type": "dir",
+                      "attributeFlags": {},
+                      "children": [
+                        {
+                          "name": "FinalGuardian.dat",
+                          "type": "file",
+                          "content": "A towering sentinel stands watch. An inscription: 'The Chalice was relocated to a hidden antechamber. Return if you dare.'",
+                          "attributeFlags": {
+                            "hidden": false,
+                            "readOnly": false
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "name": "VaultAntechamber",
+                      "type": "dir",
+                      "attributeFlags": {
+                        "hidden": true
+                      },
+                      "children": [
+                        {
+                          "name": "Treasure.txt",
+                          "type": "file",
+                          "content": "WW91IGhhdmUgZGlzY292ZXJlZCB0aGUgQVNDSUkgQ2hhbGljZSEgRm9sbG93IHRoaXMgbGluayB0byBjbGFpbSB5b3VyIHJld2FyZDogaHR0cHM6Ly95b3VyX3RlYWNoZXJfc19zaXRlL3RyZWFzdXJlLmh0bWw=",
+                          "attributeFlags": {
+                            "hidden": false,
+                            "readOnly": false
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
