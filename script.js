@@ -576,7 +576,7 @@ inputEl.addEventListener('keydown', (e) => {
           inputEl.value = parts.join(' ');
           // Add trailing space for files, slash for directories
           if (matches[0].type === 'dir') {
-            inputEl.value += '\\';
+            inputEl.value += ' ';
           } else {
             inputEl.value += ' ';
           }
