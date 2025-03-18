@@ -64,7 +64,12 @@ const parseInput = (input) => {
  *  - /A or /A:H or /ah to show hidden
  */
 const handleDir = (args) => {
-  const showHidden = args.some(a => a.toLowerCase().includes('a'));
+  if (args.length > 0) {
+    if (args.length !== 1 || args[0].toLowerCase() !== "/a") {
+      print("Invalid option. Usage: dir /a");
+      return;
+    }
+  }
   if (!currentDirectory.children) {
     print("No items.");
     return;
@@ -173,29 +178,52 @@ const handleType = (args) => {
  *  usage: rename <oldName> <newName>
  */
 const handleRename = (args) => {
-  if (args.length < 2) {
-    print("Usage: rename <oldName> <newName>");
+  if (args.length !== 2) {
+    print("Usage: rename <oldname> <newname>");
     return;
   }
+  
   const [oldName, newName] = args;
-  const found = findEntryInDir(currentDirectory, oldName);
-  if (!found) {
-    print(`File not found: ${oldName}`);
+  const entry = findEntryInDir(currentDirectory, oldName);
+  
+  // Special case for unlocking doors
+  if (oldName === 'LockedDoor.txt') {
+    const hasKey = currentDirectory.children?.some(
+      child => child.name === 'StoneKey.key'
+    );
+    
+    if (!hasKey) {
+      print("The door remains firmly locked. You need a key!");
+      return;
+    }
+    
+    if (newName === 'UnlockedDoor.txt') {
+      // Reveal hidden vault entrance
+      const vaultAntechamber = currentDirectory.children?.find(
+        child => child.name === 'VaultAntechamber'
+      );
+      if (vaultAntechamber) {
+        vaultAntechamber.attributeFlags.hidden = false;
+      }
+    }
+  }
+  
+  if (!entry) {
+    print(`File/directory not found: ${oldName}`);
     return;
   }
-  found.name = newName;
-
-  // If it was locked, let's unlock it upon rename
-  if (found.locked) {
-    found.locked = false;
-    print("File unlocked by rename!");
+  
+  if (currentDirectory.children.some(child => child.name === newName)) {
+    print(`A file/directory named '${newName}' already exists`);
+    return;
   }
-
+  
+  entry.name = newName;
   print(`Renamed ${oldName} to ${newName}`);
 }
 
 /**
- * Additional Command: "tree"
+ * "tree" command
  *  Recursively shows directory structure
  */
 const handleTree = (dir = currentDirectory, prefix = "") => {
@@ -212,41 +240,48 @@ const handleTree = (dir = currentDirectory, prefix = "") => {
 }
 
 /**
- * Additional Command: "findstr"
- *  usage: findstr <text> <files...>
+ * Search for patterns in files
+ * Usage: findstr <pattern> <filename>
  */
 const handleFindstr = (args) => {
   if (args.length < 2) {
-    print(`Usage: findstr <text> <filename> [filename2] ...`);
+    print("Usage: findstr <pattern> <filename>");
     return;
   }
-  const searchText = args[0].toLowerCase();
-  const files = args.slice(1);
-
-  files.forEach(fname => {
-    const found = findEntryInDir(currentDirectory, fname);
-    if (!found || found.type !== 'file') {
-      print(`Cannot open file: ${fname}`);
-    } else {
-      // Check content
-      let c = found.content.toLowerCase();
-      if (c.includes(searchText)) {
-        print(`${fname}: [contains "${args[0]}"]`);
-      } else {
-        print(`${fname}: [no match]`);
-      }
+  
+  const [pattern, fileName] = args;
+  const file = findEntryInDir(currentDirectory, fileName);
+  
+  if (!file || file.type !== 'file') {
+    print(`File not found: ${fileName}`);
+    return;
+  }
+  
+  const content = file.content;
+  const lines = content.split('\n');
+  let matches = [];
+  
+  lines.forEach((line, index) => {
+    if (line.includes(pattern)) {
+      matches.push(`Line ${index + 1}: ${line}`);
     }
   });
-}
+  
+  if (matches.length > 0) {
+    print(`Found ${matches.length} match${matches.length > 1 ? 'es' : ''} in ${fileName}:\n${matches.join('\n')}`);
+  } else {
+    print(`Pattern '${pattern}' not found in ${fileName}`);
+  }
+};
 
 /**
- * Additional Command: "attrib"
+ * "attrib" command
  *  usage: attrib <filename> to show attributes
  *         attrib +/-h +/-r <filename> to set/unset hidden or readOnly
  */
 const handleAttrib = (args) => {
   if (!args.length) {
-    print("Usage: attrib [options] <filename>");
+    print("Usage: attrib [-r][+r] [-h] [+h] <filename>\n\n-   Removes and attribute\n+   Adds an attribute\nR   Read-only file attribute.\nH   Hidden file attribute.");
     return;
   }
 
@@ -318,24 +353,79 @@ const handleMove = (args) => {
     print("Usage: move <source> <destination>");
     return;
   }
+  
   const [src, dest] = args;
-  const found = findEntryInDir(currentDirectory, src);
-  if (!found) {
-    print("File not found: " + src);
+  
+  // Find the source file/directory
+  const srcEntry = findEntryInDir(currentDirectory, src);
+  if (!srcEntry) {
+    print(`Source not found: ${src}`);
     return;
   }
-  if (found.type !== 'file') {
-    print("Source is not a file.");
-    return;
+  
+  // Check if destination is a path or just a filename
+  if (dest.includes('/') || dest.includes('\\')) {
+    // It's a path - parse it to get the destination directory and new name
+    const pathParts = dest.split(/[\/\\]/);
+    const newName = pathParts.pop(); // Get the last part as the new name
+    const destPath = pathParts.join('/'); // Reconstruct the path without the filename
+    
+    // Find the destination directory
+    let destDir = currentDirectory;
+    if (destPath) {
+      destDir = navigateToPath(destPath);
+      if (!destDir) {
+        print(`Destination directory not found: ${destPath}`);
+        return;
+      }
+    }
+    
+    // Check if a file/directory with the same name already exists in the destination
+    if (destDir.children && destDir.children.some(child => child.name === newName)) {
+      print(`A file or directory named '${newName}' already exists in the destination.`);
+      return;
+    }
+    
+    // Create a deep copy of the source entry
+    const movedEntry = JSON.parse(JSON.stringify(srcEntry));
+    movedEntry.name = newName || srcEntry.name; // Use new name or keep original if not specified
+    
+    // Add to destination directory
+    if (!destDir.children) destDir.children = [];
+    destDir.children.push(movedEntry);
+    
+    // Remove from source directory
+    currentDirectory.children = currentDirectory.children.filter(entry => entry !== srcEntry);
+    
+    print(`Moved ${src} to ${dest}`);
+    
+    // Check if StoneKey was moved to InnerKeep
+    if (movedEntry.name === 'StoneKey.key' && destDir.name === 'InnerKeep') {
+      // Find and update the LockedDoor.txt
+      const lockedDoor = destDir.children.find(c => c.name === 'LockedDoor.txt');
+      if (lockedDoor) {
+        lockedDoor.content = 'The door creaks open, revealing a path to the ForbiddenLibrary.';
+        lockedDoor.attributeFlags.readOnly = false;
+      }
+    }
+  } else {
+    // It's just a new name in the current directory
+    // Check if a file/directory with the same name already exists
+    if (currentDirectory.children.some(child => child.name === dest)) {
+      print(`A file or directory named '${dest}' already exists.`);
+      return;
+    }
+    
+    // Create a copy with the new name
+    const movedEntry = JSON.parse(JSON.stringify(srcEntry));
+    movedEntry.name = dest;
+    
+    // Add the copy and remove the original
+    currentDirectory.children.push(movedEntry);
+    currentDirectory.children = currentDirectory.children.filter(entry => entry !== srcEntry);
+    
+    print(`Renamed ${src} to ${dest}`);
   }
-  // create a new file with same content
-  const copyFile = JSON.parse(JSON.stringify(found));
-  copyFile.name = dest;
-  currentDirectory.children.push(copyFile);
-
-  // remove original
-  currentDirectory.children = currentDirectory.children.filter(c => c !== found);
-  print(`Moved ${src} to ${dest}`);
 }
 
 /**
@@ -343,36 +433,32 @@ const handleMove = (args) => {
  *  usage: del <filename>
  */
 const handleDel = (args) => {
-  console.log("handleDel called with args:", args); // Debugging line
-
-  if (!args.length) {
+  if (args.length === 0) {
     print("Usage: del <filename>");
-    inputEl.value = ""; // Ensure input clears
     return;
   }
-
-  // Ensure `currentDirectory` is valid before using it
-  if (!currentDirectory || !currentDirectory.children) {
-    print("Error: Current directory is undefined or invalid.");
-    inputEl.value = ""; // Ensure input clears
+  
+  const fileName = args[0];
+  const file = findEntryInDir(currentDirectory, fileName);
+  
+  if (!file) {
+    print(`File not found: ${fileName}`);
     return;
   }
-
-  const filename = args[0];
-  const found = findEntryInDir(currentDirectory, filename);
-
-  if (!found) {
-    print(`File not found: ${filename}`);
-  } else if (found.type !== "file") {
-    print(`${filename} is not a file and cannot be deleted.`);
-  } else {
-    // Remove file from the directory
-    currentDirectory.children = currentDirectory.children.filter(c => c.name !== filename);
-    print(`Deleted ${filename}`);
+  
+  if (file.name === 'CursedBook.txt' && file.attributeFlags.readOnly) {
+    print('Cannot delete - CursedBook.txt is read-only. Use attrib -r first.');
+    return;
   }
-
-  inputEl.value = ""; // Ensure input clears
-}
+  
+  if (file.attributeFlags?.readOnly) {
+    print(`Access denied. ${fileName} is read-only. Use 'attrib -r ${fileName}' first.`);
+    return;
+  }
+  
+  currentDirectory.children = currentDirectory.children.filter(child => child !== file);
+  print(`Deleted ${fileName}`);
+};
 
 /**
  * Additional Command: "echo" 
@@ -576,7 +662,7 @@ inputEl.addEventListener('keydown', (e) => {
           inputEl.value = parts.join(' ');
           // Add trailing space for files, slash for directories
           if (matches[0].type === 'dir') {
-            inputEl.value += ' ';
+            inputEl.value += '\\';
           } else {
             inputEl.value += ' ';
           }
