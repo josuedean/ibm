@@ -1,5 +1,5 @@
 /***************************************************
- * Enhanced Windows-style CLI in the Browser v7
+ * Enhanced Windows-style CLI in the Browser v10
  ****************************************************/
 
 let fileSystem = null; // We’ll build this after fetching the JSON
@@ -393,7 +393,7 @@ const handleCopy = (args) => {
 }
 
 /**
- * Additional Command: "move" (same logic as copy, but remove original)
+ * Additional Command: "move" (copies the file then removes the original)
  *  usage: move <source> <destination>
  */
 const handleMove = (args) => {
@@ -401,18 +401,17 @@ const handleMove = (args) => {
     print("Usage: move <source> <destination>");
     return;
   }
-  
+
   const [src, dest] = args;
-  
-  // Handle full source path
+
+  // --- Handle source path ---
   let srcDir = currentDirectory;
   let srcName = src;
-  
+
   if (src.includes('/') || src.includes('\\')) {
     const srcParts = src.split(/[\/\\]/);
-    srcName = srcParts.pop();
+    srcName = srcParts.pop(); // Extract the filename
     const srcPath = srcParts.join('/');
-    
     if (srcPath) {
       srcDir = navigateToPath(srcPath);
       if (!srcDir) {
@@ -421,69 +420,145 @@ const handleMove = (args) => {
       }
     }
   }
-  
-  // Find the source file/directory
-  const srcEntry = findEntryInDir(srcDir, srcName);
+
+  // Locate the source entry (exact name match)
+  const srcEntry = srcDir.children?.find(entry => entry.name === srcName);
   if (!srcEntry) {
     print(`Source not found: ${srcName}`);
     return;
   }
-  
-  // Check if destination is a path or just a filename
+
+  // --- Handle destination path ---
   let destDir = currentDirectory;
-  let destName = dest;
-  
-  if (dest.includes('/') || dest.includes('\\')) {
+  let destName = srcName; // Default to same name
+
+  if (dest.endsWith('\\') || dest.endsWith('/')) {
+    // Destination is explicitly a directory path
+    destDir = navigateToPath(dest);
+  } else if (dest.includes('/') || dest.includes('\\')) {
+    // Destination has slashes but does not end with one,
+    // so treat the last segment as a new filename.
     const destParts = dest.split(/[\/\\]/);
     destName = destParts.pop();
     const destPath = destParts.join('/');
-    
-    if (destPath) {
-      destDir = navigateToPath(destPath);
-      if (!destDir) {
-        print(`Destination directory not found: ${destPath}`);
-        return;
-      }
+    destDir = destPath ? navigateToPath(destPath) : currentDirectory;
+  } else {
+    // No slashes: check if it's an existing directory in current directory
+    const possibleDir = findEntryInDir(currentDirectory, dest);
+    if (possibleDir && possibleDir.type === 'dir') {
+      destDir = possibleDir;
+      destName = srcName;
+    } else {
+      destName = dest; // New filename in current directory
     }
   }
-  
-  // If destName is empty or ends with a slash, use the original filename
-  if (!destName) {
-    destName = srcEntry.name;
+
+  if (!destDir) {
+    print("Destination directory not found");
+    return;
   }
-  
-  // Check if a file/directory with the same name already exists in the destination
+
+  // Check if destination already has a file or directory with the same name
   if (destDir.children && destDir.children.some(child => child.name === destName)) {
     print(`A file or directory named '${destName}' already exists in the destination.`);
     return;
   }
-  
-  // Create a deep copy of the source entry
+
+  // Create a deep copy of the source entry and update the name and parent pointer
   const movedEntry = JSON.parse(JSON.stringify(srcEntry));
   movedEntry.name = destName;
-  
+  movedEntry.parent = destDir;
+
   // Add to destination directory
   if (!destDir.children) destDir.children = [];
   destDir.children.push(movedEntry);
-  
-  // Remove from source directory
-  // srcDir.children = srcDir.children.filter(entry => entry !== srcEntry);
-  srcDir.children = srcDir.children.filter(entry => entry.name !== srcEntry.name);
+
+  // Remove the original file by reference
+  const srcIndex = srcDir.children.findIndex(entry => entry === srcEntry);
+  if (srcIndex !== -1) {
+    srcDir.children.splice(srcIndex, 1);
+  }
+
   print(`Moved ${src} to ${dest}`);
-  
-  // Special case for StoneKey
+
+  // Special case for StoneKey: if moved into InnerKeep, open the locked door
   if (movedEntry && movedEntry.name === 'StoneKey.key' && destDir.name === 'InnerKeep') {
-    // Find and modify the LockedDoor directory
-    const lockedDoor = destDir.children.find(c => c.name === 'LockedDoor');
+    const lockedDoor = findLockedDoorInKeep(destDir);
     if (lockedDoor) {
-      // Transform LockedDoor into OpenedDoor
       lockedDoor.name = 'OpenedDoor';
       lockedDoor.attributeFlags.readOnly = false;
       lockedDoor.attributeFlags.locked = false;
       print("\nThe StoneKey glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!");
     }
   }
+};
+
+/**
+ * Helper function to find the LockedDoor in the Keep
+ */
+const findLockedDoorInKeep = (directory) => {
+  // First, look directly in this directory
+  const lockedDoor = directory.children?.find(c => c.name === 'LockedDoor');
+  if (lockedDoor) return lockedDoor;
+  
+  // Not found directly, search recursively if needed
+  return null;
 }
+
+/**
+ * Helper function to navigate to a path and return the directory
+ * @param {string} path - Path to navigate to (can be absolute like "C:\Something")
+ * @returns {object|null} - The directory object or null if not found
+ */
+const navigateToPath = (path) => {
+  if (!path || path.trim() === '') {
+    return currentDirectory;
+  }
+
+  // Normalize path: replace backslashes with forward slashes and trim
+  const normalizedPath = path.trim().replace(/\\/g, '/');
+
+  // Split by slashes and filter out empty segments
+  const parts = normalizedPath.split('/').filter(part => part !== '');
+
+  // Determine if this is an absolute or relative path
+  let currentDir;
+  let startIndex = 0;
+
+  // Check for "C:" at the beginning (case insensitive)
+  if (parts.length > 0 && parts[0].match(/^[a-z]:$/i)) {
+    currentDir = fileSystem; // Start from root
+    startIndex = 1; // Skip the drive letter part
+  } else if (normalizedPath.startsWith('/')) {
+    currentDir = fileSystem; // Start from root
+  } else {
+    currentDir = currentDirectory; // Relative path starts from current directory
+  }
+
+  // Navigate through the path parts with case-insensitive matching
+  for (let i = startIndex; i < parts.length; i++) {
+    const part = parts[i];
+
+    if (part === '.') {
+      continue;
+    } else if (part === '..') {
+      if (currentDir !== fileSystem && currentDir.parent) {
+        currentDir = currentDir.parent;
+      }
+    } else {
+      // Use case-insensitive matching for directory names
+      const child = currentDir.children?.find(c =>
+        c.type === 'dir' && c.name.toLowerCase() === part.toLowerCase()
+      );
+      if (!child) {
+        return null;
+      }
+      currentDir = child;
+    }
+  }
+
+  return currentDir;
+};
 
 /**
  * Additional Command: "del"
@@ -654,76 +729,6 @@ const handleHelp = () => {
   printStyled("", {});
   printStyled("TIP: Press Tab for command auto-completion", { color: "#ffff00", italic: true });
   printStyled("", {});
-}
-
-// Function to recursively index files for quick access
-const indexFiles = (dir) => {
-  if (!dir || !dir.children) return;
-  
-  dir.children.forEach(item => {
-    // Add a parent reference to enable easier navigation
-    item.parent = dir;
-    
-    // Index files by name for quick lookup
-    if (item.type === 'file') {
-      fileIndex[item.name.toLowerCase()] = item;
-    }
-    
-    // Recursively process subdirectories
-    if (item.type === 'dir') {
-      indexFiles(item);
-    }
-  });
-}
-
-// Helper function to update the prompt based on current directory
-const updatePrompt = () => {
-  // Build path by traversing up the parent chain
-  let path = [];
-  let current = currentDirectory;
-  
-  while (current !== fileSystem && current.parent) {
-    path.unshift(current.name);
-    current = current.parent;
-  }
-  
-  if (path.length === 0) {
-    promptEl.textContent = "C:\\>";
-  } else {
-    promptEl.textContent = `C:\\${path.join("\\")}\\>`;
-  }
-}
-
-/**
- * Helper function to navigate to a path and return the directory
- * @param {string} path - Path to navigate to
- * @returns {object|null} - The directory object or null if not found
- */
-const navigateToPath = (path) => {
-  // Start from root if path begins with / or \
-  let currentDir = path.startsWith('/') || path.startsWith('\\') ? fileSystem : currentDirectory;
-  
-  // Split the path and navigate through each part
-  const parts = path.split(/[\/\\]/).filter(part => part !== '');
-  
-  for (const part of parts) {
-    if (part === '..') {
-      // Go up one level if possible and if we're not at root
-      if (currentDir !== fileSystem && currentDir.parent) {
-        currentDir = currentDir.parent;
-      }
-    } else if (part !== '.') {
-      // Find the child directory with this name
-      const child = currentDir.children?.find(c => c.name === part && c.type === 'directory');
-      if (!child) {
-        return null; // Directory not found
-      }
-      currentDir = child;
-    }
-    // If part is '.', stay in the current directory (do nothing)
-  }
-  
-  return currentDir;
 }
 
 // Add command auto-completion functionality
@@ -941,3 +946,43 @@ fetch("fileSystem.json")
     console.error("Error loading file contents:", err);
     print("Error loading file contents! Check console for details.");
   });
+
+/**
+ * Function to recursively index files for quick access
+ */
+const indexFiles = (dir) => {
+  if (!dir || !dir.children) return;
+  
+  dir.children.forEach(item => {
+    // Add a parent reference to enable easier navigation
+    item.parent = dir;
+    
+    // Index files by name for quick lookup
+    if (item.type === 'file') {
+      fileIndex[item.name.toLowerCase()] = item;
+    }
+    
+    // Recursively process subdirectories
+    if (item.type === 'dir') {
+      indexFiles(item);
+    }
+  });
+}
+
+// Helper function to update the prompt based on current directory
+const updatePrompt = () => {
+  // Build path by traversing up the parent chain
+  let path = [];
+  let current = currentDirectory;
+  
+  while (current !== fileSystem && current.parent) {
+    path.unshift(current.name);
+    current = current.parent;
+  }
+  
+  if (path.length === 0) {
+    promptEl.textContent = "C:\\>";
+  } else {
+    promptEl.textContent = `C:\\${path.join("\\")}\\>`;
+  }
+}
