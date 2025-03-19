@@ -1,5 +1,5 @@
 /***************************************************
- * Enhanced Windows-style CLI in the Browser v6
+ * Enhanced Windows-style CLI in the Browser v7
  ****************************************************/
 
 let fileSystem = null; // We’ll build this after fetching the JSON
@@ -467,8 +467,8 @@ const handleMove = (args) => {
   destDir.children.push(movedEntry);
   
   // Remove from source directory
-  srcDir.children = srcDir.children.filter(entry => entry !== srcEntry);
-  
+  // srcDir.children = srcDir.children.filter(entry => entry !== srcEntry);
+  srcDir.children = srcDir.children.filter(entry => entry.name !== srcEntry.name);
   print(`Moved ${src} to ${dest}`);
   
   // Special case for StoneKey
