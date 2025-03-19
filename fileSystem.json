@@ -77,7 +77,7 @@
                 {
                   "name": "StoneKey.key",
                   "type": "file",
-                  "content": "A heavy stone key. Possibly needed to unlock a barrier in the keep.",
+                  "content": "An ancient stone key with mysterious engravings.This key appears to be made for a substantial door.",
                   "attributeFlags": {
                     "hidden": false,
                     "readOnly": false
