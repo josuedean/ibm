@@ -178,9 +178,9 @@
                   },
                   "children": [
                     {
-                      "name": "RustySword.txt",
+                      "name": "weapon.box",
                       "type": "file",
-                      "content": "An ancient sword, too corroded to be of any use.",
+                      "content": "Inside is an ancient, rusty sword, too corroded to be of any use. You look closely and see an inscription on the inside of the box:\n'\n~Sword of Elim~\nForged in the 83rd year and embued His dark energies.\n'\n\n Hmm... might be a clue.",
                       "attributeFlags": {
                         "hidden": false,
                         "readOnly": false
