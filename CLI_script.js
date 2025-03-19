@@ -1,5 +1,5 @@
 /***************************************************
- * Enhanced Windows-style CLI in the Browser v10
+ * Enhanced Windows-style CLI in the Browser v12
  ****************************************************/
 
 let fileSystem = null; // We’ll build this after fetching the JSON
@@ -15,6 +15,9 @@ let currentColor = "green"; // or "white", "black", "blue"
 // Command history storage
 const commandHistory = [];
 let historyIndex = -1;
+
+// Set to track directories that have been visited
+let visitedDirectories = new Set();
 
 // DOM references
 const outputEl = document.getElementById('output');
@@ -37,7 +40,7 @@ const getCurrentPathString = () => {
 }
 
 /**
- * Recursively search within 'dir' for an entry matching 'name' (case-insensitive)
+ * Recursively search within 'dir' for an entry matching 'name' (case sensitive)
  * Return the entry or null
  */
 const findEntryInDir = (dir, name) => {
@@ -45,7 +48,7 @@ const findEntryInDir = (dir, name) => {
     console.warn("findEntryInDir: Directory is null or has no children.");
     return null;
   }
-  return dir.children.find((child) => child.name.toLowerCase() === name.toLowerCase()) || null;
+  return dir.children.find((child) => child.name === name) || null;
 }
 
 /**
@@ -97,37 +100,76 @@ const handleDir = (args) => {
 
 /**
  * "cd" command
- *  usage: cd <foldername> or cd .. to go up (we might limit or do partial)
+ *  usage: cd <foldername> or cd .. to go up
+ *  or cd <full path> to navigate directly to that path
  */
 const handleCd = (args) => {
   if (args.length === 0) {
     // cd with no arg -> root
     currentDirectory = fileSystem;
+    markDirectoryVisited(currentDirectory);
     promptEl.textContent = "C:\\>";
     return;
   }
+  
   const target = args[0];
+  
+  // Special case for ".."
   if (target === "..") {
     // Go up to parent directory if not at root
     if (currentDirectory === fileSystem) {
       print("Already at root.");
     } else if (currentDirectory.parent) {
       currentDirectory = currentDirectory.parent;
+      markDirectoryVisited(currentDirectory);
       updatePrompt();
     } else {
       print("Cannot navigate to parent directory.");
     }
     return;
   }
-
-  // find a subdirectory with the given name
-  const found = findEntryInDir(currentDirectory, target);
-  if (!found) {
-    print(`Directory not found: ${target}`);
+  
+  // Check if this is a full path (starts with C:\ or contains \ or /)
+  if (target.match(/^[Cc]:\\/) || target.includes('\\') || target.includes('/') || target.startsWith('./') || target.startsWith('.\\')) {
+    // Use the navigateToPath function to find the target directory
+    const targetDir = navigateToPath(target);
+    
+    if (!targetDir) {
+      print(`Directory not found: ${target}`);
+      return;
+    }
+    
+    if (targetDir.type !== 'dir') {
+      print(`${targetDir.name} is not a directory.`);
+      return;
+    }
+    
+    // Check for locked door condition
+    if (targetDir.name === 'LockedDoor') {
+      print("This door is locked and holds strong when you attempt to force it open.");
+      return;
+    }
+    
+    // Check for locked VaultAntechamber
+    if (targetDir.name === 'VaultAntechamber' && targetDir.attributeFlags?.locked) {
+      print("The entrance is shrouded in dark energy. You cannot enter until the source is eliminated.");
+      return;
+    }
+    
+    // Change to the target directory
+    currentDirectory = targetDir;
+    markDirectoryVisited(currentDirectory);
+    updatePrompt();
     return;
   }
-  if (found.type !== 'dir') {
-    print(`${found.name} is not a directory.`);
+  
+  // If it's a simple directory name, find it directly with case sensitivity
+  const found = currentDirectory.children?.find(entry => 
+    entry.name === target && entry.type === 'dir'
+  );
+  
+  if (!found) {
+    print(`Directory not found: ${target}`);
     return;
   }
   
@@ -142,9 +184,10 @@ const handleCd = (args) => {
     print("The entrance is shrouded in dark energy. You cannot enter until the source is eliminated.");
     return;
   }
-
-  // move in
+  
+  // Move to the found directory
   currentDirectory = found;
+  markDirectoryVisited(currentDirectory);
   updatePrompt();
 }
 
@@ -224,19 +267,30 @@ const handleRename = (args) => {
 
 /**
  * "tree" command
- *  Recursively shows directory structure from current directory
+ *  Shows directory structure of visited directories
  */
 const handleTree = (args) => {
   // Start from current directory
   const startDir = currentDirectory;
   print(startDir.name);
   
+  // Mark the root directory as visited initially
+  if (!visitedDirectories.has(fileSystem)) {
+    visitedDirectories.add(fileSystem);
+  }
+  
   // Helper function to recursively print directory structure
   const printTree = (dir, prefix = "") => {
     if (!dir.children) return;
     
-    // Get all directories and files
-    const entries = [...dir.children];
+    // Filter entries to only include visited directories and files in visited directories
+    const entries = [...dir.children].filter(entry => {
+      // Always include files in a visited directory
+      if (entry.type === 'file') return true;
+      
+      // Only include directories that have been visited
+      return visitedDirectories.has(entry);
+    });
     
     // Print each entry with appropriate prefixes
     for (let i = 0; i < entries.length; i++) {
@@ -247,8 +301,8 @@ const handleTree = (args) => {
       
       print(`${prefix}${entryPrefix}${entry.name}`);
       
-      // Recursively print subdirectories
-      if (entry.type === 'dir') {
+      // Recursively print subdirectories only if they've been visited
+      if (entry.type === 'dir' && visitedDirectories.has(entry)) {
         printTree(entry, prefix + childPrefix);
       }
     }
@@ -375,75 +429,23 @@ const handleCopy = (args) => {
     print("Usage: copy <source> <destination>");
     return;
   }
-  
   const [src, dest] = args;
+  const found = findEntryInDir(currentDirectory, src);
   
-  // --- Handle source path ---
-  let srcDir = currentDirectory;
-  let srcName = src;
-  
-  if (src.includes('/') || src.includes('\\')) {
-    const srcParts = src.split(/[\/\\]/);
-    srcName = srcParts.pop(); // Extract the filename
-    const srcPath = srcParts.join('/');
-    if (srcPath) {
-      srcDir = navigateToPath(srcPath);
-      if (!srcDir) {
-        print(`Source directory not found: ${srcPath}`);
-        return;
-      }
-    }
-  }
-  
-  // Locate the source entry (case-insensitive)
-  const srcEntry = srcDir.children?.find(entry => entry.name.toLowerCase() === srcName.toLowerCase());
-  if (!srcEntry) {
-    print(`Source not found: ${srcName}`);
+  if (!found) {
+    print("File not found: " + src);
     return;
   }
-  if (srcEntry.type !== 'file') {
+  if (found.type !== 'file') {
     print("Source is not a file.");
     return;
   }
-  
-  // --- Handle destination path ---
-  let destDir, destName;
-  
-  // First, attempt to resolve the destination as a directory
-  let resolvedDest = navigateToPath(dest);
-  if (resolvedDest && resolvedDest.type === 'dir') {
-    destDir = resolvedDest;
-    destName = srcName; // Use the source file's name
-  } else {
-    // Split destination into directory path and new file name parts.
-    const destParts = dest.split(/[\/\\]/);
-    destName = destParts.pop();
-    const destPath = destParts.join('/');
-    destDir = destPath ? navigateToPath(destPath) : currentDirectory;
-  }
-  
-  if (!destDir) {
-    print("Destination directory not found");
-    return;
-  }
-  
-  // Check if destination already has a file or directory with the same name (case-insensitive)
-  if (destDir.children && destDir.children.some(child => child.name.toLowerCase() === destName.toLowerCase())) {
-    print(`A file or directory named '${destName}' already exists in the destination.`);
-    return;
-  }
-  
-  // Create a deep copy of the source entry, update its name and parent pointer
-  const copyFile = JSON.parse(JSON.stringify(srcEntry));
-  copyFile.name = destName;
-  copyFile.parent = destDir;
-  
-  if (!destDir.children) destDir.children = [];
-  destDir.children.push(copyFile);
-  
+  // create a new file with the same content
+  const copyFile = JSON.parse(JSON.stringify(found));
+  copyFile.name = dest;
+  currentDirectory.children.push(copyFile);
   print(`Copied ${src} to ${dest}`);
-};
-
+}
 
 /**
  * Additional Command: "move" (copies the file then removes the original)
@@ -475,7 +477,10 @@ const handleMove = (args) => {
   }
 
   // Locate the source entry (attempt exact match in the determined directory)
-  let srcEntry = srcDir.children?.find(entry => entry.name.toLowerCase() === srcName.toLowerCase());
+  let srcEntry = srcDir.children?.find(entry => 
+    entry.name === srcName
+  );
+  
   if (!srcEntry) {
     // Fallback: perform a recursive search in srcDir for a partial match
     srcEntry = findFileRecursively(srcDir, srcName);
@@ -511,7 +516,7 @@ const handleMove = (args) => {
   }
 
   // Check if destination already has a file or directory with the same name
-  if (destDir.children && destDir.children.some(child => child.name.toLowerCase() === destName.toLowerCase())) {
+  if (destDir.children && destDir.children.some(child => child.name === destName)) {
     print(`A file or directory named '${destName}' already exists in the destination.`);
     return;
   }
@@ -587,7 +592,7 @@ const navigateToPath = (path) => {
     currentDir = currentDirectory; // Relative path starts from current directory
   }
 
-  // Navigate through the path parts with case-insensitive matching
+  // Navigate through the path parts with case-sensitive matching
   for (let i = startIndex; i < parts.length; i++) {
     const part = parts[i];
 
@@ -598,9 +603,9 @@ const navigateToPath = (path) => {
         currentDir = currentDir.parent;
       }
     } else {
-      // Use case-insensitive matching for directory names
+      // Use case-sensitive matching for directory names
       const child = currentDir.children?.find(c =>
-        c.type === 'dir' && c.name.toLowerCase() === part.toLowerCase()
+        c.type === 'dir' && c.name === part
       );
       if (!child) {
         return null;
@@ -613,13 +618,13 @@ const navigateToPath = (path) => {
 };
 
 /**
- * Recursively search within 'dir' for a file entry matching 'name' (case-insensitive)
+ * Recursively search within 'dir' for a file entry matching 'name' (case sensitive)
  * Return the entry if found, otherwise null.
  */
 const findFileRecursively = (dir, name) => {
   if (!dir || !dir.children) return null;
   for (const child of dir.children) {
-    if (child.type === 'file' && child.name.toLowerCase() === name.toLowerCase()) {
+    if (child.type === 'file' && child.name === name) {
       return child;
     }
     if (child.type === 'dir') {
@@ -734,13 +739,18 @@ const handleColor = (args) => {
       textColor = "#ffffff";
       print("Color changed to white on black.");
       break;
+    case "0P": // Light purple text on black
+      backgroundColor = "black";
+      textColor = "#d0a0ff";
+      print("Color changed to light purple on black.");
+      break;
     case "07": // Default gray text on black (Windows default)
       backgroundColor = "black";
       textColor = "#c0c0c0";
       print("Color changed to default gray on black.");
       break;
     default:
-      print("Color code not recognized in this demo. Try 0A, 0F, or 07.");
+      print("Color code not recognized in this demo. Try 0A, 0F, 0P, or 07.");
       return;
   }
 
@@ -965,6 +975,13 @@ const handleCommand = (line) => {
 
   // Ensure input is cleared after every command
   inputEl.value = "";
+}
+
+// Mark the current directory as visited whenever CD is used
+const markDirectoryVisited = (directory) => {
+  if (directory) {
+    visitedDirectories.add(directory);
+  }
 }
 
 // ----- MAIN COMMAND HANDLER -----
