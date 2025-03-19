@@ -1,5 +1,5 @@
 /***************************************************
- * Enhanced Windows-style CLI in the Browser v9
+ * Enhanced Windows-style CLI in the Browser v8
  ****************************************************/
 
 let fileSystem = null; // We’ll build this after fetching the JSON
@@ -393,7 +393,7 @@ const handleCopy = (args) => {
 }
 
 /**
- * Additional Command: "move" (same logic as copy, but remove original)
+ * Additional Command: "move" (copies the file then removes the original)
  *  usage: move <source> <destination>
  */
 const handleMove = (args) => {
@@ -401,63 +401,17 @@ const handleMove = (args) => {
     print("Usage: move <source> <destination>");
     return;
   }
-  
+
   const [src, dest] = args;
-  
-  // --- SPECIAL CASE FOR STONE KEY PUZZLE ---
-  // Check for the specific commands mentioned in requirements
-  if ((src === "StoneKey.key" && dest === "C:\\EntranceGrounds\\OuterWalls\\InnerKeep\\") || 
-      (src === "C:\\EntranceGrounds\\OuterWalls\\StorageRoom\\StoneKey.key" && dest === "C:\\EntranceGrounds\\OuterWalls\\InnerKeep\\")) {
-    
-    // Get references to required directories
-    const storageRoom = findDirectoryByPath("EntranceGrounds/OuterWalls/StorageRoom");
-    const innerKeep = findDirectoryByPath("EntranceGrounds/OuterWalls/InnerKeep");
-    
-    if (!storageRoom || !innerKeep) {
-      print("Error: Could not find required directories for this special operation.");
-      return;
-    }
-    
-    // Find the key in storage room
-    const stoneKey = storageRoom.children.find(item => item.name === "StoneKey.key");
-    if (!stoneKey) {
-      print("Error: StoneKey.key not found in StorageRoom.");
-      return;
-    }
-    
-    // Create a copy of the key in InnerKeep
-    const keyForKeep = JSON.parse(JSON.stringify(stoneKey));
-    innerKeep.children.push(keyForKeep);
-    
-    // Remove the key from StorageRoom
-    storageRoom.children = storageRoom.children.filter(item => item.name !== "StoneKey.key");
-    
-    print(`Moved ${src} to ${dest}`);
-    
-    // Find and modify the LockedDoor directory in InnerKeep
-    const lockedDoor = innerKeep.children.find(c => c.name === 'LockedDoor');
-    if (lockedDoor) {
-      // Transform LockedDoor into OpenedDoor
-      lockedDoor.name = 'OpenedDoor';
-      lockedDoor.attributeFlags.readOnly = false;
-      lockedDoor.attributeFlags.locked = false;
-      print("\nThe StoneKey glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!");
-    }
-    
-    return; // Skip the regular move logic
-  }
-  
-  // --- REGULAR MOVE LOGIC CONTINUES BELOW ---
-  
-  // Handle full source path
+
+  // --- Handle source path ---
   let srcDir = currentDirectory;
   let srcName = src;
-  
+
   if (src.includes('/') || src.includes('\\')) {
     const srcParts = src.split(/[\/\\]/);
-    srcName = srcParts.pop(); // Get the filename
+    srcName = srcParts.pop(); // Extract the filename
     const srcPath = srcParts.join('/');
-    
     if (srcPath) {
       srcDir = navigateToPath(srcPath);
       if (!srcDir) {
@@ -466,138 +420,133 @@ const handleMove = (args) => {
       }
     }
   }
-  
-  // Find the source entry with the exact name
+
+  // Locate the source entry (exact name match)
   const srcEntry = srcDir.children?.find(entry => entry.name === srcName);
   if (!srcEntry) {
     print(`Source not found: ${srcName}`);
     return;
   }
-  
+
   // --- Handle destination path ---
-  
-  // Parse destination path
   let destDir = currentDirectory;
-  let destName = srcName; // Default to same name if not specified
-  
-  if (dest.includes('/') || dest.includes('\\')) {
+  let destName = srcName; // Default to same name
+
+  if (dest.endsWith('\\') || dest.endsWith('/')) {
+    // Destination is explicitly a directory path
+    destDir = navigateToPath(dest);
+  } else if (dest.includes('/') || dest.includes('\\')) {
+    // Destination has slashes but does not end with one,
+    // so treat the last segment as a new filename.
     const destParts = dest.split(/[\/\\]/);
-    const lastName = destParts.pop(); // Get the last part
+    destName = destParts.pop();
     const destPath = destParts.join('/');
-    
-    // If the destination ends with a slash or backslash, it's a directory path
-    // Otherwise, the last part is the new filename
-    if (dest.endsWith('/') || dest.endsWith('\\')) {
-      // It's a directory, keep original filename
-      if (destPath) {
-        destDir = navigateToPath(destPath);
-      }
-    } else {
-      // The last part could be a directory or a new filename
-      if (destPath) {
-        destDir = navigateToPath(destPath);
-        if (!destDir) {
-          // Try with the full path (maybe last part is a directory too)
-          destDir = navigateToPath(dest);
-          if (destDir) {
-            // Last part was a directory after all
-            destName = srcName;
-          } else {
-            print(`Destination directory not found: ${destPath}`);
-            return;
-          }
-        } else {
-          // Last part is the new filename
-          destName = lastName;
-        }
-      } else {
-        // No path, just a new name
-        destName = lastName;
-      }
-    }
+    destDir = destPath ? navigateToPath(destPath) : currentDirectory;
   } else {
-    // No slashes, check if it's an existing directory
+    // No slashes: check if it's an existing directory in current directory
     const possibleDir = findEntryInDir(currentDirectory, dest);
     if (possibleDir && possibleDir.type === 'dir') {
-      // It's a directory, move the file there with original name
       destDir = possibleDir;
+      destName = srcName;
     } else {
-      // It's a new filename in current directory
-      destName = dest;
+      destName = dest; // New filename in current directory
     }
   }
-  
-  // Check if destination directory exists
+
   if (!destDir) {
-    print(`Destination directory not found`);
+    print("Destination directory not found");
     return;
   }
-  
-  // Check if a file/directory with the same name already exists in the destination
+
+  // Check if destination already has a file or directory with the same name
   if (destDir.children && destDir.children.some(child => child.name === destName)) {
     print(`A file or directory named '${destName}' already exists in the destination.`);
     return;
   }
-  
-  // Create a deep copy of the source entry
+
+  // Create a deep copy of the source entry and update the name and parent pointer
   const movedEntry = JSON.parse(JSON.stringify(srcEntry));
   movedEntry.name = destName;
-  
+  movedEntry.parent = destDir;
+
   // Add to destination directory
   if (!destDir.children) destDir.children = [];
   destDir.children.push(movedEntry);
-  
-  // Remove the original file by reference (safer than filtering by name)
+
+  // Remove the original file by reference
   const srcIndex = srcDir.children.findIndex(entry => entry === srcEntry);
   if (srcIndex !== -1) {
     srcDir.children.splice(srcIndex, 1);
   }
-  
+
   print(`Moved ${src} to ${dest}`);
-  
-  // Special case for StoneKey
+
+  // Special case for StoneKey: if moved into InnerKeep, open the locked door
   if (movedEntry && movedEntry.name === 'StoneKey.key' && destDir.name === 'InnerKeep') {
-    // Find the LockedDoor directory
     const lockedDoor = findLockedDoorInKeep(destDir);
     if (lockedDoor) {
-      // Transform LockedDoor into OpenedDoor
       lockedDoor.name = 'OpenedDoor';
       lockedDoor.attributeFlags.readOnly = false;
       lockedDoor.attributeFlags.locked = false;
       print("\nThe StoneKey glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!");
     }
   }
-}
+};
 
 /**
- * Helper function to find a directory by path from the root
- * @param {string} path - Path relative to root, can use forward or backslashes
+ * Helper function to navigate to a path and return the directory
+ * @param {string} path - Path to navigate to (can be absolute like "C:\Something")
  * @returns {object|null} - The directory object or null if not found
  */
-const findDirectoryByPath = (path) => {
-  // Normalize path with forward slashes and split
-  const parts = path.replace(/\\/g, '/').split('/').filter(p => p !== '');
-  
-  // Start from the root
-  let currentDir = fileSystem;
-  
-  // Traverse the path
-  for (const part of parts) {
-    if (!currentDir || !currentDir.children) {
-      return null;
-    }
-    
-    // Find the next directory in the path
-    const nextDir = currentDir.children.find(c => c.name === part && c.type === 'dir');
-    if (!nextDir) {
-      return null;
-    }
-    
-    currentDir = nextDir;
+const navigateToPath = (path) => {
+  if (!path || path.trim() === '') {
+    return currentDirectory;
   }
-  
+
+  // Normalize path: replace backslashes with forward slashes and trim
+  const normalizedPath = path.trim().replace(/\\/g, '/');
+
+  // Split by slashes and filter out empty segments
+  const parts = normalizedPath.split('/').filter(part => part !== '');
+
+  // Determine if this is an absolute or relative path
+  let currentDir;
+  let startIndex = 0;
+
+  // Check for "C:" at the beginning (case insensitive)
+  if (parts.length > 0 && parts[0].match(/^[a-z]:$/i)) {
+    currentDir = fileSystem; // Start from root
+    startIndex = 1; // Skip the drive letter part
+  } else if (normalizedPath.startsWith('/')) {
+    currentDir = fileSystem; // Start from root
+  } else {
+    currentDir = currentDirectory; // Relative path starts from current directory
+  }
+
+  // Navigate through the path parts with case-insensitive matching
+  for (let i = startIndex; i < parts.length; i++) {
+    const part = parts[i];
+
+    if (part === '.') {
+      continue;
+    } else if (part === '..') {
+      if (currentDir !== fileSystem && currentDir.parent) {
+        currentDir = currentDir.parent;
+      }
+    } else {
+      // Use case-insensitive matching for directory names
+      const child = currentDir.children?.find(c =>
+        c.type === 'dir' && c.name.toLowerCase() === part.toLowerCase()
+      );
+      if (!child) {
+        return null;
+      }
+      currentDir = child;
+    }
+  }
+
   return currentDir;
-}
+};
 
 /**
  * Additional Command: "del"
