@@ -403,7 +403,52 @@ const handleMove = (args) => {
   }
 
   const [src, dest] = args;
+  const lowerSrc = src.toLowerCase();
+  const lowerDest = dest.replace(/\\/g, '/').toLowerCase();
 
+  // Special condition: If moving StoneKey.key from StorageRoom to InnerKeep
+  if (
+    (
+      (lowerSrc === "stonekey.key" && currentDirectory.name.toLowerCase() === "storageroom") ||
+      (lowerSrc === "c:/entrancegrounds/outerwalls/storageroom/stonekey.key")
+    ) &&
+    (lowerDest === "c:/entrancegrounds/outerwalls/innerkeep/" || lowerDest === "c:/entrancegrounds/outerwalls/innerkeep")
+  ) {
+    // Locate the StorageRoom directory and the InnerKeep directory
+    const storageRoom = navigateToPath("C:\\EntranceGrounds\\OuterWalls\\StorageRoom");
+    const innerKeep = navigateToPath("C:\\EntranceGrounds\\OuterWalls\\InnerKeep");
+    
+    if (!storageRoom || !innerKeep) {
+      print("Special move failed: Could not locate StorageRoom or InnerKeep.");
+      return;
+    }
+    
+    // Find StoneKey.key in StorageRoom (case-insensitive match)
+    const stoneKeyIndex = storageRoom.children.findIndex(entry => entry.name.toLowerCase() === "stonekey.key");
+    if (stoneKeyIndex === -1) {
+      print("StoneKey.key not found in StorageRoom.");
+      return;
+    }
+    
+    // Remove the StoneKey from StorageRoom and update its parent pointer
+    const stoneKey = storageRoom.children.splice(stoneKeyIndex, 1)[0];
+    stoneKey.parent = innerKeep;
+    innerKeep.children.push(stoneKey);
+    
+    print(`Moved StoneKey.key to C:\\EntranceGrounds\\OuterWalls\\InnerKeep\\`);
+    
+    // Special case: if a locked door exists in InnerKeep, open it
+    const lockedDoor = findLockedDoorInKeep(innerKeep);
+    if (lockedDoor) {
+      lockedDoor.name = 'OpenedDoor';
+      lockedDoor.attributeFlags.readOnly = false;
+      lockedDoor.attributeFlags.locked = false;
+      print("\nThe StoneKey glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!");
+    }
+    return;
+  }
+
+  // --- Normal move command handling ---
   // --- Handle source path ---
   let srcDir = currentDirectory;
   let srcName = src;
@@ -492,6 +537,7 @@ const handleMove = (args) => {
     }
   }
 };
+
 
 /**
  * Helper function to navigate to a path and return the directory
