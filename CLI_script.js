@@ -471,10 +471,10 @@ const handleMove = (args) => {
     return;
   }
 
-  // Create a deep copy of the source entry and update the name and parent pointer
-  const movedEntry = JSON.parse(JSON.stringify(srcEntry));
-  movedEntry.name = destName;
-  movedEntry.parent = destDir;
+  // Update the source entry's name and parent pointer, then assign it for moving
+  srcEntry.name = destName;
+  srcEntry.parent = destDir;
+  const movedEntry = srcEntry;
 
   // Add to destination directory
   if (!destDir.children) destDir.children = [];
