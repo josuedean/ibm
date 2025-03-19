@@ -6,7 +6,7 @@
     {
       "name": "FortressLore.txt",
       "type": "file",
-      "content": "Legends speak of an abandoned fortress once ruled by a brilliant CLI Wizard. Within its depths lies a relic said to grant eternal command mastery: the ASCII Chalice. Many have ventured here, few returned. Will you succeed?",
+      "content": "Legends speak of an abandoned fortress once ruled by a brilliant CLI Wizard. Within its depths lies a relic said to grant eternal command line mastery: the ASCII Chalice. Many have ventured here, few returned. Will you succeed?",
       "attributeFlags": {
         "hidden": false,
         "readOnly": false
@@ -15,7 +15,7 @@
     {
       "name": "README.md",
       "type": "file",
-      "content": "# Abandoned Fortress\n\n**Objective:** Retrieve the legendary ASCII Chalice hidden within these ancient walls.\n\n- Explore folders (like levels of the fortress) using `dir` and `cd`.\n- Some rooms or files may be hidden; use `dir /A` or `attrib`.\n- You may need to rename, move, or delete certain files to progress.\n- Use `findstr` to search large text for hidden clues.\n- `attrib -r` might be needed on read-only files before deletion.\n\nProceed carefully, adventurer... Good luck!",
+      "content": "# Abandoned Fortress\n\n**Objective:** Retrieve the legendary ASCII Chalice hidden within these ancient walls.\n\n- Explore folders (like levels and rooms of the fortress) using `dir` and `cd`.\n- Some rooms or files may be hidden; use `dir /A` or `attrib`.\n- You may need to rename, move, or delete certain files to progress.\n- Use `findstr` to search files with a large amount of text for hidden clues.\n- `attrib -r` might be needed on read-only files before deletion.\n\nProceed carefully, adventurer... Good luck!",
       "attributeFlags": {
         "hidden": false,
         "readOnly": false
@@ -59,9 +59,9 @@
           "attributeFlags": {},
           "children": [
             {
-              "name": "CrumblingTower.txt",
+              "name": "CrumblingTower.look",
               "type": "file",
-              "content": "From atop the tower, you glimpse the InnerKeep in the distance and another structure hidden behind overgrowth of old trees and vines.",
+              "content": "From atop the tower, you glimpse the Inner Keep in the distance and another structure hidden behind overgrowth of old trees and vines.",
               "attributeFlags": {
                 "hidden": false,
                 "readOnly": false
@@ -91,7 +91,7 @@
               "attributeFlags": {},
               "children": [
                 {
-                  "name": "GreatHall.txt",
+                  "name": "GreatHall.info",
                   "type": "file",
                   "content": "The Great Hall resonates with echoes of a long-departed wizard. A locked doorway stands further in.",
                   "attributeFlags": {
@@ -100,7 +100,7 @@
                   }
                 },
                 {
-                  "name": "OldRecords.txt",
+                  "name": "OldRecords.tome",
                   "type": "file",
                   "content": "1. Ancient fortress archives - Year 1562\n2. Weather patterns in the northern region\n3. List of supplies for the eastern wing\n4. Inventory of magical artifacts (incomplete)\n5. Staff rotation schedules\n6. Notes on dimensional portal experiments\n7. Visitor logs from neighboring kingdoms\n8. Maintenance requests for the western tower\n9. List of forbidden tomes in the library\n10. Records of astronomical observations\n11. Transcripts from council meetings\n12. Catalog of rare herbs in the garden\n13. Correspondence with foreign mages\n14. Training regimen for apprentices\n15. Meal plans for the winter solstice\n16. Budget allocations for the year\n17. Security protocols for the inner sanctum\n18. Blueprint modifications for the eastern corridor\n19. List of approved visitors\n20. Incident reports from the alchemy lab\n21. Inventory of kitchen supplies\n22. Maintenance schedule for the water system\n23. Archive access permissions\n24. Records of magical anomalies\n25. List of banned substances\n26. Notes on recent strange occurrences\n27. Guard rotation assignments\n28. Inventory of the armory\n29. Repairs needed for the south wall\n30. Schedule for magical barrier reinforcement\n31. List of books recently added to the library\n32. Visitor logs for the past month\n33. Experiment notes from the wizard's study\n34. Supply requisition forms\n35. Staff complaints and resolutions\n36. Calendar of celestial events\n37. Inventory of potion ingredients\n38. Notes on strange sounds from the basement\n39. List of rooms requiring cleaning\n40. Maintenance log for the main gate\n41. Record of recent thefts\n42. Apprentice evaluation reports\n43. List of rooms needing new furniture\n44. Magical energy consumption metrics\n45. Library book return log\n46. Minutes from the last council meeting\n47. Inventory of candles and torches\n48. Notes on structural integrity concerns\n49. List of approved research projects\n50. Visitor testimonials and feedback\n51. Record of strange dreams reported by staff\n52. Inventory of medical supplies\n53. List of areas restricted to apprentices\n54. Notes on mysterious disappearances\n55. Schedule for weekly meetings\n56. Inventory of cleaning supplies\n57. List of reprimanded staff members\n58. Notes on increased magical interference\n59. Maintenance requests for the library\n60. Record of power fluctuations in the east wing\n61. Inventory of writing materials\n62. Strange symbols appearing on walls report\n63. List of completed renovations\n64. Notes on unexplained footprints\n65. Schedule for magic practice sessions\n66. Inventory of rare metals\n67. List of staff birthdays and celebrations\n68. Notes on peculiar weather patterns near the fortress\n69. Maintenance log for the kitchen\n70. Record of magical accidents this year\n71. Inventory of preserved specimens\n72. List of rooms with reported hauntings\n73. Notes on secret passages discovered recently\n74. Secret library access codes - outdated\n75. Inventory of arcane tools\n76. List of failed experiments and outcomes\n77. Notes on strange markings found in the basement\n78. Maintenance schedule for waste disposal\n79. Record of visitors who never left\n80. Inventory of enchanted items\n81. List of broken furniture awaiting repair\n82. Notes on whispers heard in empty rooms\n83. *SECURITY NOTICE* For cursed objects that resist removal, remember the emergency elimination protocol must be invoked with 'attrib -elim [filename]'\n84. Inventory of magical crystals\n85. List of staff with special access privileges\n86. Notes on flickering lights in the west corridor\n87. Maintenance log for the heating system\n88. Record of unusual temperature fluctuations\n89. Inventory of ceremonial objects\n90. List of approved research methods\n91. Notes on increased rat activity in the cellars\n92. Schedule for magical barrier inspections\n93. Inventory of preserved food\n94. List of unresolved phenomena\n95. Notes on staff reporting hearing their names called\n96. Maintenance requests for the apprentice quarters\n97. Record of missing items never recovered\n98. Inventory of imported spices\n99. List of areas due for magical cleansing\n100. Final notes: The grand wizard has left. All is not as it seems.",
                   "attributeFlags": {
@@ -123,9 +123,9 @@
                       "attributeFlags": {},
                       "children": [
                         {
-                          "name": "CursedBook.txt",
+                          "name": "CursedBook.tome",
                           "type": "file",
-                          "content": "You sense dark energy from this tome. Perhaps removing it is necessary to clear the path. But it resists attempts to beremoved...",
+                          "content": "You sense dark energy from this tome. Perhaps removing it is necessary to clear the path. But it resists attempts to be removed...",
                           "attributeFlags": {
                             "hidden": false,
                             "readOnly": true
@@ -137,9 +137,9 @@
                           "attributeFlags": {},
                           "children": [
                             {
-                              "name": "FinalGuardian.dat",
+                              "name": "StoneSentinel.dat",
                               "type": "file",
-                              "content": "A towering sentinel stands watch. An inscription: 'The Chalice was relocated to a hidden antechamber. Return if you dare.'",
+                              "content": "A towering sentinel statue stands in the middle of the room. Its hands extend in front holding empty air. Maybe this statue once held the legendary Chalice that you seek, however there is no sign of it here. You wonder if it may have been hidden away somewhere in the fortress.",
                               "attributeFlags": {
                                 "hidden": false,
                                 "readOnly": false
@@ -148,7 +148,7 @@
                           ]
                         },
                         {
-                          "name": "VaultAntechamber",
+                          "name": "ReadingChamber",
                           "type": "dir",
                           "attributeFlags": {
                             "hidden": true,
