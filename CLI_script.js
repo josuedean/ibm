@@ -1,5 +1,5 @@
 /***************************************************
- * Enhanced Windows-style CLI in the Browser v7
+ * Enhanced Windows-style CLI in the Browser v8
  ****************************************************/
 
 let fileSystem = null; // We’ll build this after fetching the JSON
@@ -393,8 +393,8 @@ const handleCopy = (args) => {
 }
 
 /**
- * move <source> <destination>
- * Moves a file or folder from one location to another, then removes it from the original location.
+ * Additional Command: "move" (same logic as copy, but remove original)
+ *  usage: move <source> <destination>
  */
 const handleMove = (args) => {
   if (args.length < 2) {
@@ -403,118 +403,87 @@ const handleMove = (args) => {
   }
   
   const [src, dest] = args;
-
-  // Helper to decide if user typed root path (e.g. "C:", "C:\\")
-  // Adjust as needed if your environment uses a different root name or notation
-  const isRootPath = (path) => {
-    return !path || path === "C:" || path === "C:\\" || path === "/";
-  };
-
-  // Resolve a path string to a directory object (or null if not found)
-  // If path is root-like, return the root directory immediately
-  const resolveDirectory = (path) => {
-    if (isRootPath(path)) {
-      return rootDirectory; // however you reference the top-level "C:\\" object
-    }
-    return navigateToPath(path); // your existing function that finds a directory by path
-  };
-
-  // -- 1. Identify source directory + item name --
+  
+  // Handle full source path
   let srcDir = currentDirectory;
   let srcName = src;
-
-  if (src.includes("/") || src.includes("\\")) {
+  
+  if (src.includes('/') || src.includes('\\')) {
     const srcParts = src.split(/[\/\\]/);
-    srcName = srcParts.pop();              // filename or folder name
-    const srcPath = srcParts.join("/");    // everything before the last slash
+    srcName = srcParts.pop();
+    const srcPath = srcParts.join('/');
+    
     if (srcPath) {
-      srcDir = resolveDirectory(srcPath);
+      srcDir = navigateToPath(srcPath);
       if (!srcDir) {
         print(`Source directory not found: ${srcPath}`);
         return;
       }
     }
   }
-
-  // Make sure the source file/folder exists
+  
+  // Find the source file/directory
   const srcEntry = findEntryInDir(srcDir, srcName);
   if (!srcEntry) {
     print(`Source not found: ${srcName}`);
     return;
   }
-
-  // -- 2. Identify destination directory + name --
+  
+  // Check if destination is a path or just a filename
   let destDir = currentDirectory;
   let destName = dest;
-
-  if (dest.includes("/") || dest.includes("\\")) {
+  
+  if (dest.includes('/') || dest.includes('\\')) {
     const destParts = dest.split(/[\/\\]/);
-    destName = destParts.pop();            // filename or folder name
-    const destPath = destParts.join("/");  // everything before the last slash
-
+    destName = destParts.pop();
+    const destPath = destParts.join('/');
+    
     if (destPath) {
-      destDir = resolveDirectory(destPath);
+      destDir = navigateToPath(destPath);
       if (!destDir) {
         print(`Destination directory not found: ${destPath}`);
         return;
       }
-    } else {
-      // e.g. user typed just "C:\" (which split into ["C:", ""])
-      // so check if that is the root
-      if (isRootPath(destParts[0])) {
-        destDir = rootDirectory;
-      }
     }
-  } else if (isRootPath(dest)) {
-    // if user typed exactly "C:" or "C:\" etc.
-    destDir = rootDirectory;
-    // in this case, we'll use srcEntry's name as the destination name
-    destName = srcEntry.name;
   }
-
-  // If user’s destination was a path ending in slash, or user typed "C:\" with no new name
+  
+  // If destName is empty or ends with a slash, use the original filename
   if (!destName) {
     destName = srcEntry.name;
   }
-
-  // -- 3. Check if there's already a file/folder by that name in dest --
+  
+  // Check if a file/directory with the same name already exists in the destination
   if (destDir.children && destDir.children.some(child => child.name === destName)) {
     print(`A file or directory named '${destName}' already exists in the destination.`);
     return;
   }
-
-  // -- 4. Clone the source entry and put it in the destination --
+  
+  // Create a deep copy of the source entry
   const movedEntry = JSON.parse(JSON.stringify(srcEntry));
   movedEntry.name = destName;
-
-  if (!destDir.children) {
-    destDir.children = [];
-  }
+  
+  // Add to destination directory
+  if (!destDir.children) destDir.children = [];
   destDir.children.push(movedEntry);
-
-  // -- 5. Remove the original from srcDir by name (not strict object reference) --
-  srcDir.children = srcDir.children.filter(entry =>
-    !(entry.name === srcEntry.name && entry.type === srcEntry.type)
-  );
-
+  
+  // Remove from source directory
+  // srcDir.children = srcDir.children.filter(entry => entry !== srcEntry);
+  srcDir.children = srcDir.children.filter(entry => entry.name !== srcEntry.name);
   print(`Moved ${src} to ${dest}`);
-
-  // -- 6. Special case for StoneKey unlocking the InnerKeep door --
-  if (
-    movedEntry &&
-    movedEntry.name === 'StoneKey.key' &&
-    destDir.name === 'InnerKeep'
-  ) {
+  
+  // Special case for StoneKey
+  if (movedEntry && movedEntry.name === 'StoneKey.key' && destDir.name === 'InnerKeep') {
+    // Find and modify the LockedDoor directory
     const lockedDoor = destDir.children.find(c => c.name === 'LockedDoor');
     if (lockedDoor) {
+      // Transform LockedDoor into OpenedDoor
       lockedDoor.name = 'OpenedDoor';
       lockedDoor.attributeFlags.readOnly = false;
       lockedDoor.attributeFlags.locked = false;
       print("\nThe StoneKey glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!");
     }
   }
-};
-
+}
 
 /**
  * Additional Command: "del"
@@ -727,35 +696,52 @@ const updatePrompt = () => {
 
 /**
  * Helper function to navigate to a path and return the directory
- * @param {string} path - Path to navigate to
+ * @param {string} path - Path to navigate to (can be absolute like "C:\\Something")
  * @returns {object|null} - The directory object or null if not found
  */
 const navigateToPath = (path) => {
-  // Start from root if path begins with / or \
-  let currentDir = path.startsWith('/') || path.startsWith('\\') ? fileSystem : currentDirectory;
+  // Trim and split on slashes/backslashes, ignoring empty splits
+  let parts = path.trim().split(/[\/\\]/).filter(p => p !== '');
   
-  // Split the path and navigate through each part
-  const parts = path.split(/[\/\\]/).filter(part => part !== '');
-  
+  // Decide whether we start at root or currentDirectory
+  // If path starts with "C:" or "/" or "\", treat it as an absolute path
+  let currentDir = currentDirectory;
+  if (
+    path.toUpperCase().startsWith("C:") ||
+    path.startsWith("/") ||
+    path.startsWith("\\")
+  ) {
+    currentDir = fileSystem; // Root
+  }
+
+  // If the first part is literally "C:" remove it and continue from root
+  if (parts[0] && parts[0].toUpperCase() === "C:") {
+    parts.shift(); // drop the "C:" portion
+  }
+
+  // Now traverse each part
   for (const part of parts) {
-    if (part === '..') {
-      // Go up one level if possible and if we're not at root
+    if (part === "..") {
+      // go up one level if possible
       if (currentDir !== fileSystem && currentDir.parent) {
         currentDir = currentDir.parent;
       }
-    } else if (part !== '.') {
-      // Find the child directory with this name
-      const child = currentDir.children?.find(c => c.name === part && c.type === 'directory');
+    } else if (part !== ".") {
+      // Find a subdirectory named 'part'
+      // NOTE: previously it was c.type === 'directory', which doesn't match your JSON data ("dir").
+      const child = currentDir.children?.find(
+        (c) => c.name === part && c.type === "dir"
+      );
       if (!child) {
         return null; // Directory not found
       }
       currentDir = child;
     }
-    // If part is '.', stay in the current directory (do nothing)
+    // if it's '.', we just stay in the same directory
   }
-  
+
   return currentDir;
-}
+};
 
 // Add command auto-completion functionality
 inputEl.addEventListener('keydown', (e) => {
