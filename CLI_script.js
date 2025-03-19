@@ -1,5 +1,5 @@
 /***************************************************
- * Enhanced Windows-style CLI in the Browser v12
+ * Enhanced Windows-style CLI in the Browser v10
  ****************************************************/
 
 let fileSystem = null; // We’ll build this after fetching the JSON
@@ -421,31 +421,95 @@ const showAttributes = (fileOrDir) => {
 }
 
 /**
- * Additional Command: "copy" (just duplicating the file in the same dir for demo)
- *  usage: copy <source> <dest>
+ * Additional Command: "copy" (duplicates the file while leaving the original intact)
+ *  usage: copy <source> <destination>
  */
 const handleCopy = (args) => {
   if (args.length < 2) {
     print("Usage: copy <source> <destination>");
     return;
   }
-  const [src, dest] = args;
-  const found = findEntryInDir(currentDirectory, src);
   
-  if (!found) {
-    print("File not found: " + src);
+  const [src, dest] = args;
+  
+  // --- Handle source path ---
+  let srcDir = currentDirectory;
+  let srcName = src;
+  
+  if (src.includes('/') || src.includes('\\')) {
+    const srcParts = src.split(/[\/\\]/);
+    srcName = srcParts.pop(); // Extract the filename
+    const srcPath = srcParts.join('/');
+    if (srcPath) {
+      srcDir = navigateToPath(srcPath);
+      if (!srcDir) {
+        print(`Source directory not found: ${srcPath}`);
+        return;
+      }
+    }
+  }
+  
+  // Locate the source entry (case-insensitive)
+  const srcEntry = srcDir.children?.find(entry => entry.name.toLowerCase() === srcName.toLowerCase());
+  if (!srcEntry) {
+    print(`Source not found: ${srcName}`);
     return;
   }
-  if (found.type !== 'file') {
+  if (srcEntry.type !== 'file') {
     print("Source is not a file.");
     return;
   }
-  // create a new file with the same content
-  const copyFile = JSON.parse(JSON.stringify(found));
-  copyFile.name = dest;
-  currentDirectory.children.push(copyFile);
+  
+  // --- Handle destination path ---
+  let destDir = currentDirectory;
+  let destName = srcName; // Default to the source file's name
+  
+  if (dest.endsWith('\\') || dest.endsWith('/')) {
+    // Destination is explicitly a directory path.
+    destDir = navigateToPath(dest);
+  } else if (dest.includes('/') || dest.includes('\\')) {
+    // Destination includes slashes but does not end with one:
+    // treat the last segment as the new filename.
+    const destParts = dest.split(/[\/\\]/);
+    destName = destParts.pop();
+    const destPath = destParts.join('/');
+    destDir = destPath ? navigateToPath(destPath) : currentDirectory;
+  } else {
+    // No slashes: check if it's an existing directory in the current directory.
+    const possibleDir = findEntryInDir(currentDirectory, dest);
+    if (possibleDir && possibleDir.type === 'dir') {
+      destDir = possibleDir;
+      destName = srcName;
+    } else {
+      destName = dest; // New filename in current directory.
+    }
+  }
+  
+  if (!destDir) {
+    print("Destination directory not found");
+    return;
+  }
+  
+  // Check if destination already has a file or directory with the same name (case-insensitive)
+  if (destDir.children && destDir.children.some(child => child.name.toLowerCase() === destName.toLowerCase())) {
+    print(`A file or directory named '${destName}' already exists in the destination.`);
+    return;
+  }
+  
+  // --- Perform Copy ---
+  // Create a deep copy of the source entry, update its name and parent pointer.
+  const copyFile = JSON.parse(JSON.stringify(srcEntry));
+  copyFile.name = destName;
+  copyFile.parent = destDir;
+  
+  if (!destDir.children) {
+    destDir.children = [];
+  }
+  destDir.children.push(copyFile);
+  
   print(`Copied ${src} to ${dest}`);
-}
+};
+
 
 /**
  * Additional Command: "move" (copies the file then removes the original)
@@ -720,7 +784,7 @@ const handleTitle = (args) => {
  */
 const handleColor = (args) => {
   if (!args.length) {
-    print("Usage: color <code>  (e.g. 0A for green on black, etc.)");
+    print("Usage: color <code>  (e.g. 0A for green, 0F for white, 0P for light purple, 07 for default gray).");
     return;
   }
   const code = args[0].toUpperCase();
@@ -780,20 +844,20 @@ const handleCls = () => {
 const handleHelp = () => {
   const lines = [
     ["dir [options]",       "Displays a list of files and subdirectories in a directory."],
-    ["cd <dir>",            "Change directory. Use cd .. to go up one level."],
+    ["cd <dir>",            "Change directory. Use 'cd ..' to go up one directory level."],
     ["type <file>",         "Displays the contents of a text file."],
     ["rename <old> <new>",  "Renames a file or files."],
-    ["tree",                "Graphically displays the directory structure."],
-    ["cls",                 "Clears the screen."],
-    ["findstr",             "Searches for strings in files."],
+    ["tree",                "Graphically displays the structure of the directories that you have visited."],
+    ["cls",                 "Clears the screen. Enter this command to remove distractions."],
+    ["findstr",             "Searches for text patterns in files."],
     ["attrib",              "Displays or changes file attributes."],
     ["copy",                "Copies one or more files to another location."],
     ["move",                "Moves files from one directory to another."],
     ["del",                 "Deletes one or more files."],
     ["echo",                "Displays messages."],
     ["title",               "Sets the window title."],
-    ["color",               "Sets console foreground and background colors."],
-    ["help",                "Show this help"]
+    ["color",               "Sets console foreground and background colors (0A, 0F, 0P, 07)."],
+    ["help",                "Show this help."]
   ];
 
   printStyled("", {});
