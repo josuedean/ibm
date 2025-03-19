@@ -421,11 +421,18 @@ const handleMove = (args) => {
     }
   }
 
-  // Locate the source entry (exact name match)
-const srcEntry = srcDir.children?.find(entry => entry.name.toLowerCase() === srcName.toLowerCase());
+  // Locate the source entry (attempt exact match in the determined directory)
+  let srcEntry = srcDir.children?.find(entry => entry.name.toLowerCase() === srcName.toLowerCase());
   if (!srcEntry) {
-    print(`Source not found: ${srcName}`);
-    return;
+    // Fallback: perform a recursive search in srcDir for a partial match
+    srcEntry = findFileRecursively(srcDir, srcName);
+    if (srcEntry) {
+      // Update srcDir to the parent of the found entry
+      srcDir = srcEntry.parent;
+    } else {
+      print(`Source not found: ${srcName}`);
+      return;
+    }
   }
 
   // --- Handle destination path ---
@@ -558,6 +565,24 @@ const navigateToPath = (path) => {
   }
 
   return currentDir;
+};
+
+/**
+ * Recursively search within 'dir' for a file entry matching 'name' (case-insensitive)
+ * Return the entry if found, otherwise null.
+ */
+const findFileRecursively = (dir, name) => {
+  if (!dir || !dir.children) return null;
+  for (const child of dir.children) {
+    if (child.type === 'file' && child.name.toLowerCase() === name.toLowerCase()) {
+      return child;
+    }
+    if (child.type === 'dir') {
+      const found = findFileRecursively(child, name);
+      if (found) return found;
+    }
+  }
+  return null;
 };
 
 /**
