@@ -180,14 +180,7 @@
                     {
                       "name": "weapon.box",
                       "type": "file",
-                      "content": "
-                      Inside is an ancient, rusty sword, too corroded to be of any use.\n
-                      You look closely and see an inscription on the inside of the box:\n\n
-                      #####################################################\n
-                                          ~Sword of Elim~\n
-                      Forged in the 83rd year and embued His dark energies.\n
-                      #####################################################\n\n
-                      Hmm... might be a clue.",
+                      "content": "Inside is an ancient, rusty sword, too corroded to be of any use.\nYou look closely and see an inscription on the inside of the box:\n\n#####################################################\n                    ~Sword of Elim~\nForged in the 83rd year and embued His dark energies.\n#####################################################\n\nHmm... might be a clue.",
                       "attributeFlags": {
                         "hidden": false,
                         "readOnly": true
