@@ -436,28 +436,20 @@ const handleMove = (args) => {
   }
 
   // --- Handle destination path ---
-  let destDir = currentDirectory;
-  let destName = srcName; // Default to same name
-
-  if (dest.endsWith('\\') || dest.endsWith('/')) {
-    // Destination is explicitly a directory path
-    destDir = navigateToPath(dest);
-  } else if (dest.includes('/') || dest.includes('\\')) {
-    // Destination has slashes but does not end with one,
-    // so treat the last segment as a new filename.
+  let destDir, destName;
+  
+  // First, try to resolve the entire destination as a directory
+  let resolvedDest = navigateToPath(dest);
+  if (resolvedDest && resolvedDest.type === 'dir') {
+    // The destination path itself is a valid directory.
+    destDir = resolvedDest;
+    destName = srcName; // Preserve the source file's name
+  } else {
+    // Otherwise, split the destination into directory and file name parts.
     const destParts = dest.split(/[\/\\]/);
     destName = destParts.pop();
     const destPath = destParts.join('/');
     destDir = destPath ? navigateToPath(destPath) : currentDirectory;
-  } else {
-    // No slashes: check if it's an existing directory in current directory
-    const possibleDir = findEntryInDir(currentDirectory, dest);
-    if (possibleDir && possibleDir.type === 'dir') {
-      destDir = possibleDir;
-      destName = srcName;
-    } else {
-      destName = dest; // New filename in current directory
-    }
   }
 
   if (!destDir) {
