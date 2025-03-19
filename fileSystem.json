@@ -15,7 +15,7 @@
     {
       "name": "README.md",
       "type": "file",
-      "content": "# Abandoned Fortress\n\n**Objective:** Retrieve the legendary ASCII Chalice hidden within these ancient walls.\n\n- Explore folders (like levels and rooms of the fortress) using `dir` and `cd`.\n- Some rooms or files may be hidden; use `dir /A` or `attrib`.\n- You may need to rename, move, or delete certain files to progress.\n- Use `findstr` to search files with a large amount of text for hidden clues.\n- `attrib -r` might be needed on read-only files before deletion.\n- Use the Tab key to auto complete file and directory names.\n- Use the up and down arrows to cycle through past commands you've used.\n- All file and directory name are CASE SENSITIVE! Type carefully.\n\nProceed carefully, adventurer... Good luck!",
+      "content": "# Abandoned Fortress\n\n**Your Objective:** Retrieve the legendary ASCII Chalice hidden within these ancient walls.\n\n- Explore directories (like levels and rooms of the fortress) using `dir` and `cd`.\n- Some rooms or files may be hidden; use `dir /A` to reveal things hidden.\n- You may need to rename, move, or delete certain files to progress.\n- Use `findstr` to search files with a large amount of text for hidden clues.\n- `attrib -r` might be needed on read-only files before deletion.\n- Use the Tab key to auto complete file and directory names.\n- Use the up and down arrows to cycle through past commands you've used.\n- All file and directory names are CASE SENSITIVE! Type carefully.\n\n** Assignment Requirements: **\n\n- Read everything carefully!\n- Complete the deliverables.\n\nProceed carefully, adventurer... Good luck!",
       "attributeFlags": {
         "hidden": false,
         "readOnly": true
