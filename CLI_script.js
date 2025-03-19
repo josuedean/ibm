@@ -375,22 +375,75 @@ const handleCopy = (args) => {
     print("Usage: copy <source> <destination>");
     return;
   }
+  
   const [src, dest] = args;
-  const found = findEntryInDir(currentDirectory, src);
-  if (!found) {
-    print("File not found: " + src);
+  
+  // --- Handle source path ---
+  let srcDir = currentDirectory;
+  let srcName = src;
+  
+  if (src.includes('/') || src.includes('\\')) {
+    const srcParts = src.split(/[\/\\]/);
+    srcName = srcParts.pop(); // Extract the filename
+    const srcPath = srcParts.join('/');
+    if (srcPath) {
+      srcDir = navigateToPath(srcPath);
+      if (!srcDir) {
+        print(`Source directory not found: ${srcPath}`);
+        return;
+      }
+    }
+  }
+  
+  // Locate the source entry (case-insensitive)
+  const srcEntry = srcDir.children?.find(entry => entry.name.toLowerCase() === srcName.toLowerCase());
+  if (!srcEntry) {
+    print(`Source not found: ${srcName}`);
     return;
   }
-  if (found.type !== 'file') {
+  if (srcEntry.type !== 'file') {
     print("Source is not a file.");
     return;
   }
-  // create a new file with the same content
-  const copyFile = JSON.parse(JSON.stringify(found));
-  copyFile.name = dest;
-  currentDirectory.children.push(copyFile);
+  
+  // --- Handle destination path ---
+  let destDir, destName;
+  
+  // First, attempt to resolve the destination as a directory
+  let resolvedDest = navigateToPath(dest);
+  if (resolvedDest && resolvedDest.type === 'dir') {
+    destDir = resolvedDest;
+    destName = srcName; // Use the source file's name
+  } else {
+    // Split destination into directory path and new file name parts.
+    const destParts = dest.split(/[\/\\]/);
+    destName = destParts.pop();
+    const destPath = destParts.join('/');
+    destDir = destPath ? navigateToPath(destPath) : currentDirectory;
+  }
+  
+  if (!destDir) {
+    print("Destination directory not found");
+    return;
+  }
+  
+  // Check if destination already has a file or directory with the same name (case-insensitive)
+  if (destDir.children && destDir.children.some(child => child.name.toLowerCase() === destName.toLowerCase())) {
+    print(`A file or directory named '${destName}' already exists in the destination.`);
+    return;
+  }
+  
+  // Create a deep copy of the source entry, update its name and parent pointer
+  const copyFile = JSON.parse(JSON.stringify(srcEntry));
+  copyFile.name = destName;
+  copyFile.parent = destDir;
+  
+  if (!destDir.children) destDir.children = [];
+  destDir.children.push(copyFile);
+  
   print(`Copied ${src} to ${dest}`);
-}
+};
+
 
 /**
  * Additional Command: "move" (copies the file then removes the original)
