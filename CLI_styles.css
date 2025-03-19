@@ -8,7 +8,7 @@ body {
 
 /* CLI Window Container */
 #cli-window {
-  width: 800px;
+  width: 1200px; /* Increased from 800px (50% wider) */
   margin: 50px auto; /* Center horizontally */
   box-shadow: 0 0 15px rgba(0,0,0,0.5);
   border: 1px solid #222;
@@ -72,7 +72,7 @@ body {
 
 /* UI Panel for color/theme buttons */
 #ui-panel {
-  width: 800px;
+  width: 1200px; /* Increased from 800px (50% wider) */
   margin: 10px auto;
   display: flex;
   flex-direction: column;
