@@ -1,5 +1,5 @@
 /***************************************************
- * Enhanced Windows-style CLI in the Browser v5
+ * Enhanced Windows-style CLI in the Browser v6
  ****************************************************/
 
 let fileSystem = null; // We’ll build this after fetching the JSON
@@ -224,19 +224,38 @@ const handleRename = (args) => {
 
 /**
  * "tree" command
- *  Recursively shows directory structure
+ *  Recursively shows directory structure from current directory
  */
-const handleTree = (dir = currentDirectory, prefix = "") => {
-  print(`${prefix}${dir.name}`);
-  if (dir.children) {
-    for (const child of dir.children) {
-      if (child.type === 'dir') {
-        handleTree(child, `${prefix}   `);
-      } else {
-        print(`${prefix}   ${child.name}`);
+const handleTree = (args) => {
+  // Start from current directory
+  const startDir = currentDirectory;
+  print(startDir.name);
+  
+  // Helper function to recursively print directory structure
+  const printTree = (dir, prefix = "") => {
+    if (!dir.children) return;
+    
+    // Get all directories and files
+    const entries = [...dir.children];
+    
+    // Print each entry with appropriate prefixes
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      const isLast = i === entries.length - 1;
+      const entryPrefix = isLast ? "└── " : "├── ";
+      const childPrefix = isLast ? "    " : "│   ";
+      
+      print(`${prefix}${entryPrefix}${entry.name}`);
+      
+      // Recursively print subdirectories
+      if (entry.type === 'dir') {
+        printTree(entry, prefix + childPrefix);
       }
     }
-  }
+  };
+  
+  // Start the recursive printing
+  printTree(startDir);
 }
 
 /**
@@ -385,22 +404,40 @@ const handleMove = (args) => {
   
   const [src, dest] = args;
   
+  // Handle full source path
+  let srcDir = currentDirectory;
+  let srcName = src;
+  
+  if (src.includes('/') || src.includes('\\')) {
+    const srcParts = src.split(/[\/\\]/);
+    srcName = srcParts.pop();
+    const srcPath = srcParts.join('/');
+    
+    if (srcPath) {
+      srcDir = navigateToPath(srcPath);
+      if (!srcDir) {
+        print(`Source directory not found: ${srcPath}`);
+        return;
+      }
+    }
+  }
+  
   // Find the source file/directory
-  const srcEntry = findEntryInDir(currentDirectory, src);
+  const srcEntry = findEntryInDir(srcDir, srcName);
   if (!srcEntry) {
-    print(`Source not found: ${src}`);
+    print(`Source not found: ${srcName}`);
     return;
   }
   
   // Check if destination is a path or just a filename
+  let destDir = currentDirectory;
+  let destName = dest;
+  
   if (dest.includes('/') || dest.includes('\\')) {
-    // It's a path - parse it to get the destination directory and new name
-    const pathParts = dest.split(/[\/\\]/);
-    const newName = pathParts.pop(); // Get the last part as the new name
-    const destPath = pathParts.join('/'); // Reconstruct the path without the filename
+    const destParts = dest.split(/[\/\\]/);
+    destName = destParts.pop();
+    const destPath = destParts.join('/');
     
-    // Find the destination directory
-    let destDir = currentDirectory;
     if (destPath) {
       destDir = navigateToPath(destPath);
       if (!destDir) {
@@ -408,55 +445,43 @@ const handleMove = (args) => {
         return;
       }
     }
-    
-    // Check if a file/directory with the same name already exists in the destination
-    if (destDir.children && destDir.children.some(child => child.name === newName)) {
-      print(`A file or directory named '${newName}' already exists in the destination.`);
-      return;
+  }
+  
+  // If destName is empty or ends with a slash, use the original filename
+  if (!destName) {
+    destName = srcEntry.name;
+  }
+  
+  // Check if a file/directory with the same name already exists in the destination
+  if (destDir.children && destDir.children.some(child => child.name === destName)) {
+    print(`A file or directory named '${destName}' already exists in the destination.`);
+    return;
+  }
+  
+  // Create a deep copy of the source entry
+  const movedEntry = JSON.parse(JSON.stringify(srcEntry));
+  movedEntry.name = destName;
+  
+  // Add to destination directory
+  if (!destDir.children) destDir.children = [];
+  destDir.children.push(movedEntry);
+  
+  // Remove from source directory
+  srcDir.children = srcDir.children.filter(entry => entry !== srcEntry);
+  
+  print(`Moved ${src} to ${dest}`);
+  
+  // Special case for StoneKey
+  if (movedEntry && movedEntry.name === 'StoneKey.key' && destDir.name === 'InnerKeep') {
+    // Find and modify the LockedDoor directory
+    const lockedDoor = destDir.children.find(c => c.name === 'LockedDoor');
+    if (lockedDoor) {
+      // Transform LockedDoor into OpenedDoor
+      lockedDoor.name = 'OpenedDoor';
+      lockedDoor.attributeFlags.readOnly = false;
+      lockedDoor.attributeFlags.locked = false;
+      print("\nThe StoneKey glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!");
     }
-    
-    // Create a deep copy of the source entry
-    const movedEntry = JSON.parse(JSON.stringify(srcEntry));
-    movedEntry.name = newName || srcEntry.name; // Use new name or keep original if not specified
-    
-    // Add to destination directory
-    if (!destDir.children) destDir.children = [];
-    destDir.children.push(movedEntry);
-    
-    // Remove from source directory
-    currentDirectory.children = currentDirectory.children.filter(entry => entry !== srcEntry);
-    
-    print(`Moved ${src} to ${dest}`);
-    
-    // Special case for StoneKey
-    if (movedEntry && movedEntry.name === 'StoneKey.key' && destDir.name === 'InnerKeep') {
-      // Find and modify the LockedDoor directory
-      const lockedDoor = destDir.children.find(c => c.name === 'LockedDoor');
-      if (lockedDoor) {
-        // Transform LockedDoor into OpenedDoor
-        lockedDoor.name = 'OpenedDoor';
-        lockedDoor.attributeFlags.readOnly = false;
-        lockedDoor.attributeFlags.locked = false;
-        print("\nThe StoneKey glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!");
-      }
-    }
-  } else {
-    // It's just a new name in the current directory
-    // Check if a file/directory with the same name already exists
-    if (currentDirectory.children.some(child => child.name === dest)) {
-      print(`A file or directory named '${dest}' already exists.`);
-      return;
-    }
-    
-    // Create a copy with the new name
-    const movedEntry = JSON.parse(JSON.stringify(srcEntry));
-    movedEntry.name = dest;
-    
-    // Add the copy and remove the original
-    currentDirectory.children.push(movedEntry);
-    currentDirectory.children = currentDirectory.children.filter(entry => entry !== srcEntry);
-    
-    print(`Renamed ${src} to ${dest}`);
   }
 }
 
@@ -824,7 +849,7 @@ const handleCommand = (line) => {
       handleRename(args);
       break;
     case 'tree':
-      handleTree();
+      handleTree(args);
       break;
     case 'findstr':
       handleFindstr(args);
@@ -880,6 +905,7 @@ inputEl.addEventListener('keydown', (e) => {
 
     const pathString = getCurrentPathString().split("\\").slice(1).join("\\");
     print(`C:\\${pathString}> ${command}`);
+    print("");
     handleCommand(command);
     inputEl.value = "";
   } else if (e.key === "ArrowUp") {
