@@ -393,8 +393,8 @@ const handleCopy = (args) => {
 }
 
 /**
- * Additional Command: "move" (same logic as copy, but remove original)
- *  usage: move <source> <destination>
+ * move <source> <destination>
+ * Moves a file or folder from one location to another, then removes it from the original location.
  */
 const handleMove = (args) => {
   if (args.length < 2) {
@@ -403,87 +403,118 @@ const handleMove = (args) => {
   }
   
   const [src, dest] = args;
-  
-  // Handle full source path
+
+  // Helper to decide if user typed root path (e.g. "C:", "C:\\")
+  // Adjust as needed if your environment uses a different root name or notation
+  const isRootPath = (path) => {
+    return !path || path === "C:" || path === "C:\\" || path === "/";
+  };
+
+  // Resolve a path string to a directory object (or null if not found)
+  // If path is root-like, return the root directory immediately
+  const resolveDirectory = (path) => {
+    if (isRootPath(path)) {
+      return rootDirectory; // however you reference the top-level "C:\\" object
+    }
+    return navigateToPath(path); // your existing function that finds a directory by path
+  };
+
+  // -- 1. Identify source directory + item name --
   let srcDir = currentDirectory;
   let srcName = src;
-  
-  if (src.includes('/') || src.includes('\\')) {
+
+  if (src.includes("/") || src.includes("\\")) {
     const srcParts = src.split(/[\/\\]/);
-    srcName = srcParts.pop();
-    const srcPath = srcParts.join('/');
-    
+    srcName = srcParts.pop();              // filename or folder name
+    const srcPath = srcParts.join("/");    // everything before the last slash
     if (srcPath) {
-      srcDir = navigateToPath(srcPath);
+      srcDir = resolveDirectory(srcPath);
       if (!srcDir) {
         print(`Source directory not found: ${srcPath}`);
         return;
       }
     }
   }
-  
-  // Find the source file/directory
+
+  // Make sure the source file/folder exists
   const srcEntry = findEntryInDir(srcDir, srcName);
   if (!srcEntry) {
     print(`Source not found: ${srcName}`);
     return;
   }
-  
-  // Check if destination is a path or just a filename
+
+  // -- 2. Identify destination directory + name --
   let destDir = currentDirectory;
   let destName = dest;
-  
-  if (dest.includes('/') || dest.includes('\\')) {
+
+  if (dest.includes("/") || dest.includes("\\")) {
     const destParts = dest.split(/[\/\\]/);
-    destName = destParts.pop();
-    const destPath = destParts.join('/');
-    
+    destName = destParts.pop();            // filename or folder name
+    const destPath = destParts.join("/");  // everything before the last slash
+
     if (destPath) {
-      destDir = navigateToPath(destPath);
+      destDir = resolveDirectory(destPath);
       if (!destDir) {
         print(`Destination directory not found: ${destPath}`);
         return;
       }
+    } else {
+      // e.g. user typed just "C:\" (which split into ["C:", ""])
+      // so check if that is the root
+      if (isRootPath(destParts[0])) {
+        destDir = rootDirectory;
+      }
     }
+  } else if (isRootPath(dest)) {
+    // if user typed exactly "C:" or "C:\" etc.
+    destDir = rootDirectory;
+    // in this case, we'll use srcEntry's name as the destination name
+    destName = srcEntry.name;
   }
-  
-  // If destName is empty or ends with a slash, use the original filename
+
+  // If user’s destination was a path ending in slash, or user typed "C:\" with no new name
   if (!destName) {
     destName = srcEntry.name;
   }
-  
-  // Check if a file/directory with the same name already exists in the destination
+
+  // -- 3. Check if there's already a file/folder by that name in dest --
   if (destDir.children && destDir.children.some(child => child.name === destName)) {
     print(`A file or directory named '${destName}' already exists in the destination.`);
     return;
   }
-  
-  // Create a deep copy of the source entry
+
+  // -- 4. Clone the source entry and put it in the destination --
   const movedEntry = JSON.parse(JSON.stringify(srcEntry));
   movedEntry.name = destName;
-  
-  // Add to destination directory
-  if (!destDir.children) destDir.children = [];
+
+  if (!destDir.children) {
+    destDir.children = [];
+  }
   destDir.children.push(movedEntry);
-  
-  // Remove from source directory
-  // srcDir.children = srcDir.children.filter(entry => entry !== srcEntry);
-  srcDir.children = srcDir.children.filter(entry => entry.name !== srcEntry.name);
+
+  // -- 5. Remove the original from srcDir by name (not strict object reference) --
+  srcDir.children = srcDir.children.filter(entry =>
+    !(entry.name === srcEntry.name && entry.type === srcEntry.type)
+  );
+
   print(`Moved ${src} to ${dest}`);
-  
-  // Special case for StoneKey
-  if (movedEntry && movedEntry.name === 'StoneKey.key' && destDir.name === 'InnerKeep') {
-    // Find and modify the LockedDoor directory
+
+  // -- 6. Special case for StoneKey unlocking the InnerKeep door --
+  if (
+    movedEntry &&
+    movedEntry.name === 'StoneKey.key' &&
+    destDir.name === 'InnerKeep'
+  ) {
     const lockedDoor = destDir.children.find(c => c.name === 'LockedDoor');
     if (lockedDoor) {
-      // Transform LockedDoor into OpenedDoor
       lockedDoor.name = 'OpenedDoor';
       lockedDoor.attributeFlags.readOnly = false;
       lockedDoor.attributeFlags.locked = false;
       print("\nThe StoneKey glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!");
     }
   }
-}
+};
+
 
 /**
  * Additional Command: "del"
