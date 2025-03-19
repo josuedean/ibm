@@ -15,7 +15,7 @@
     {
       "name": "README.md",
       "type": "file",
-      "content": "# Abandoned Fortress\n\n**Objective:** Retrieve the legendary ASCII Chalice hidden within these ancient walls.\n\n- Explore folders (like levels and rooms of the fortress) using `dir` and `cd`.\n- Some rooms or files may be hidden; use `dir /A` or `attrib`.\n- You may need to rename, move, or delete certain files to progress.\n- Use `findstr` to search files with a large amount of text for hidden clues.\n- `attrib -r` might be needed on read-only files before deletion.\n\nProceed carefully, adventurer... Good luck!",
+      "content": "# Abandoned Fortress\n\n**Objective:** Retrieve the legendary ASCII Chalice hidden within these ancient walls.\n\n- Explore folders (like levels and rooms of the fortress) using `dir` and `cd`.\n- Some rooms or files may be hidden; use `dir /A` or `attrib`.\n- You may need to rename, move, or delete certain files to progress.\n- Use `findstr` to search files with a large amount of text for hidden clues.\n- `attrib -r` might be needed on read-only files before deletion.\n- Use the Tab key to auto complete file and directory names.\n- Use the up and down arrows to cycle through past commands you've used.\n- All file and directory name are CASE SENSITIVE! Type carefully.\n\nProceed carefully, adventurer... Good luck!",
       "attributeFlags": {
         "hidden": false,
         "readOnly": false
@@ -27,9 +27,9 @@
       "attributeFlags": {},
       "children": [
         {
-          "name": "Gatehouse.txt",
+          "name": "Gatehouse.info",
           "type": "file",
-          "content": "You stand before the Entrance Grounds. The gate creaks open. Rumors say the OuterWalls lie ahead, and hidden paths might exist nearby.",
+          "content": "You stand before the Entrance Grounds. The gate creaks open. Rumors say the Outer Walls lie ahead, and hidden paths might exist nearby.",
           "attributeFlags": {
             "hidden": false,
             "readOnly": false
@@ -45,7 +45,7 @@
             {
               "name": "DiscardedNote.txt",
               "type": "file",
-              "content": "A weathered note reading: 'We thought the chalice was here... We were so wrong.'",
+              "content": "A weathered note reading: 'The Chalice has been moved or hidden away in the fortress. There is a door sealed by magic that we could not open. We believe the Tome of Records contains a clue.'",
               "attributeFlags": {
                 "hidden": false,
                 "readOnly": false
@@ -77,7 +77,7 @@
                 {
                   "name": "StoneKey.key",
                   "type": "file",
-                  "content": "An ancient stone key with mysterious engravings.This key appears to be made for a substantial door.",
+                  "content": "An ancient stone key with mysterious engravings. This key appears to be made for a substantial door.",
                   "attributeFlags": {
                     "hidden": false,
                     "readOnly": false
@@ -93,7 +93,7 @@
                 {
                   "name": "GreatHall.info",
                   "type": "file",
-                  "content": "The Great Hall resonates with echoes of a long-departed wizard. A locked doorway stands further in.",
+                  "content": "The Great Hall resonates with echoes of a long-departed wizard. A locked doorway stands further in. If only you had a key...",
                   "attributeFlags": {
                     "hidden": false,
                     "readOnly": false
@@ -132,14 +132,14 @@
                           }
                         },
                         {
-                          "name": "DeepVault",
+                          "name": "Vault",
                           "type": "dir",
                           "attributeFlags": {},
                           "children": [
                             {
                               "name": "StoneSentinel.dat",
                               "type": "file",
-                              "content": "A towering sentinel statue stands in the middle of the room. Its hands extend in front holding empty air. Maybe this statue once held the legendary Chalice that you seek, however there is no sign of it here. You wonder if it may have been hidden away somewhere in the fortress.",
+                              "content": "A towering sentinel statue stands in the middle of the vault room. Its hands extend in front holding empty air. Maybe this statue once held the legendary Chalice that you seek, however there is no sign of it here. You wonder if it may have been hidden away somewhere in the fortress.",
                               "attributeFlags": {
                                 "hidden": false,
                                 "readOnly": false
