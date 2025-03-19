@@ -1,5 +1,5 @@
 /***************************************************
- * Enhanced Windows-style CLI in the Browser v4
+ * Enhanced Windows-style CLI in the Browser v5
  ****************************************************/
 
 let fileSystem = null; // We’ll build this after fetching the JSON
@@ -130,6 +130,18 @@ const handleCd = (args) => {
     print(`${found.name} is not a directory.`);
     return;
   }
+  
+  // Check for locked door condition
+  if (found.name === 'LockedDoor') {
+    print("This door is locked and holds strong when you attempt to force it open.");
+    return;
+  }
+  
+  // Check for locked VaultAntechamber
+  if (found.name === 'VaultAntechamber' && found.attributeFlags?.locked) {
+    print("The entrance is shrouded in dark energy. You cannot enter until the source is eliminated.");
+    return;
+  }
 
   // move in
   currentDirectory = found;
@@ -190,26 +202,6 @@ const handleRename = (args) => {
   const [oldName, newName] = args;
   const entry = findEntryInDir(currentDirectory, oldName);
   
-  // Special puzzle case for LockedDoor.txt
-  if (oldName === 'LockedDoor.txt') {
-    // Check if key is present in the directory
-    const hasKey = currentDirectory.children.some(c => c.name === 'StoneKey.key');
-    
-    if (!hasKey) {
-      print("The door remains firmly locked. You need the StoneKey in this directory!");
-      return;
-    }
-    
-    if (newName === 'UnlockedDoor.txt') {
-      // Find the ForbiddenLibrary and unhide it
-      const forbiddenLib = currentDirectory.children.find(c => c.name === 'ForbiddenLibrary');
-      if (forbiddenLib) {
-        forbiddenLib.attributeFlags.hidden = false;
-        print("The door unlocks with a satisfying click! The entrance to the Forbidden Library is now visible.");
-      }
-    }
-  }
-  
   if (!entry) {
     print(`File/directory not found: ${oldName}`);
     return;
@@ -217,6 +209,12 @@ const handleRename = (args) => {
   
   if (currentDirectory.children.some(child => child.name === newName && child !== entry)) {
     print(`A file/directory named '${newName}' already exists`);
+    return;
+  }
+  
+  // Check if the entry is read-only
+  if (entry.attributeFlags?.readOnly) {
+    print(`Cannot rename: ${oldName} is read-only.`);
     return;
   }
   
@@ -286,10 +284,11 @@ const handleFindstr = (args) => {
  * "attrib" command
  *  usage: attrib <filename> to show attributes
  *         attrib +/-h +/-r <filename> to set/unset hidden or readOnly
+ *         attrib -elim <filename> to use special elimination protocol
  */
 const handleAttrib = (args) => {
   if (!args.length) {
-    print("Usage: attrib [-r][+r] [-h] [+h] <filename>\n\n-   Removes and attribute\n+   Adds an attribute\nR   Read-only file attribute.\nH   Hidden file attribute.");
+    print("Usage: attrib [-r][+r] [-h] [+h] [-elim] <filename>\n\n-   Removes an attribute\n+   Adds an attribute\nR   Read-only file attribute.\nH   Hidden file attribute.\nelim  Emergency elimination protocol (for cursed objects)");
     return;
   }
 
@@ -308,7 +307,29 @@ const handleAttrib = (args) => {
     // just show attributes
     showAttributes(found);
   } else {
-    // set/unset attributes
+    // Special case for the emergency elimination protocol
+    if (flags.includes('-elim')) {
+      if (found.name === 'CursedBook.txt') {
+        print("Emergency elimination protocol initiated on cursed object...");
+        
+        // Remove the file
+        currentDirectory.children = currentDirectory.children.filter(child => child !== found);
+        
+        // Find and unlock VaultAntechamber
+        const vaultAntechamber = currentDirectory.children.find(c => c.name === 'VaultAntechamber');
+        if (vaultAntechamber) {
+          vaultAntechamber.attributeFlags.hidden = false;
+          vaultAntechamber.attributeFlags.locked = false;
+          print("The cursed book disintegrates completely! The dark energy dissipates, revealing a hidden antechamber that you can now enter.");
+        }
+        return;
+      } else {
+        print("Emergency elimination protocol can only be used on cursed objects.");
+        return;
+      }
+    }
+    
+    // Regular attribute operations
     flags.forEach(flag => {
       if (flag === '+h') found.attributeFlags.hidden = true;
       if (flag === '-h') found.attributeFlags.hidden = false;
@@ -409,12 +430,14 @@ const handleMove = (args) => {
     
     // Special case for StoneKey
     if (movedEntry && movedEntry.name === 'StoneKey.key' && destDir.name === 'InnerKeep') {
-      // Find and modify the LockedDoor.txt
-      const lockedDoor = destDir.children.find(c => c.name === 'LockedDoor.txt');
+      // Find and modify the LockedDoor directory
+      const lockedDoor = destDir.children.find(c => c.name === 'LockedDoor');
       if (lockedDoor) {
+        // Transform LockedDoor into OpenedDoor
+        lockedDoor.name = 'OpenedDoor';
         lockedDoor.attributeFlags.readOnly = false;
-        lockedDoor.content = "The door seems to respond to the key's presence. The lock appears ready to be opened with 'rename LockedDoor.txt UnlockedDoor.txt'";
-        print("\nThe StoneKey glows faintly as you place it in the Inner Keep. The locked door seems to respond to its presence!");
+        lockedDoor.attributeFlags.locked = false;
+        print("\nThe StoneKey glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!");
       }
     }
   } else {
@@ -464,7 +487,7 @@ const handleDel = (args) => {
       print(`The cursed book dissolves into ethereal smoke...`);
     }
   } else if (file.attributeFlags?.readOnly) {
-    print(`Access denied. ${fileName} is read-only. Use 'attrib -r ${fileName}' first.`);
+    print(`Access denied. ${fileName} is read-only.`);
     return;
   }
   
@@ -717,7 +740,7 @@ inputEl.addEventListener('keydown', (e) => {
           inputEl.value = parts.join(' ');
           // Add trailing space for files, slash for directories
           if (matches[0].type === 'dir') {
-            inputEl.value += '\\';
+            inputEl.value += ' ';
           } else {
             inputEl.value += ' ';
           }
