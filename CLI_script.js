@@ -1,5 +1,5 @@
 /***************************************************
- * Enhanced Windows-style CLI in the Browser v8
+ * Enhanced Windows-style CLI in the Browser v10
  ****************************************************/
 
 let fileSystem = null; // We’ll build this after fetching the JSON
@@ -403,52 +403,7 @@ const handleMove = (args) => {
   }
 
   const [src, dest] = args;
-  const lowerSrc = src.toLowerCase();
-  const lowerDest = dest.replace(/\\/g, '/').toLowerCase();
 
-  // Special condition: If moving StoneKey.key from StorageRoom to InnerKeep
-  if (
-    (
-      (lowerSrc === "stonekey.key" && currentDirectory.name.toLowerCase() === "storageroom") ||
-      (lowerSrc === "c:/entrancegrounds/outerwalls/storageroom/stonekey.key")
-    ) &&
-    (lowerDest === "c:/entrancegrounds/outerwalls/innerkeep/" || lowerDest === "c:/entrancegrounds/outerwalls/innerkeep")
-  ) {
-    // Locate the StorageRoom directory and the InnerKeep directory
-    const storageRoom = navigateToPath("C:\\EntranceGrounds\\OuterWalls\\StorageRoom");
-    const innerKeep = navigateToPath("C:\\EntranceGrounds\\OuterWalls\\InnerKeep");
-    
-    if (!storageRoom || !innerKeep) {
-      print("Special move failed: Could not locate StorageRoom or InnerKeep.");
-      return;
-    }
-    
-    // Find StoneKey.key in StorageRoom (case-insensitive match)
-    const stoneKeyIndex = storageRoom.children.findIndex(entry => entry.name.toLowerCase() === "stonekey.key");
-    if (stoneKeyIndex === -1) {
-      print("StoneKey.key not found in StorageRoom.");
-      return;
-    }
-    
-    // Remove the StoneKey from StorageRoom and update its parent pointer
-    const stoneKey = storageRoom.children.splice(stoneKeyIndex, 1)[0];
-    stoneKey.parent = innerKeep;
-    innerKeep.children.push(stoneKey);
-    
-    print(`Moved StoneKey.key to C:\\EntranceGrounds\\OuterWalls\\InnerKeep\\`);
-    
-    // Special case: if a locked door exists in InnerKeep, open it
-    const lockedDoor = findLockedDoorInKeep(innerKeep);
-    if (lockedDoor) {
-      lockedDoor.name = 'OpenedDoor';
-      lockedDoor.attributeFlags.readOnly = false;
-      lockedDoor.attributeFlags.locked = false;
-      print("\nThe StoneKey glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!");
-    }
-    return;
-  }
-
-  // --- Normal move command handling ---
   // --- Handle source path ---
   let srcDir = currentDirectory;
   let srcName = src;
@@ -538,6 +493,17 @@ const handleMove = (args) => {
   }
 };
 
+/**
+ * Helper function to find the LockedDoor in the Keep
+ */
+const findLockedDoorInKeep = (directory) => {
+  // First, look directly in this directory
+  const lockedDoor = directory.children?.find(c => c.name === 'LockedDoor');
+  if (lockedDoor) return lockedDoor;
+  
+  // Not found directly, search recursively if needed
+  return null;
+}
 
 /**
  * Helper function to navigate to a path and return the directory
@@ -982,73 +948,8 @@ fetch("fileSystem.json")
   });
 
 /**
- * Helper function to navigate to a path and return the directory
- * @param {string} path - Path to navigate to (can be absolute like "C:\\Something")
- * @returns {object|null} - The directory object or null if not found
+ * Function to recursively index files for quick access
  */
-const navigateToPath = (path) => {
-  // Handle empty path
-  if (!path || path.trim() === '') {
-    return currentDirectory;
-  }
-
-  // Normalize path: replace backslashes with forward slashes and trim
-  const normalizedPath = path.trim().replace(/\\/g, '/');
-  
-  // Split by slashes and filter out empty segments
-  const parts = normalizedPath.split('/').filter(part => part !== '');
-  
-  // Determine if this is an absolute or relative path
-  let currentDir;
-  let startIndex = 0;
-  
-  // Check for "C:" at the beginning (case insensitive)
-  if (parts.length > 0 && parts[0].match(/^[a-z]:$/i)) {
-    currentDir = fileSystem; // Start from root
-    startIndex = 1; // Skip the drive letter part
-  } 
-  // Check for absolute path without drive letter
-  else if (normalizedPath.startsWith('/')) {
-    currentDir = fileSystem; // Start from root
-  }
-  // Relative path
-  else {
-    currentDir = currentDirectory; // Start from current directory
-  }
-  
-  // Navigate through the path parts
-  for (let i = startIndex; i < parts.length; i++) {
-    const part = parts[i];
-    
-    if (part === '.') {
-      // Current directory - do nothing
-      continue;
-    } 
-    else if (part === '..') {
-      // Go up one level if not at root
-      if (currentDir !== fileSystem && currentDir.parent) {
-        currentDir = currentDir.parent;
-      }
-    } 
-    else {
-      // Find child directory with matching name
-      const child = currentDir.children?.find(c => 
-        c.name === part && c.type === 'dir'
-      );
-      
-      if (!child) {
-        // Path segment not found - return null
-        return null;
-      }
-      
-      currentDir = child;
-    }
-  }
-  
-  return currentDir;
-}
-
-// Function to recursively index files for quick access
 const indexFiles = (dir) => {
   if (!dir || !dir.children) return;
   
