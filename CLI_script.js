@@ -855,9 +855,9 @@ const handleHelp = () => {
     ["cls",                      "Clears the screen. Enter this command to remove distractions."],
     ["findstr [pattern] [file]", "Searches for text patterns in files."],
     ["attrib [options] [file]",  "Displays or changes file attributes."],
-    ["copy [source file] [destination dir]",        "Copies one or more files to another location."],
-    ["move [source file] [destination dir]",        "Moves files from one directory to another."],
-    ["del [file]",               "Deletes one or more files."],
+    ["copy [file] [destination]",        "Copies a file to a destination dir."],
+    ["move [file] [destination]",        "Moves a file to a destination dir."],
+    ["del [file]",               "Deletes a file."],
     ["echo [message]",           "Displays messages to the terminal window."],
     ["title [new_title]",        "Sets a new window title."],
     ["color [option]",           "Sets console foreground and background colors (0A, 0F, 0P, 07)."],
@@ -868,7 +868,7 @@ const handleHelp = () => {
 
   // Apply padding correctly
   lines.forEach(([cmd, desc]) => {
-    const cmdPadded = cmd.padEnd(18, " ");
+    const cmdPadded = cmd.padEnd(29, " ");
     printStyled(`  ${cmdPadded} - ${desc}`, {});
   });
 
