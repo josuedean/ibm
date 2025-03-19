@@ -70,6 +70,10 @@ const handleDir = (args) => {
       return;
     }
   }
+  
+  // Define showHidden based on presence of /a argument
+  const showHidden = args.length > 0;
+  
   if (!currentDirectory.children) {
     print("No items.");
     return;
@@ -186,24 +190,22 @@ const handleRename = (args) => {
   const [oldName, newName] = args;
   const entry = findEntryInDir(currentDirectory, oldName);
   
-  // Special case for unlocking doors
+  // Special puzzle case for LockedDoor.txt
   if (oldName === 'LockedDoor.txt') {
-    const hasKey = currentDirectory.children?.some(
-      child => child.name === 'StoneKey.key'
-    );
+    // Check if key is present in the directory
+    const hasKey = currentDirectory.children.some(c => c.name === 'StoneKey.key');
     
     if (!hasKey) {
-      print("The door remains firmly locked. You need a key!");
+      print("The door remains firmly locked. You need the StoneKey in this directory!");
       return;
     }
     
     if (newName === 'UnlockedDoor.txt') {
-      // Reveal hidden vault entrance
-      const vaultAntechamber = currentDirectory.children?.find(
-        child => child.name === 'VaultAntechamber'
-      );
-      if (vaultAntechamber) {
-        vaultAntechamber.attributeFlags.hidden = false;
+      // Find the ForbiddenLibrary and unhide it
+      const forbiddenLib = currentDirectory.children.find(c => c.name === 'ForbiddenLibrary');
+      if (forbiddenLib) {
+        forbiddenLib.attributeFlags.hidden = false;
+        print("The door unlocks with a satisfying click! The entrance to the Forbidden Library is now visible.");
       }
     }
   }
@@ -213,7 +215,7 @@ const handleRename = (args) => {
     return;
   }
   
-  if (currentDirectory.children.some(child => child.name === newName)) {
+  if (currentDirectory.children.some(child => child.name === newName && child !== entry)) {
     print(`A file/directory named '${newName}' already exists`);
     return;
   }
@@ -269,6 +271,12 @@ const handleFindstr = (args) => {
   
   if (matches.length > 0) {
     print(`Found ${matches.length} match${matches.length > 1 ? 'es' : ''} in ${fileName}:\n${matches.join('\n')}`);
+    
+    // Special case for OldRecords.txt code
+    if (fileName === 'OldRecords.txt' && pattern === '1987') {
+      print('\nSECRET DISCOVERED: You found the ancient code (1987)!');
+      print('This might be useful elsewhere in the fortress...');
+    }
   } else {
     print(`Pattern '${pattern}' not found in ${fileName}`);
   }
@@ -399,13 +407,14 @@ const handleMove = (args) => {
     
     print(`Moved ${src} to ${dest}`);
     
-    // Check if StoneKey was moved to InnerKeep
-    if (movedEntry.name === 'StoneKey.key' && destDir.name === 'InnerKeep') {
-      // Find and update the LockedDoor.txt
+    // Special case for StoneKey
+    if (movedEntry && movedEntry.name === 'StoneKey.key' && destDir.name === 'InnerKeep') {
+      // Find and modify the LockedDoor.txt
       const lockedDoor = destDir.children.find(c => c.name === 'LockedDoor.txt');
       if (lockedDoor) {
-        lockedDoor.content = 'The door creaks open, revealing a path to the ForbiddenLibrary.';
         lockedDoor.attributeFlags.readOnly = false;
+        lockedDoor.content = "The door seems to respond to the key's presence. The lock appears ready to be opened with 'rename LockedDoor.txt UnlockedDoor.txt'";
+        print("\nThe StoneKey glows faintly as you place it in the Inner Keep. The locked door seems to respond to its presence!");
       }
     }
   } else {
@@ -446,17 +455,31 @@ const handleDel = (args) => {
     return;
   }
   
-  if (file.name === 'CursedBook.txt' && file.attributeFlags.readOnly) {
-    print('Cannot delete - CursedBook.txt is read-only. Use attrib -r first.');
-    return;
-  }
-  
-  if (file.attributeFlags?.readOnly) {
+  // Special case for CursedBook.txt
+  if (file.name === 'CursedBook.txt') {
+    if (file.attributeFlags?.readOnly) {
+      print(`The cursed book resists your attempt to destroy it. Use 'attrib -r CursedBook.txt' to weaken its magic first.`);
+      return;
+    } else {
+      print(`The cursed book dissolves into ethereal smoke...`);
+    }
+  } else if (file.attributeFlags?.readOnly) {
     print(`Access denied. ${fileName} is read-only. Use 'attrib -r ${fileName}' first.`);
     return;
   }
   
+  // Remove the file
   currentDirectory.children = currentDirectory.children.filter(child => child !== file);
+  
+  // Special case: When CursedBook.txt is deleted, reveal VaultAntechamber
+  if (fileName === 'CursedBook.txt') {
+    const vaultAntechamber = currentDirectory.children.find(c => c.name === 'VaultAntechamber');
+    if (vaultAntechamber) {
+      vaultAntechamber.attributeFlags.hidden = false;
+      print(`\nAs the book vanishes, a hidden antechamber appears in the wall!`);
+    }
+  }
+  
   print(`Deleted ${fileName}`);
 };
 
@@ -621,6 +644,38 @@ const updatePrompt = () => {
   } else {
     promptEl.textContent = `C:\\${path.join("\\")}\\>`;
   }
+}
+
+/**
+ * Helper function to navigate to a path and return the directory
+ * @param {string} path - Path to navigate to
+ * @returns {object|null} - The directory object or null if not found
+ */
+const navigateToPath = (path) => {
+  // Start from root if path begins with / or \
+  let currentDir = path.startsWith('/') || path.startsWith('\\') ? fileSystem : currentDirectory;
+  
+  // Split the path and navigate through each part
+  const parts = path.split(/[\/\\]/).filter(part => part !== '');
+  
+  for (const part of parts) {
+    if (part === '..') {
+      // Go up one level if possible and if we're not at root
+      if (currentDir !== fileSystem && currentDir.parent) {
+        currentDir = currentDir.parent;
+      }
+    } else if (part !== '.') {
+      // Find the child directory with this name
+      const child = currentDir.children?.find(c => c.name === part && c.type === 'directory');
+      if (!child) {
+        return null; // Directory not found
+      }
+      currentDir = child;
+    }
+    // If part is '.', stay in the current directory (do nothing)
+  }
+  
+  return currentDir;
 }
 
 // Add command auto-completion functionality
