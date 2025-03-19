@@ -422,7 +422,7 @@ const handleMove = (args) => {
   }
 
   // Locate the source entry (exact name match)
-  const srcEntry = srcDir.children?.find(entry => entry.name === srcName);
+const srcEntry = srcDir.children?.find(entry => entry.name.toLowerCase() === srcName.toLowerCase());
   if (!srcEntry) {
     print(`Source not found: ${srcName}`);
     return;
@@ -459,7 +459,7 @@ const handleMove = (args) => {
   }
 
   // Check if destination already has a file or directory with the same name
-  if (destDir.children && destDir.children.some(child => child.name === destName)) {
+  if (destDir.children && destDir.children.some(child => child.name.toLowerCase() === destName.toLowerCase())) {
     print(`A file or directory named '${destName}' already exists in the destination.`);
     return;
   }
