@@ -69,7 +69,7 @@ const parseInput = (input) => {
 const handleDir = (args) => {
   if (args.length > 0) {
     if (args.length !== 1 || args[0].toLowerCase() !== "/a") {
-      print("Invalid option. Usage: dir /a");
+      print("Invalid option. Usage: dir [option]  ('/A' or '/a' shows all hidden files and directories)\n\nEXAMPLE: dir /A");
       return;
     }
   }
@@ -91,10 +91,10 @@ const handleDir = (args) => {
   const files = items.filter(i => i.type === 'file');
 
   dirs.forEach(d => {
-    print(`<DIR>          ${d.name}`);
+    print(`               ${d.name}  <DIR>`);
   });
   files.forEach(f => {
-    print(`               ${f.name}`);
+    print(`               ${f.name}  <file>`);
   });
 }
 
@@ -104,11 +104,16 @@ const handleDir = (args) => {
  *  or cd <full path> to navigate directly to that path
  */
 const handleCd = (args) => {
-  if (args.length === 0) {
-    // cd with no arg -> root
-    currentDirectory = fileSystem;
-    markDirectoryVisited(currentDirectory);
-    promptEl.textContent = "C:\\>";
+  // if (args.length === 0) {
+  //   // cd with no arg -> root
+  //   currentDirectory = fileSystem;
+  //   markDirectoryVisited(currentDirectory);
+  //   promptEl.textContent = "C:\\>";
+  //   return;
+  // }
+  
+  if (!args.length) {
+    print("Usage: cd [dir]\n\nEXAMPLE: cd C:");
     return;
   }
   
@@ -150,8 +155,8 @@ const handleCd = (args) => {
       return;
     }
     
-    // Check for locked VaultAntechamber
-    if (targetDir.name === 'VaultAntechamber' && targetDir.attributeFlags?.locked) {
+    // Check for locked ReadingChamber
+    if (targetDir.name === 'ReadingChamber' && targetDir.attributeFlags?.locked) {
       print("The entrance is shrouded in dark energy. You cannot enter until the source is eliminated.");
       return;
     }
@@ -179,8 +184,8 @@ const handleCd = (args) => {
     return;
   }
   
-  // Check for locked VaultAntechamber
-  if (found.name === 'VaultAntechamber' && found.attributeFlags?.locked) {
+  // Check for locked ReadingChamber
+  if (found.name === 'ReadingChamber' && found.attributeFlags?.locked) {
     print("The entrance is shrouded in dark energy. You cannot enter until the source is eliminated.");
     return;
   }
@@ -197,7 +202,7 @@ const handleCd = (args) => {
  */
 const handleType = (args) => {
   if (!args.length) {
-    print("Usage: type <filename>");
+    print("Usage: type [filename]\n\nEXAMPLE: type README.md");
     return;
   }
   const filename = args[0];
@@ -238,7 +243,7 @@ const handleType = (args) => {
  */
 const handleRename = (args) => {
   if (args.length !== 2) {
-    print("Usage: rename <oldname> <newname>");
+    print("Usage: rename [old file name] [new file name]\n\nEXAMPLE: rename README.md TAKENOTES.always");
     return;
   }
   
@@ -318,7 +323,7 @@ const handleTree = (args) => {
  */
 const handleFindstr = (args) => {
   if (args.length < 2) {
-    print("Usage: findstr <pattern> <filename>");
+    print("Usage: findstr [pattern] [file]\n\nEXAMPLE: findstr Chalice C:\README.md");
     return;
   }
   
@@ -343,9 +348,9 @@ const handleFindstr = (args) => {
   if (matches.length > 0) {
     print(`Found ${matches.length} match${matches.length > 1 ? 'es' : ''} in ${fileName}:\n${matches.join('\n')}`);
     
-    // Special case for OldRecords.txt code
-    if (fileName === 'OldRecords.txt' && pattern === '1987') {
-      print('\nSECRET DISCOVERED: You found the ancient code (1987)!');
+    // Special case for OldRecords.tome code
+    if (fileName === 'OldRecords.tome' && pattern === '83') {
+      print('\nCLUE DISCOVERED: Read entry #83.');
       print('This might be useful elsewhere in the fortress...');
     }
   } else {
@@ -357,11 +362,10 @@ const handleFindstr = (args) => {
  * "attrib" command
  *  usage: attrib <filename> to show attributes
  *         attrib +/-h +/-r <filename> to set/unset hidden or readOnly
- *         attrib -elim <filename> to use special elimination protocol
  */
 const handleAttrib = (args) => {
   if (!args.length) {
-    print("Usage: attrib [-r][+r] [-h] [+h] [-elim] <filename>\n\n-   Removes an attribute\n+   Adds an attribute\nR   Read-only file attribute.\nH   Hidden file attribute.\nelim  Emergency elimination protocol (for cursed objects)");
+    print("Usage: attrib [option] [filename]   (options: '-r' Removes read-only attribute, '-h' Removes hidden attribute, Replace '-' with '+' to add an attribute\n\nEXAMPLE: attrib -r README.md");
     return;
   }
 
@@ -382,18 +386,18 @@ const handleAttrib = (args) => {
   } else {
     // Special case for the emergency elimination protocol
     if (flags.includes('-elim')) {
-      if (found.name === 'CursedBook.txt') {
-        print("Emergency elimination protocol initiated on cursed object...");
+      if (found.name === 'CursedBook.tome') {
+        print("Emergency elimination counter curse initiated on cursed object...");
         
         // Remove the file
         currentDirectory.children = currentDirectory.children.filter(child => child !== found);
         
-        // Find and unlock VaultAntechamber
-        const vaultAntechamber = currentDirectory.children.find(c => c.name === 'VaultAntechamber');
-        if (vaultAntechamber) {
-          vaultAntechamber.attributeFlags.hidden = false;
-          vaultAntechamber.attributeFlags.locked = false;
-          print("The cursed book disintegrates completely! The dark energy dissipates, revealing a hidden antechamber that you can now enter.");
+        // Find and unlock ReadingChamber
+        const ReadingChamber = currentDirectory.children.find(c => c.name === 'ReadingChamber');
+        if (ReadingChamber) {
+          ReadingChamber.attributeFlags.hidden = false;
+          ReadingChamber.attributeFlags.locked = false;
+          print("The cursed book disintegrates completely! The dark energy dissipates, revealing a hidden reading chamber that you can now enter.");
         }
         return;
       } else {
@@ -426,7 +430,7 @@ const showAttributes = (fileOrDir) => {
  */
 const handleCopy = (args) => {
   if (args.length < 2) {
-    print("Usage: copy <source> <destination>");
+    print("Usage: copy [source file] [destination dir]\n\nEXAMPLE: copy README.md C:\EntranceGrounds\OuterWalls");
     return;
   }
   
@@ -456,7 +460,7 @@ const handleCopy = (args) => {
     return;
   }
   if (srcEntry.type !== 'file') {
-    print("Source is not a file.");
+    print("Source file is not a file.");
     return;
   }
   
@@ -517,7 +521,7 @@ const handleCopy = (args) => {
  */
 const handleMove = (args) => {
   if (args.length < 2) {
-    print("Usage: move <source> <destination>");
+    print("Usage: move [source file] [destination dir]\n\nEXAMPLE:move README.md C:\EntranceGrounds\OuterWalls");
     return;
   }
 
@@ -609,7 +613,7 @@ const handleMove = (args) => {
       lockedDoor.name = 'OpenedDoor';
       lockedDoor.attributeFlags.readOnly = false;
       lockedDoor.attributeFlags.locked = false;
-      print("\nThe StoneKey glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!");
+      print("\nThe Stone Key glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!");
     }
   }
 };
@@ -705,7 +709,7 @@ const findFileRecursively = (dir, name) => {
  */
 const handleDel = (args) => {
   if (args.length === 0) {
-    print("Usage: del <filename>");
+    print("Usage: del [file]\n\nEXAMPLE: del README.md");
     return;
   }
   
@@ -717,10 +721,10 @@ const handleDel = (args) => {
     return;
   }
   
-  // Special case for CursedBook.txt
-  if (file.name === 'CursedBook.txt') {
+  // Special case for CursedBook.tome
+  if (file.name === 'CursedBook.tome') {
     if (file.attributeFlags?.readOnly) {
-      print(`The cursed book resists your attempt to destroy it. Use 'attrib -r CursedBook.txt' to weaken its magic first.`);
+      print(`The Cursed Book resists your attempt to destroy it. Use 'attrib [option] CursedBook.tome' to remove its read-only attribute to weaken its magic first.`);
       return;
     } else {
       print(`The cursed book dissolves into ethereal smoke...`);
@@ -733,12 +737,12 @@ const handleDel = (args) => {
   // Remove the file
   currentDirectory.children = currentDirectory.children.filter(child => child !== file);
   
-  // Special case: When CursedBook.txt is deleted, reveal VaultAntechamber
-  if (fileName === 'CursedBook.txt') {
-    const vaultAntechamber = currentDirectory.children.find(c => c.name === 'VaultAntechamber');
-    if (vaultAntechamber) {
-      vaultAntechamber.attributeFlags.hidden = false;
-      print(`\nAs the book vanishes, a hidden antechamber appears in the wall!`);
+  // Special case: When CursedBook.tome is deleted, reveal ReadingChamber
+  if (fileName === 'CursedBook.tome') {
+    const ReadingChamber = currentDirectory.children.find(c => c.name === 'ReadingChamber');
+    if (ReadingChamber) {
+      ReadingChamber.attributeFlags.hidden = false;
+      print(`\nAs the book vanishes, a hidden reading chamber appears in the wall!`);
     }
   }
   
@@ -784,7 +788,7 @@ const handleTitle = (args) => {
  */
 const handleColor = (args) => {
   if (!args.length) {
-    print("Usage: color <code>  (e.g. 0A for green, 0F for white, 0P for light purple, 07 for default gray).");
+    print("Usage: color [option]  (options: '0A' for green, '0F' for white, '0P' for light purple, '07' for default gray).\n\nEXAMPLE: color 0P");
     return;
   }
   const code = args[0].toUpperCase();
@@ -843,21 +847,21 @@ const handleCls = () => {
  */
 const handleHelp = () => {
   const lines = [
-    ["dir [options]",       "Displays a list of files and subdirectories in a directory."],
-    ["cd <dir>",            "Change directory. Use 'cd ..' to go up one directory level."],
-    ["type <file>",         "Displays the contents of a text file."],
-    ["rename <old> <new>",  "Renames a file or files."],
-    ["tree",                "Graphically displays the structure of the directories that you have visited."],
-    ["cls",                 "Clears the screen. Enter this command to remove distractions."],
-    ["findstr",             "Searches for text patterns in files."],
-    ["attrib",              "Displays or changes file attributes."],
-    ["copy",                "Copies one or more files to another location."],
-    ["move",                "Moves files from one directory to another."],
-    ["del",                 "Deletes one or more files."],
-    ["echo",                "Displays messages."],
-    ["title",               "Sets the window title."],
-    ["color",               "Sets console foreground and background colors (0A, 0F, 0P, 07)."],
-    ["help",                "Show this help."]
+    ["dir [options]",            "Displays a list of files and subdirectories in a directory."],
+    ["cd [dir]",                 "Change directory. Use 'cd ..' to go up one directory level."],
+    ["type [file]",              "Displays the contents of a text file."],
+    ["rename [old] [new]",       "Renames a file or files."],
+    ["tree",                     "Graphically displays the structure of the directories that you have visited."],
+    ["cls",                      "Clears the screen. Enter this command to remove distractions."],
+    ["findstr [pattern] [file]", "Searches for text patterns in files."],
+    ["attrib [options] [file]",  "Displays or changes file attributes."],
+    ["copy [source file] [destination dir]",        "Copies one or more files to another location."],
+    ["move [source file] [destination dir]",        "Moves files from one directory to another."],
+    ["del [file]",               "Deletes one or more files."],
+    ["echo [message]",           "Displays messages to the terminal window."],
+    ["title [new_title]",        "Sets a new window title."],
+    ["color [option]",           "Sets console foreground and background colors (0A, 0F, 0P, 07)."],
+    ["help",                     "Show this help."]
   ];
 
   printStyled("", {});
