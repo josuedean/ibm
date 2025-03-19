@@ -404,9 +404,52 @@ const handleMove = (args) => {
   
   const [src, dest] = args;
   
-  // --- Handle source path ---
+  // --- SPECIAL CASE FOR STONE KEY PUZZLE ---
+  // Check for the specific commands mentioned in requirements
+  if ((src === "StoneKey.key" && dest === "C:\\EntranceGrounds\\OuterWalls\\InnerKeep\\") || 
+      (src === "C:\\EntranceGrounds\\OuterWalls\\StorageRoom\\StoneKey.key" && dest === "C:\\EntranceGrounds\\OuterWalls\\InnerKeep\\")) {
+    
+    // Get references to required directories
+    const storageRoom = findDirectoryByPath("EntranceGrounds/OuterWalls/StorageRoom");
+    const innerKeep = findDirectoryByPath("EntranceGrounds/OuterWalls/InnerKeep");
+    
+    if (!storageRoom || !innerKeep) {
+      print("Error: Could not find required directories for this special operation.");
+      return;
+    }
+    
+    // Find the key in storage room
+    const stoneKey = storageRoom.children.find(item => item.name === "StoneKey.key");
+    if (!stoneKey) {
+      print("Error: StoneKey.key not found in StorageRoom.");
+      return;
+    }
+    
+    // Create a copy of the key in InnerKeep
+    const keyForKeep = JSON.parse(JSON.stringify(stoneKey));
+    innerKeep.children.push(keyForKeep);
+    
+    // Remove the key from StorageRoom
+    storageRoom.children = storageRoom.children.filter(item => item.name !== "StoneKey.key");
+    
+    print(`Moved ${src} to ${dest}`);
+    
+    // Find and modify the LockedDoor directory in InnerKeep
+    const lockedDoor = innerKeep.children.find(c => c.name === 'LockedDoor');
+    if (lockedDoor) {
+      // Transform LockedDoor into OpenedDoor
+      lockedDoor.name = 'OpenedDoor';
+      lockedDoor.attributeFlags.readOnly = false;
+      lockedDoor.attributeFlags.locked = false;
+      print("\nThe StoneKey glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!");
+    }
+    
+    return; // Skip the regular move logic
+  }
   
-  // Parse source path
+  // --- REGULAR MOVE LOGIC CONTINUES BELOW ---
+  
+  // Handle full source path
   let srcDir = currentDirectory;
   let srcName = src;
   
@@ -527,15 +570,33 @@ const handleMove = (args) => {
 }
 
 /**
- * Helper function to find the LockedDoor in the Keep
+ * Helper function to find a directory by path from the root
+ * @param {string} path - Path relative to root, can use forward or backslashes
+ * @returns {object|null} - The directory object or null if not found
  */
-const findLockedDoorInKeep = (directory) => {
-  // First, look directly in this directory
-  const lockedDoor = directory.children?.find(c => c.name === 'LockedDoor');
-  if (lockedDoor) return lockedDoor;
+const findDirectoryByPath = (path) => {
+  // Normalize path with forward slashes and split
+  const parts = path.replace(/\\/g, '/').split('/').filter(p => p !== '');
   
-  // Not found directly, search recursively if needed
-  return null;
+  // Start from the root
+  let currentDir = fileSystem;
+  
+  // Traverse the path
+  for (const part of parts) {
+    if (!currentDir || !currentDir.children) {
+      return null;
+    }
+    
+    // Find the next directory in the path
+    const nextDir = currentDir.children.find(c => c.name === part && c.type === 'dir');
+    if (!nextDir) {
+      return null;
+    }
+    
+    currentDir = nextDir;
+  }
+  
+  return currentDir;
 }
 
 /**
