@@ -865,8 +865,6 @@ const handleHelp = () => {
   ];
 
   printStyled("", {});
-  printStyled("COMMAND REFERENCE", { color: "#00ff00", bold: true });
-  printStyled("=================", { color: "#00ff00" });
 
   // Apply padding correctly
   lines.forEach(([cmd, desc]) => {
@@ -875,7 +873,7 @@ const handleHelp = () => {
   });
 
   printStyled("", {});
-  printStyled("TIP: Press Tab for command auto-completion", { color: "#ffff00", italic: true });
+  printStyled("\n  TIP: Press Tab for command auto-completion", { color: "#ffff00", italic: true });
   printStyled("", {});
 }
 
