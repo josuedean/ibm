@@ -1,5 +1,5 @@
 /***************************************************
- * Enhanced Windows-style CLI in the Browser v11
+ * Enhanced Windows-style CLI in the Browser v12
  ****************************************************/
 
 let fileSystem = null; // We’ll build this after fetching the JSON
@@ -278,29 +278,22 @@ const handleRename = (args) => {
 
 /**
  * "tree" command
- *  Shows directory structure of visited directories
+ *  Shows directory structure of visited and discovered directories
  */
 const handleTree = (args) => {
-  // Start from current directory
-  const startDir = currentDirectory;
-  print(startDir.name);
-  
-  // Mark the root directory as visited initially
-  if (!visitedDirectories.has(fileSystem)) {
-    visitedDirectories.add(fileSystem);
-  }
+  // Start from root directory
+  const startDir = fileSystem;
+  print(`Directory Tree (showing discovered items only):`);
+  print(`[${startDir.name}]`);
   
   // Helper function to recursively print directory structure
   const printTree = (dir, prefix = "") => {
     if (!dir.children) return;
     
-    // Filter entries to only include visited directories and files in visited directories
+    // Filter entries to only include discovered files and directories
     const entries = [...dir.children].filter(entry => {
-      // Always include files in a visited directory
-      if (entry.type === 'file') return true;
-      
-      // Only include directories that have been visited
-      return visitedDirectories.has(entry);
+      // Include only if discovered (visible)
+      return entry.discovered === true;
     });
     
     // Print each entry with appropriate prefixes
@@ -310,10 +303,14 @@ const handleTree = (args) => {
       const entryPrefix = isLast ? "└── " : "├── ";
       const childPrefix = isLast ? "    " : "│   ";
       
-      print(`${prefix}${entryPrefix}${entry.name}`);
+      // Format directory names with brackets
+      const displayName = entry.type === 'dir' ? `[${entry.name}]` : entry.name;
+      const visitedMark = (entry.type === 'dir' && visitedDirectories.has(entry)) ? " (visited)" : "";
       
-      // Recursively print subdirectories only if they've been visited
-      if (entry.type === 'dir' && visitedDirectories.has(entry)) {
+      print(`${prefix}${entryPrefix}${displayName}${visitedMark}`);
+      
+      // Recursively print subdirectories only if they've been discovered
+      if (entry.type === 'dir') {
         printTree(entry, prefix + childPrefix);
       }
     }
