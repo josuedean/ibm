@@ -1,5 +1,5 @@
 /***************************************************
- * Enhanced Windows-style CLI in the Browser v10
+ * Enhanced Windows-style CLI in the Browser v11
  ****************************************************/
 
 let fileSystem = null; // We’ll build this after fetching the JSON
@@ -251,12 +251,18 @@ const handleRename = (args) => {
   const entry = findEntryInDir(currentDirectory, oldName);
   
   if (!entry) {
-    print(`File/directory not found: ${oldName}`);
+    print(`File not found: ${oldName}`);
+    return;
+  }
+  
+  // Check if it's a directory
+  if (entry.type === 'dir') {
+    print(`Cannot rename directory: ${oldName}`);
     return;
   }
   
   if (currentDirectory.children.some(child => child.name === newName && child !== entry)) {
-    print(`A file/directory named '${newName}' already exists`);
+    print(`A file named '${newName}' already exists`);
     return;
   }
   
@@ -323,7 +329,7 @@ const handleTree = (args) => {
  */
 const handleFindstr = (args) => {
   if (args.length < 2) {
-    print("Usage: findstr [pattern] [file]\n\nEXAMPLE: findstr Chalice C:\README.md");
+    print("Usage: findstr [pattern] [file]\n\nEXAMPLE: findstr Chalice C:\\README.md");
     return;
   }
   
@@ -374,6 +380,12 @@ const handleAttrib = (args) => {
   const found = findEntryInDir(currentDirectory, filename);
   if (!found) {
     print(`File not found: ${filename}`);
+    return;
+  }
+  
+  // Check if it's a directory
+  if (found.type === 'dir') {
+    print(`Cannot set attributes on directory: ${filename}`);
     return;
   }
 
@@ -430,7 +442,7 @@ const showAttributes = (fileOrDir) => {
  */
 const handleCopy = (args) => {
   if (args.length < 2) {
-    print("Usage: copy [source file] [destination dir]\n\nEXAMPLE: copy README.md C:\EntranceGrounds\OuterWalls");
+    print("Usage: copy [source file] [destination dir]\n\nEXAMPLE: copy README.md C:\\EntranceGrounds\\OuterWalls");
     return;
   }
   
@@ -453,14 +465,16 @@ const handleCopy = (args) => {
     }
   }
   
-  // Locate the source entry (case-insensitive)
-  const srcEntry = srcDir.children?.find(entry => entry.name.toLowerCase() === srcName.toLowerCase());
+  // Locate the source entry (case-sensitive)
+  const srcEntry = srcDir.children?.find(entry => entry.name === srcName);
   if (!srcEntry) {
     print(`Source not found: ${srcName}`);
     return;
   }
-  if (srcEntry.type !== 'file') {
-    print("Source file is not a file.");
+
+  // Check if source is a directory
+  if (srcEntry.type === 'dir') {
+    print(`Cannot copy directory: ${srcName}`);
     return;
   }
   
@@ -494,9 +508,9 @@ const handleCopy = (args) => {
     return;
   }
   
-  // Check if destination already has a file or directory with the same name (case-insensitive)
-  if (destDir.children && destDir.children.some(child => child.name.toLowerCase() === destName.toLowerCase())) {
-    print(`A file or directory named '${destName}' already exists in the destination.`);
+  // Check if destination already has a file with the same name (case-sensitive)
+  if (destDir.children && destDir.children.some(child => child.name === destName)) {
+    print(`A file named '${destName}' already exists in the destination.`);
     return;
   }
   
@@ -514,14 +528,13 @@ const handleCopy = (args) => {
   print(`Copied ${src} to ${dest}`);
 };
 
-
 /**
  * Additional Command: "move" (copies the file then removes the original)
  *  usage: move <source> <destination>
  */
 const handleMove = (args) => {
   if (args.length < 2) {
-    print("Usage: move [source file] [destination dir]\n\nEXAMPLE:move README.md C:\EntranceGrounds\OuterWalls");
+    print("Usage: move [source file] [destination dir]\n\nEXAMPLE:move README.md C:\\EntranceGrounds\\OuterWalls");
     return;
   }
 
@@ -721,16 +734,20 @@ const handleDel = (args) => {
     return;
   }
   
-  // Special case for CursedBook.tome
-  if (file.name === 'CursedBook.tome') {
-    if (file.attributeFlags?.readOnly) {
+  // Check if it's a directory
+  if (file.type === 'dir') {
+    print(`Cannot delete directory: ${fileName}`);
+    return;
+  }
+  
+  // Check if the file is read-only
+  if (file.attributeFlags?.readOnly) {
+    // Special case for CursedBook.tome
+    if (file.name === 'CursedBook.tome') {
       print(`The Cursed Book resists your attempt to destroy it. Use 'attrib [option] CursedBook.tome' to remove its read-only attribute to weaken its magic first.`);
       return;
-    } else {
-      print(`The cursed book dissolves into ethereal smoke...`);
     }
-  } else if (file.attributeFlags?.readOnly) {
-    print(`Access denied. ${fileName} is read-only.`);
+    print(`Cannot delete ${fileName}: Access is denied.`);
     return;
   }
   
@@ -929,6 +946,103 @@ inputEl.addEventListener('keydown', (e) => {
   }
 });
 
+// Mark the current directory as visited whenever CD is used
+const markDirectoryVisited = (directory) => {
+  if (directory) {
+    visitedDirectories.add(directory);
+  }
+}
+
+// ----- MAIN COMMAND HANDLER -----
+inputEl.addEventListener('keydown', (e) => {
+  if (e.key === "Enter") {
+    const command = inputEl.value;
+
+    if (command !== "") {
+      commandHistory.push(command);
+      if (commandHistory.length > 50) commandHistory.shift(); // Limit history size
+      historyIndex = commandHistory.length;
+    }
+
+    const pathString = getCurrentPathString().split("\\").slice(1).join("\\");
+    print(`C:\\${pathString}> ${command}`);
+    print("");
+    handleCommand(command);
+    inputEl.value = "";
+  } else if (e.key === "ArrowUp") {
+    if (historyIndex > 0) {
+      historyIndex--;
+      inputEl.value = commandHistory[historyIndex];
+    }
+    e.preventDefault();
+  } else if (e.key === "ArrowDown") {
+    if (historyIndex < commandHistory.length - 1) {
+      historyIndex++;
+      inputEl.value = commandHistory[historyIndex];
+    } else {
+      historyIndex = commandHistory.length;
+      inputEl.value = "";
+    }
+    e.preventDefault();
+  }
+});
+
+// INITIAL SETUP: fetch the JSON, build the fileSystem, set currentDirectory
+fetch("fileSystem.json")
+  .then(res => res.json())
+  .then(contents => {
+    fileSystem = contents;
+    currentDirectory = fileSystem;
+    print("Welcome to the Dungeon Crawl CLI! Type 'help' for commands.");
+    
+    // Index important files for quick access
+    indexFiles(fileSystem);
+  })
+  .catch(err => {
+    console.error("Error loading file contents:", err);
+    print("Error loading file contents! Check console for details.");
+  });
+
+/**
+ * Function to recursively index files for quick access
+ */
+const indexFiles = (dir) => {
+  if (!dir || !dir.children) return;
+  
+  dir.children.forEach(item => {
+    // Add a parent reference to enable easier navigation
+    item.parent = dir;
+    
+    // Index files by name for quick lookup
+    if (item.type === 'file') {
+      fileIndex[item.name.toLowerCase()] = item;
+    }
+    
+    // Recursively process subdirectories
+    if (item.type === 'dir') {
+      indexFiles(item);
+    }
+  });
+}
+
+// Helper function to update the prompt based on current directory
+const updatePrompt = () => {
+  // Build path by traversing up the parent chain
+  let path = [];
+  let current = currentDirectory;
+  
+  while (current !== fileSystem && current.parent) {
+    path.unshift(current.name);
+    current = current.parent;
+  }
+  
+  if (path.length === 0) {
+    promptEl.textContent = "C:\\>";
+  } else {
+    promptEl.textContent = `C:\\${path.join("\\")}\\>`;
+  }
+}
+
 // Enhance the print function to support different styles
 const printStyled = (text, style = {}) => {
   const line = document.createElement("div");
@@ -1041,101 +1155,4 @@ const handleCommand = (line) => {
 
   // Ensure input is cleared after every command
   inputEl.value = "";
-}
-
-// Mark the current directory as visited whenever CD is used
-const markDirectoryVisited = (directory) => {
-  if (directory) {
-    visitedDirectories.add(directory);
-  }
-}
-
-// ----- MAIN COMMAND HANDLER -----
-inputEl.addEventListener('keydown', (e) => {
-  if (e.key === "Enter") {
-    const command = inputEl.value;
-
-    if (command !== "") {
-      commandHistory.push(command);
-      if (commandHistory.length > 50) commandHistory.shift(); // Limit history size
-      historyIndex = commandHistory.length;
-    }
-
-    const pathString = getCurrentPathString().split("\\").slice(1).join("\\");
-    print(`C:\\${pathString}> ${command}`);
-    print("");
-    handleCommand(command);
-    inputEl.value = "";
-  } else if (e.key === "ArrowUp") {
-    if (historyIndex > 0) {
-      historyIndex--;
-      inputEl.value = commandHistory[historyIndex];
-    }
-    e.preventDefault();
-  } else if (e.key === "ArrowDown") {
-    if (historyIndex < commandHistory.length - 1) {
-      historyIndex++;
-      inputEl.value = commandHistory[historyIndex];
-    } else {
-      historyIndex = commandHistory.length;
-      inputEl.value = "";
-    }
-    e.preventDefault();
-  }
-});
-
-// INITIAL SETUP: fetch the JSON, build the fileSystem, set currentDirectory
-fetch("fileSystem.json")
-  .then(res => res.json())
-  .then(contents => {
-    fileSystem = contents;
-    currentDirectory = fileSystem;
-    print("Welcome to the Dungeon Crawl CLI! Type 'help' for commands.");
-    
-    // Index important files for quick access
-    indexFiles(fileSystem);
-  })
-  .catch(err => {
-    console.error("Error loading file contents:", err);
-    print("Error loading file contents! Check console for details.");
-  });
-
-/**
- * Function to recursively index files for quick access
- */
-const indexFiles = (dir) => {
-  if (!dir || !dir.children) return;
-  
-  dir.children.forEach(item => {
-    // Add a parent reference to enable easier navigation
-    item.parent = dir;
-    
-    // Index files by name for quick lookup
-    if (item.type === 'file') {
-      fileIndex[item.name.toLowerCase()] = item;
-    }
-    
-    // Recursively process subdirectories
-    if (item.type === 'dir') {
-      indexFiles(item);
-    }
-  });
-}
-
-// Helper function to update the prompt based on current directory
-const updatePrompt = () => {
-  // Build path by traversing up the parent chain
-  let path = [];
-  let current = currentDirectory;
-  
-  while (current !== fileSystem && current.parent) {
-    path.unshift(current.name);
-    current = current.parent;
-  }
-  
-  if (path.length === 0) {
-    promptEl.textContent = "C:\\>";
-  } else {
-    promptEl.textContent = `C:\\${path.join("\\")}\\>`;
-  }
 }
