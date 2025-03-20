@@ -1,5 +1,5 @@
 /***************************************************
- * Enhanced Windows-style CLI in the Browser v12
+ * Enhanced Windows-style CLI in the Browser v11
  ****************************************************/
 
 let fileSystem = null; // We’ll build this after fetching the JSON
@@ -278,22 +278,42 @@ const handleRename = (args) => {
 
 /**
  * "tree" command
- *  Shows directory structure of visited and discovered directories
+ *  Shows directory structure of visited directories and discovered files
  */
 const handleTree = (args) => {
-  // Start from root directory
+  // Start from root directory to show all levels
   const startDir = fileSystem;
-  print(`Directory Tree (showing discovered items only):`);
+  print('Directory Tree (showing discovered items only):');
   print(`[${startDir.name}]`);
   
+  // Current path components to highlight current directory
+  const currentPath = [];
+  let tempDir = currentDirectory;
+  while (tempDir) {
+    currentPath.unshift(tempDir.name);
+    tempDir = tempDir.parent;
+  }
+  
   // Helper function to recursively print directory structure
-  const printTree = (dir, prefix = "") => {
+  const printTree = (dir, prefix = "", pathComponents = []) => {
     if (!dir.children) return;
     
-    // Filter entries to only include discovered files and directories
+    // Filter entries to include visited directories and discovered files
     const entries = [...dir.children].filter(entry => {
-      // Include only if discovered (visible)
-      return entry.discovered === true;
+      if (entry.type === 'dir') {
+        // Include directories if they've been visited
+        return visitedDirectories.has(entry);
+      } else {
+        // Include files if they've been discovered
+        return entry.discovered === true;
+      }
+    });
+    
+    // Sort entries with directories first, then files
+    entries.sort((a, b) => {
+      if (a.type === 'dir' && b.type === 'file') return -1;
+      if (a.type === 'file' && b.type === 'dir') return 1;
+      return a.name.localeCompare(b.name);
     });
     
     // Print each entry with appropriate prefixes
@@ -303,22 +323,31 @@ const handleTree = (args) => {
       const entryPrefix = isLast ? "└── " : "├── ";
       const childPrefix = isLast ? "    " : "│   ";
       
-      // Format directory names with brackets
-      const displayName = entry.type === 'dir' ? `[${entry.name}]` : entry.name;
-      const visitedMark = (entry.type === 'dir' && visitedDirectories.has(entry)) ? " (visited)" : "";
+      // Create new path for this entry
+      const newPath = [...pathComponents, entry.name];
       
-      print(`${prefix}${entryPrefix}${displayName}${visitedMark}`);
+      // Check if this is the current directory
+      const isCurrentDir = entry.type === 'dir' && 
+                         newPath.length === currentPath.length && 
+                         newPath.every((part, idx) => part === currentPath[idx]);
       
-      // Recursively print subdirectories only if they've been discovered
+      // Format directory names with brackets, mark current directory
+      const displayName = entry.type === 'dir' ? 
+        `[${entry.name}]${isCurrentDir ? ' (current)' : ''}` : 
+        entry.name;
+        
+      print(`${prefix}${entryPrefix}${displayName}`);
+      
+      // Recursively print subdirectories
       if (entry.type === 'dir') {
-        printTree(entry, prefix + childPrefix);
+        printTree(entry, prefix + childPrefix, newPath);
       }
     }
   };
   
-  // Start the recursive printing
-  printTree(startDir);
-}
+  // Start the recursive printing from root
+  printTree(startDir, "", [startDir.name]);
+};
 
 /**
  * Search for patterns in files
