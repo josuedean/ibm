@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procurement Data Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        :root {
+            /* Light mode variables */
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --header-bg: #0062cc;
+            --header-text: white;
+            --container-bg: white;
+            --container-shadow: rgba(0,0,0,0.1);
+            --th-bg: #f2f2f2;
+            --border-color: #ddd;
+            --btn-primary: #0062cc;
+            --btn-hover: #004999;
+            --summary-item-bg: rgba(0, 98, 204, 0.1);
+            --summary-highlight: #0062cc;
+        }
+        [data-theme="dark"] {
+            /* Dark mode variables */
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --header-bg: #004080;
+            --header-text: #f0f0f0;
+            --container-bg: #1e1e1e;
+            --container-shadow: rgba(0,0,0,0.4);
+            --th-bg: #2d2d2d;
+            --border-color: #444;
+            --btn-primary: #0078d4;
+            --btn-hover: #0086ef;
+            --summary-item-bg: rgba(0, 120, 212, 0.2);
+            --summary-highlight: #0078d4;
+        }
+        header {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            padding: 1rem;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+            flex-grow: 1;
+        }
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 0;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+        }
+        .chart-container {
+            background-color: var(--container-bg);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px var(--container-shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--btn-primary);
+        }
+        .data-section {
+            margin-bottom: 2rem;
+            background-color: var(--container-bg);
+            padding: 1.5rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px var(--container-shadow);
+        }
+        button {
+            background-color: var(--btn-primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: var(--btn-hover);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background-color: var(--th-bg);
+        }
+        .hidden {
+            display: none;
+        }
+        #loading {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+        }
+        .file-upload {
+            margin: 1rem 0;
+        }
+        .summary-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .summary-item {
+            background-color: var(--summary-item-bg);
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px var(--container-shadow);
+            display: flex;
+            flex-direction: column;
+        }
+        .summary-title {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+        .summary-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+            color: var(--summary-highlight);
+        }
+        .summary-subtext {
+            font-size: 0.8rem;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Procurement Data Analysis Dashboard</h1>
+        <label class="theme-switch">
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider"></span>
+        </label>
+    </header>
+    
+    <div class="container">
+        <div class="data-section">
+            <h2>Data Generation and Import</h2>
+            <button id="generate-data">Generate Sample Data</button>
+            <button id="analyze-data">Analyze Data</button>
+            <div class="file-upload">
+                <label for="csv-file">Or upload your CSV file:</label>
+                <input type="file" id="csv-file" accept=".csv">
+            </div>
+            <div id="loading" class="hidden">Processing data...</div>
+            
+            <div id="data-table-container" class="hidden">
+                <h3>Data Preview</h3>
+                <div style="overflow-x: auto;">
+                    <table id="data-table">
+                        <thead>
+                            <tr id="table-header"></tr>
+                        </thead>
+                        <tbody id="table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div id="summary-section" class="data-section hidden">
+            <h2>Key Insights</h2>
+            <div class="summary-container">
+                <div class="summary-item">
+                    <div class="summary-title">Supplier with Highest Avg Lead Time</div>
+                    <div id="highest-lead-supplier" class="summary-value">-</div>
+                    <div id="highest-lead-supplier-value" class="summary-subtext">- days</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-title">Transport with Lowest Avg Lead Time</div>
+                    <div id="lowest-lead-transport" class="summary-value">-</div>
+                    <div id="lowest-lead-transport-value" class="summary-subtext">- days</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-title">Month with Highest Avg Delays</div>
+                    <div id="highest-delay-month" class="summary-value">-</div>
+                    <div id="highest-delay-month-value" class="summary-subtext">- days</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-title">Disruption with Longest Avg Delay</div>
+                    <div id="longest-disruption" class="summary-value">-</div>
+                    <div id="longest-disruption-value" class="summary-subtext">- days</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-title">Product with Shortest Avg Lead Time</div>
+                    <div id="shortest-lead-product" class="summary-value">-</div>
+                    <div id="shortest-lead-product-value" class="summary-subtext">- days</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <div class="chart-container">
+                <div class="chart-title">Supplier Lead Time Variability</div>
+                <canvas id="supplier-chart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Transportation Mode Contribution to Delays</div>
+                <canvas id="transport-chart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Seasonal Patterns in Lead Times</div>
+                <canvas id="seasonal-chart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Disruption Impact on Delays</div>
+                <canvas id="disruption-chart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Bullwhip Effect Analysis</div>
+                <canvas id="bullwhip-chart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Lead Time vs Delay Correlation</div>
+                <canvas id="correlation-chart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Product Category Lead Times</div>
+                <canvas id="product-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let procurementData = [];
+        const colors = [
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(255, 206, 86, 0.7)',
+            'rgba(75, 192, 192, 0.7)',
+            'rgba(153, 102, 255, 0.7)',
+            'rgba(255, 159, 64, 0.7)',
+            'rgba(199, 199, 199, 0.7)',
+            'rgba(83, 102, 255, 0.7)',
+            'rgba(40, 159, 64, 0.7)',
+            'rgba(210, 199, 199, 0.7)',
+        ];
+
+        // Set dark mode from local storage
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('theme-toggle').checked = true;
+        }
+
+        // Event listeners
+        document.getElementById('generate-data').addEventListener('click', generateData);
+        document.getElementById('analyze-data').addEventListener('click', analyzeData);
+        document.getElementById('csv-file').addEventListener('change', handleFileUpload);
+        document.getElementById('theme-toggle').addEventListener('change', toggleTheme);
+
+        // Toggle theme function
+        function toggleTheme() {
+            if (document.documentElement.getAttribute('data-theme') === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('darkMode', 'false');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('darkMode', 'true');
+            }
+            
+            // Redraw charts if they exist
+            if (procurementData.length > 0) {
+                analyzeData();
+            }
+        }
+        
+        // Function to generate random dataset
+        function generateData() {
+            showLoading();
+            
+            // Parameters
+            const suppliers = ['Alpha Supplies', 'BetaTech', 'GammaCorp', 'Epsilon Global', 'Delta Corp'];
+            const transportModes = ['Air', 'Sea', 'Land Rail', 'Land Truck'];
+            const productCategories = ['Electronics', 'Mechanical', 'Raw Materials', 'Chemicals', 'Textiles'];
+            const supplierLocations = {
+                'Alpha Supplies': 'China',
+                'BetaTech': 'Germany',
+                'GammaCorp': 'Korea',
+                'Epsilon Global': 'Brazil',
+                'Delta Corp': 'USA'
+            };
+            const disruptions = ['Weather', 'Customs', 'Production', 'None', 'Political', 'Global Pandemic'];
+            
+            // Generate data
+            procurementData = [];
+            const numRecords = 100;
+            const startDate = new Date(2024, 0, 1);
+            const endDate = new Date(2024, 11, 31);
+            
+            // Monthly demand base values
+            const monthlyDemand = {
+                1: 100, 2: 110, 3: 105, 4: 120, 5: 115, 6: 130,
+                7: 125, 8: 120, 9: 110, 10: 115, 11: 120, 12: 130
+            };
+            
+            for (let i = 0; i < numRecords; i++) {
+                // Random order date
+                const orderDate = new Date(startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime()));
+                const month = orderDate.getMonth() + 1;
+                
+                // Random supplier and transport
+                const supplier = suppliers[Math.floor(Math.random() * suppliers.length)];
+                const transport = transportModes[Math.floor(Math.random() * transportModes.length)];
+                const productCategory = productCategories[Math.floor(Math.random() * productCategories.length)];
+                const disruption = disruptions[Math.floor(Math.random() * disruptions.length)];
+                
+                // Base lead times and delays
+                const baseLead = {
+                    'Air': 10, 
+                    'Sea': 14, 
+                    'Land Rail': 12,
+                    'Land Truck': 8
+                }[transport];
+                
+                const supplierDelay = {
+                    'Alpha Supplies': 2,
+                    'BetaTech': 4,
+                    'GammaCorp': 1,
+                    'Epsilon Global': 3,
+                    'Delta Corp': 2
+                }[supplier];
+                
+                const disruptionDelay = {
+                    'Weather': 3,
+                    'Customs': 2,
+                    'Production': 4,
+                    'None': 0,
+                    'Political': 5,
+                    'Global Pandemic': 14
+                }[disruption];
+                
+                // Calculate variability
+                const variability = supplierDelay + disruptionDelay + (Math.random() * 4) - 2;
+                const actualLead = Math.max(baseLead + variability, baseLead * 0.7);
+                
+                // Delivery dates
+                const expectedDelivery = new Date(orderDate);
+                expectedDelivery.setDate(orderDate.getDate() + baseLead);
+                
+                const actualDelivery = new Date(orderDate);
+                actualDelivery.setDate(orderDate.getDate() + Math.round(actualLead));
+                
+                // Customer demand and order quantity (bullwhip effect)
+                const customerDemand = monthlyDemand[month] + Math.floor(Math.random() * 11) - 5;
+                const bullwhipFactor = 1 + (Math.random() * 0.5);
+                const orderQuantity = Math.round(customerDemand * bullwhipFactor);
+                
+                // Add to dataset
+                procurementData.push({
+                    'Order_ID': `ORD${1000 + i}`,
+                    'Supplier': supplier,
+                    'Order_Date': formatDate(orderDate),
+                    'Expected_Delivery_Date': formatDate(expectedDelivery),
+                    'Actual_Delivery_Date': formatDate(actualDelivery),
+                    'Product_Category': productCategory,
+                    'Transportation_Mode': transport,
+                    'Supplier_Location': supplierLocations[supplier],
+                    'Disruption_Type': disruption,
+                    'Customer_Demand': customerDemand,
+                    'Order_Quantity': orderQuantity,
+                    'Expected_Lead_Time': baseLead,
+                    'Actual_Lead_Time': Math.round(actualLead),
+                    'Delay_Days': Math.round(actualLead - baseLead),
+                    'Month': month,
+                    'Month_Name': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month-1],
+                    'Bullwhip_Factor': bullwhipFactor,
+                    'Lead_Time_Variability': variability.toFixed(2)
+                });
+            }
+            
+            displayDataTable();
+            hideLoading();
+        }
+        
+        // Handle file upload
+        function handleFileUpload(event) {
+            showLoading();
+            const file = event.target.files[0];
+            if (file) {
+                Papa.parse(file, {
+                    header: true,
+                    complete: function(results) {
+                        procurementData = results.data;
+                        
+                        // Convert date strings to Date objects for analysis
+                        procurementData.forEach(row => {
+                            if (row['Order_Date']) {
+                                // Add calculated fields if they don't exist
+                                if (!row['Actual_Lead_Time']) {
+                                    const orderDate = new Date(row['Order_Date']);
+                                    const actualDelivery = new Date(row['Actual_Delivery_Date']);
+                                    const expectedDelivery = new Date(row['Expected_Delivery_Date']);
+                                    
+                                    row['Actual_Lead_Time'] = Math.round((actualDelivery - orderDate) / (1000 * 60 * 60 * 24));
+                                    row['Expected_Lead_Time'] = Math.round((expectedDelivery - orderDate) / (1000 * 60 * 60 * 24));
+                                    row['Delay_Days'] = Math.round((actualDelivery - expectedDelivery) / (1000 * 60 * 60 * 24));
+                                }
+                                
+                                if (!row['Month']) {
+                                    const orderDate = new Date(row['Order_Date']);
+                                    row['Month'] = orderDate.getMonth() + 1;
+                                    row['Month_Name'] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][orderDate.getMonth()];
+                                }
+                                
+                                if (!row['Bullwhip_Factor'] && row['Order_Quantity'] && row['Customer_Demand']) {
+                                    row['Bullwhip_Factor'] = (parseFloat(row['Order_Quantity']) / parseFloat(row['Customer_Demand'])).toFixed(2);
+                                }
+                            }
+                        });
+                        
+                        displayDataTable();
+                        hideLoading();
+                    }
+                });
+            }
+        }
+        
+        // Helper function to format dates
+        function formatDate(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+        
+        // Display data table 
+        function displayDataTable() {
+            if (procurementData.length === 0) return;
+            
+            const tableHeader = document.getElementById('table-header');
+            const tableBody = document.getElementById('table-body');
+            
+            // Clear existing data
+            tableHeader.innerHTML = '';
+            tableBody.innerHTML = '';
+            
+            // Get headers from first data row
+            const headers = Object.keys(procurementData[0]);
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                tableHeader.appendChild(th);
+            });
+            
+            // Display first 5 rows
+            const displayRows = procurementData.slice(0, 5);
+            displayRows.forEach(row => {
+                const tr = document.createElement('tr');
+                headers.forEach(header => {
+                    const td = document.createElement('td');
+                    td.textContent = row[header] || '';
+                    tr.appendChild(td);
+                });
+                tableBody.appendChild(tr);
+            });
+            
+            document.getElementById('data-table-container').classList.remove('hidden');
+        }
+        
+        // Analyze data and create charts
+        function analyzeData() {
+            if (procurementData.length === 0) {
+                alert('Please generate or upload data first');
+                return;
+            }
+            
+            showLoading();
+            
+            // Calculate summary statistics
+            calculateSummaryStatistics();
+            
+            // Create all charts
+            createSupplierChart();
+            createTransportChart();
+            createSeasonalChart();
+            createDisruptionChart();
+            createBullwhipChart();
+            createCorrelationChart();
+            createProductCategoryChart();
+            
+            // Show summary section
+            document.getElementById('summary-section').classList.remove('hidden');
+            
+            hideLoading();
+        }
+        
+        // Calculate summary statistics for the 5 simple questions
+        function calculateSummaryStatistics() {
+            // 1. Which supplier has the highest average lead time?
+            const supplierLeadTimes = {};
+            procurementData.forEach(row => {
+                const supplier = row['Supplier'];
+                const leadTime = parseFloat(row['Actual_Lead_Time']);
+                
+                if (!supplierLeadTimes[supplier]) {
+                    supplierLeadTimes[supplier] = { total: 0, count: 0 };
+                }
+                
+                supplierLeadTimes[supplier].total += leadTime;
+                supplierLeadTimes[supplier].count += 1;
+            });
+            
+            let highestLeadSupplier = '';
+            let highestLeadTime = 0;
+            
+            Object.entries(supplierLeadTimes).forEach(([supplier, data]) => {
+                const avgLeadTime = data.total / data.count;
+                if (avgLeadTime > highestLeadTime) {
+                    highestLeadTime = avgLeadTime;
+                    highestLeadSupplier = supplier;
+                }
+            });
+            
+            document.getElementById('highest-lead-supplier').textContent = highestLeadSupplier;
+            document.getElementById('highest-lead-supplier-value').textContent = `${highestLeadTime.toFixed(1)} days`;
+            
+            // 2. What transportation mode has the lowest average lead time?
+            const transportLeadTimes = {};
+            procurementData.forEach(row => {
+                const transport = row['Transportation_Mode'];
+                const leadTime = parseFloat(row['Actual_Lead_Time']);
+                
+                if (!transportLeadTimes[transport]) {
+                    transportLeadTimes[transport] = { total: 0, count: 0 };
+                }
+                
+                transportLeadTimes[transport].total += leadTime;
+                transportLeadTimes[transport].count += 1;
+            });
+            
+            let lowestLeadTransport = '';
+            let lowestLeadTime = Infinity;
+            
+            Object.entries(transportLeadTimes).forEach(([transport, data]) => {
+                const avgLeadTime = data.total / data.count;
+                if (avgLeadTime < lowestLeadTime) {
+                    lowestLeadTime = avgLeadTime;
+                    lowestLeadTransport = transport;
+                }
+            });
+            
+            document.getElementById('lowest-lead-transport').textContent = lowestLeadTransport;
+            document.getElementById('lowest-lead-transport-value').textContent = `${lowestLeadTime.toFixed(1)} days`;
+            
+            // 3. Which month shows the highest average delays in delivery?
+            const monthDelays = {};
+            procurementData.forEach(row => {
+                const month = parseInt(row['Month']);
+                const monthName = row['Month_Name'];
+                const delay = parseFloat(row['Delay_Days']);
+                
+                if (!monthDelays[month]) {
+                    monthDelays[month] = { name: monthName, total: 0, count: 0 };
+                }
+                
+                monthDelays[month].total += delay;
+                monthDelays[month].count += 1;
+            });
+            
+            let highestDelayMonth = '';
+            let highestDelay = 0;
+            
+            Object.entries(monthDelays).forEach(([month, data]) => {
+                const avgDelay = data.total / data.count;
+                if (avgDelay > highestDelay) {
+                    highestDelay = avgDelay;
+                    highestDelayMonth = data.name;
+                }
+            });
+            
+            document.getElementById('highest-delay-month').textContent = highestDelayMonth;
+            document.getElementById('highest-delay-month-value').textContent = `${highestDelay.toFixed(1)} days`;
+            
+            // 4. What type of disruption leads to the longest average delay?
+            const disruptionDelays = {};
+            procurementData.forEach(row => {
+                const disruption = row['Disruption_Type'];
+                const delay = parseFloat(row['Delay_Days']);
+                
+                if (!disruptionDelays[disruption]) {
+                    disruptionDelays[disruption] = { total: 0, count: 0 };
+                }
+                
+                disruptionDelays[disruption].total += delay;
+                disruptionDelays[disruption].count += 1;
+            });
+            
+            let longestDisruption = '';
+            let longestDelay = 0;
+            
+            Object.entries(disruptionDelays).forEach(([disruption, data]) => {
+                const avgDelay = data.total / data.count;
+                if (avgDelay > longestDelay) {
+                    longestDelay = avgDelay;
+                    longestDisruption = disruption;
+                }
+            });
+            
+            document.getElementById('longest-disruption').textContent = longestDisruption;
+            document.getElementById('longest-disruption-value').textContent = `${longestDelay.toFixed(1)} days`;
+            
+            // 5. Which product category experiences the shortest average lead time?
+            const productLeadTimes = {};
+            procurementData.forEach(row => {
+                const product = row['Product_Category'];
+                const leadTime = parseFloat(row['Actual_Lead_Time']);
+                
+                if (!productLeadTimes[product]) {
+                    productLeadTimes[product] = { total: 0, count: 0 };
+                }
+                
+                productLeadTimes[product].total += leadTime;
+                productLeadTimes[product].count += 1;
+            });
+            
+            let shortestLeadProduct = '';
+            let shortestLeadTime = Infinity;
+            
+            Object.entries(productLeadTimes).forEach(([product, data]) => {
+                const avgLeadTime = data.total / data.count;
+                if (avgLeadTime < shortestLeadTime) {
+                    shortestLeadTime = avgLeadTime;
+                    shortestLeadProduct = product;
+                }
+            });
+            
+            document.getElementById('shortest-lead-product').textContent = shortestLeadProduct;
+            document.getElementById('shortest-lead-product-value').textContent = `${shortestLeadTime.toFixed(1)} days`;
+        }
+        
+        // Create supplier lead time variability chart
+        function createSupplierChart() {
+            // Group by supplier and calculate average lead time
+            const supplierData = {};
+            procurementData.forEach(row => {
+                const supplier = row['Supplier'];
+                const leadTime = parseFloat(row['Actual_Lead_Time']);
+                
+                if (!supplierData[supplier]) {
+                    supplierData[supplier] = { total: 0, count: 0 };
+                }
+                
+                supplierData[supplier].total += leadTime;
+                supplierData[supplier].count += 1;
+            });
+            
+            // Calculate averages
+            const suppliers = [];
+            const avgLeadTimes = [];
+            
+            Object.entries(supplierData).forEach(([supplier, data]) => {
+                suppliers.push(supplier);
+                avgLeadTimes.push((data.total / data.count).toFixed(1));
+            });
+            
+            // Create chart
+            const ctx = document.getElementById('supplier-chart').getContext('2d');
+            
+            if (window.supplierChart) {
+                window.supplierChart.destroy();
+            }
+            
+            window.supplierChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: suppliers,
+                    datasets: [{
+                        label: 'Average Lead Time (Days)',
+                        data: avgLeadTimes,
+                        backgroundColor: colors,
+                        borderColor: colors.map(c => c.replace('0.7', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Days'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Create transportation mode chart
+        function createTransportChart() {
+            // Group by transportation mode and calculate average delay
+            const transportData = {};
+            procurementData.forEach(row => {
+                const transport = row['Transportation_Mode'];
+                const delay = parseFloat(row['Delay_Days']);
+                
+                if (!transportData[transport]) {
+                    transportData[transport] = { totalDelay: 0, count: 0 };
+                }
+                
+                transportData[transport].totalDelay += delay;
+                transportData[transport].count += 1;
+            });
+            
+            // Calculate averages
+            const transports = [];
+            const avgDelays = [];
+            
+            Object.entries(transportData).forEach(([transport, data]) => {
+                transports.push(transport);
+                avgDelays.push((data.totalDelay / data.count).toFixed(1));
+            });
+            
+            // Create chart
+            const ctx = document.getElementById('transport-chart').getContext('2d');
+            
+            if (window.transportChart) {
+                window.transportChart.destroy();
+            }
+            
+            window.transportChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: transports,
+                    datasets: [{
+                        label: 'Average Delay (Days)',
+                        data: avgDelays,
+                        backgroundColor: colors,
+                        borderColor: colors.map(c => c.replace('0.7', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Days'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Create seasonal patterns chart
+        function createSeasonalChart() {
+            // Group by month and calculate average lead time
+            const monthData = {};
+            procurementData.forEach(row => {
+                const month = parseInt(row['Month']);
+                const monthName = row['Month_Name'];
+                const leadTime = parseFloat(row['Actual_Lead_Time']);
+                const delay = parseFloat(row['Delay_Days']);
+                
+                if (!monthData[month]) {
+                    monthData[month] = { 
+                        name: monthName,
+                        totalLead: 0, 
+                        totalDelay: 0,
+                        count: 0 
+                    };
+                }
+                
+                monthData[month].totalLead += leadTime;
+                monthData[month].totalDelay += delay;
+                monthData[month].count += 1;
+            });
+            
+            // Sort by month number
+            const sortedMonths = Object.keys(monthData)
+                .map(m => parseInt(m))
+                .sort((a, b) => a - b);
+            
+            const monthNames = sortedMonths.map(m => monthData[m].name);
+            const avgLeadTimes = sortedMonths.map(m => (monthData[m].totalLead / monthData[m].count).toFixed(1));
+            const avgDelays = sortedMonths.map(m => (monthData[m].totalDelay / monthData[m].count).toFixed(1));
+            
+            // Create chart
+            const ctx = document.getElementById('seasonal-chart').getContext('2d');
+            
+            if (window.seasonalChart) {
+                window.seasonalChart.destroy();
+            }
+            
+            window.seasonalChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: monthNames,
+                    datasets: [
+                        {
+                            label: 'Average Lead Time (Days)',
+                            data: avgLeadTimes,
+                            borderColor: colors[0],
+                            backgroundColor: colors[0].replace('0.7', '0.1'),
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Average Delay (Days)',
+                            data: avgDelays,
+                            borderColor: colors[1],
+                            backgroundColor: colors[1].replace('0.7', '0.1'),
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Days'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Create disruption impact chart
+        function createDisruptionChart() {
+            // Group by disruption type and calculate average delay
+            const disruptionData = {};
+            procurementData.forEach(row => {
+                const disruption = row['Disruption_Type'];
+                const delay = parseFloat(row['Delay_Days']);
+                
+                if (!disruptionData[disruption]) {
+                    disruptionData[disruption] = { totalDelay: 0, count: 0 };
+                }
+                
+                disruptionData[disruption].totalDelay += delay;
+                disruptionData[disruption].count += 1;
+            });
+            
+            // Calculate averages
+            const disruptions = [];
+            const avgDelays = [];
+            
+            Object.entries(disruptionData).forEach(([disruption, data]) => {
+                disruptions.push(disruption);
+                avgDelays.push((data.totalDelay / data.count).toFixed(1));
+            });
+            
+            // Create chart
+            const ctx = document.getElementById('disruption-chart').getContext('2d');
+            
+            if (window.disruptionChart) {
+                window.disruptionChart.destroy();
+            }
+            
+            window.disruptionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: disruptions,
+                    datasets: [{
+                        label: 'Average Delay (Days)',
+                        data: avgDelays,
+                        backgroundColor: colors,
+                        borderColor: colors.map(c => c.replace('0.7', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Days'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Create bullwhip effect chart
+        function createBullwhipChart() {
+            // Group by month and calculate average customer demand and order quantity
+            const monthData = {};
+            procurementData.forEach(row => {
+                const month = parseInt(row['Month']);
+                const monthName = row['Month_Name'];
+                const demand = parseFloat(row['Customer_Demand']);
+                const order = parseFloat(row['Order_Quantity']);
+                
+                if (!monthData[month]) {
+                    monthData[month] = { 
+                        name: monthName,
+                        totalDemand: 0, 
+                        totalOrder: 0,
+                        count: 0 
+                    };
+                }
+                
+                monthData[month].totalDemand += demand;
+                monthData[month].totalOrder += order;
+                monthData[month].count += 1;
+            });
+            
+            // Sort by month number
+            const sortedMonths = Object.keys(monthData)
+                .map(m => parseInt(m))
+                .sort((a, b) => a - b);
+            
+            const monthNames = sortedMonths.map(m => monthData[m].name);
+            const avgDemand = sortedMonths.map(m => (monthData[m].totalDemand / monthData[m].count).toFixed(1));
+            const avgOrder = sortedMonths.map(m => (monthData[m].totalOrder / monthData[m].count).toFixed(1));
+            const bullwhipRatio = sortedMonths.map(m => 
+                (monthData[m].totalOrder / monthData[m].totalDemand).toFixed(2)
+            );
+            
+            // Create chart
+            const ctx = document.getElementById('bullwhip-chart').getContext('2d');
+            
+            if (window.bullwhipChart) {
+                window.bullwhipChart.destroy();
+            }
+            
+            window.bullwhipChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: monthNames,
+                    datasets: [
+                        {
+                            label: 'Average Customer Demand',
+                            data: avgDemand,
+                            backgroundColor: colors[0],
+                            borderColor: colors[0].replace('0.7', '1'),
+                            borderWidth: 1,
+                            order: 2
+                        },
+                        {
+                            label: 'Average Order Quantity',
+                            data: avgOrder,
+                            backgroundColor: colors[1],
+                            borderColor: colors[1].replace('0.7', '1'),
+                            borderWidth: 1,
+                            order: 1
+                        },
+                        {
+                            label: 'Bullwhip Ratio',
+                            data: bullwhipRatio,
+                            type: 'line',
+                            borderColor: colors[2],
+                            borderWidth: 2,
+                            pointBackgroundColor: colors[2],
+                            yAxisID: 'y1',
+                            order: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantity'
+                            }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Ratio'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Create correlation scatter plot
+        function createCorrelationChart() {
+            // Extract lead time variability and actual lead time
+            const dataPoints = procurementData.map(row => ({
+                x: parseFloat(row['Actual_Lead_Time']),
+                y: parseFloat(row['Delay_Days'])
+            }));
+            
+            // Create chart
+            const ctx = document.getElementById('correlation-chart').getContext('2d');
+            
+            if (window.correlationChart) {
+                window.correlationChart.destroy();
+            }
+            
+            window.correlationChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Lead Time vs Delay',
+                        data: dataPoints,
+                        backgroundColor: colors[0],
+                        borderColor: colors[0].replace('0.7', '1'),
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Actual Lead Time (Days)'
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Delay (Days)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Create product category chart
+        function createProductCategoryChart() {
+            // Group by product category and calculate average lead time
+            const productData = {};
+            procurementData.forEach(row => {
+                const product = row['Product_Category'];
+                const leadTime = parseFloat(row['Actual_Lead_Time']);
+                
+                if (!productData[product]) {
+                    productData[product] = { totalLead: 0, count: 0 };
+                }
+                
+                productData[product].totalLead += leadTime;
+                productData[product].count += 1;
+            });
+            
+            // Calculate averages
+            const products = [];
+            const avgLeadTimes = [];
+            
+            Object.entries(productData).forEach(([product, data]) => {
+                products.push(product);
+                avgLeadTimes.push((data.totalLead / data.count).toFixed(1));
+            });
+            
+            // Create chart
+            const ctx = document.getElementById('product-chart').getContext('2d');
+            
+            if (window.productChart) {
+                window.productChart.destroy();
+            }
+            
+            window.productChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: products,
+                    datasets: [{
+                        label: 'Average Lead Time (Days)',
+                        data: avgLeadTimes,
+                        backgroundColor: colors,
+                        borderColor: colors.map(c => c.replace('0.7', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Days'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Helper functions for displaying loading state
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
