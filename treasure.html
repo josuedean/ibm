@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- Ensures proper scaling on mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D ASCII Chalice</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&display=swap">
   <style>
@@ -16,12 +18,6 @@
       justify-content: flex-start;
       align-items: center;
     }
-    #ascii-container {
-      white-space: pre;
-      line-height: 0.9;
-      font-size: 10px;
-      letter-spacing: -0.5px;
-    }
     .title {
       font-family: 'Tangerine', cursive;
       font-size: 32px;
@@ -32,27 +28,42 @@
       max-width: 80%;
       z-index: 10;
     }
+    /* Container for the ASCII output */
+    #ascii-display {
+      white-space: pre;
+      line-height: 0.9;
+      font-size: 10px;
+      letter-spacing: -0.5px;
+    }
   </style>
 </head>
 <body>
-  <div class="title">An intricately rendered chalice made entirely of ASCII characters, awarded to true text-command masters.</div>
-  <div id="ascii-container"></div>
+  <div class="title">
+    An intricately rendered chalice made entirely of ASCII characters, awarded to true text-command masters.
+  </div>
+  <!-- We keep a container to hold our ASCII content -->
+  <div id="ascii-display"></div>
+
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://unpkg.com/three@0.128.0/examples/js/effects/AsciiEffect.js"></script>
-  
   <script>
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 2.5, 5);  // Moved camera back for larger model view
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    camera.position.set(0, 2.5, 5);
     camera.lookAt(0, 1, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // Enhanced lighting setup for better handle and rim visibility
+    // Lights
     const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
     scene.add(ambientLight);
     
@@ -68,128 +79,110 @@
     sideLight.position.set(5, 0, -5);
     scene.add(sideLight);
 
-    // Chalice geometry matching ASCII art:
-    //  '._==_==_=_.'  
-    //  .-\:      /-.
-    // | (|:.     |) |
-    //  '-|:.     |-'
-    //    \::.    /
-    //     '::. .'
-    //       ) (
-    //     _.' '._
-    //    `"""""""`
-
-    // Create a group to hold our chalice and handles
+    // Chalice Group
     const chaliceGroup = new THREE.Group();
     scene.add(chaliceGroup);
 
-    // Main chalice points - ensure no hole through the center
+    // Main Chalice Lathe points
     const points = [];
-    
-    // Base (`""""""`), curved base (_.' '_.)
-    points.push(new THREE.Vector2(0.05, 0.0));    // Center point to close bottom
-    points.push(new THREE.Vector2(1.0, 0.0));     // Base outer - narrower
-    points.push(new THREE.Vector2(0.9, 0.05));    // Base curve in
-    points.push(new THREE.Vector2(0.8, 0.1));     // Base narrow
-    points.push(new THREE.Vector2(0.9, 0.2));     // Base curve out
-    
-    // Stem ) (
-    points.push(new THREE.Vector2(0.5, 0.3));     // Stem start
-    points.push(new THREE.Vector2(0.4, 0.6));     // Stem narrowest
-    points.push(new THREE.Vector2(0.5, 0.9));     // Stem widen
-    
-    // Bowl shape (\::. ./)
-    points.push(new THREE.Vector2(0.7, 1.1));     // Bowl start
-    points.push(new THREE.Vector2(0.9, 1.3));     // Bowl middle
-    points.push(new THREE.Vector2(1.0, 1.5));     // Bowl widen
-    
-    // Top rim ('._==_==_=_.')
-    points.push(new THREE.Vector2(1.1, 1.7));     // Rim base
-    points.push(new THREE.Vector2(1.2, 1.75));    // First =
-    points.push(new THREE.Vector2(1.1, 1.8));     // First dip
-    points.push(new THREE.Vector2(1.2, 1.85));    // Second =
-    points.push(new THREE.Vector2(1.1, 1.9));     // Second dip
-    points.push(new THREE.Vector2(1.2, 1.95));    // Third =
-    points.push(new THREE.Vector2(1.0, 2.0));     // Final curve
+    points.push(new THREE.Vector2(0.05, 0.0));
+    points.push(new THREE.Vector2(1.0, 0.0));
+    points.push(new THREE.Vector2(0.9, 0.05));
+    points.push(new THREE.Vector2(0.8, 0.1));
+    points.push(new THREE.Vector2(0.9, 0.2));
+    points.push(new THREE.Vector2(0.5, 0.3));
+    points.push(new THREE.Vector2(0.4, 0.6));
+    points.push(new THREE.Vector2(0.5, 0.9));
+    points.push(new THREE.Vector2(0.7, 1.1));
+    points.push(new THREE.Vector2(0.9, 1.3));
+    points.push(new THREE.Vector2(1.0, 1.5));
+    points.push(new THREE.Vector2(1.1, 1.7));
+    points.push(new THREE.Vector2(1.2, 1.75));
+    points.push(new THREE.Vector2(1.1, 1.8));
+    points.push(new THREE.Vector2(1.2, 1.85));
+    points.push(new THREE.Vector2(1.1, 1.9));
+    points.push(new THREE.Vector2(1.2, 1.95));
+    points.push(new THREE.Vector2(1.0, 2.0));
 
-    // Create the main chalice with higher segment count for more detail
-    const geometry = new THREE.LatheGeometry(points, 192); // Increased segments for more detail
+    const geometry = new THREE.LatheGeometry(points, 192);
     const material = new THREE.MeshPhongMaterial({
-        color: 0xffd700,        // Gold color
-        shininess: 120,         // Reflective
-        specular: 0xffffdd,     // Warm highlights
+        color: 0xffd700,
+        shininess: 120,
+        specular: 0xffffdd,
         side: THREE.DoubleSide
     });
     
     const chalice = new THREE.Mesh(geometry, material);
-    chalice.scale.set(1.5, 1.5, 1.5); // Increase overall size by 50%
+    chalice.scale.set(1.5, 1.5, 1.5);
     chaliceGroup.add(chalice);
 
-    // Create very prominent handles that will be clearly visible in ASCII
-    // Connect handles from stem to upper bowl
+    // Handles
     const handleWidth = 0.15;
-    
-    // Create a curved handle path - connect from stem to upper bowl
-    const leftHandleCurve = new THREE.CubicBezierCurve3(
-        new THREE.Vector3(-0.6, 0.7, 0),          // Start at stem
-        new THREE.Vector3(-1.4, 0.9, 0),          // Control point 1
-        new THREE.Vector3(-1.4, 1.4, 0),          // Control point 2
-        new THREE.Vector3(-0.9, 1.5, 0)           // End at upper bowl
-    );
-    
-    // Create handle geometry by extruding along path
     const handleShape = new THREE.Shape();
     handleShape.ellipse(0, 0, handleWidth, handleWidth, 0, Math.PI * 2);
-    
+
+    const leftHandleCurve = new THREE.CubicBezierCurve3(
+      new THREE.Vector3(-0.6, 0.7, 0),
+      new THREE.Vector3(-1.4, 0.9, 0),
+      new THREE.Vector3(-1.4, 1.4, 0),
+      new THREE.Vector3(-0.9, 1.5, 0)
+    );
+
     const leftExtrudeSettings = {
-        steps: 40,              // More steps for smoother curve
-        bevelEnabled: false,
-        extrudePath: leftHandleCurve
+      steps: 40,
+      bevelEnabled: false,
+      extrudePath: leftHandleCurve
     };
-    
+
     const leftHandleGeometry = new THREE.ExtrudeGeometry(handleShape, leftExtrudeSettings);
     const leftHandle = new THREE.Mesh(leftHandleGeometry, material);
-    leftHandle.scale.set(1.5, 1.5, 1.5); // Scale to match chalice
+    leftHandle.scale.set(1.5, 1.5, 1.5);
     chaliceGroup.add(leftHandle);
-    
-    // Right handle - mirror the left handle
+
     const rightHandleCurve = new THREE.CubicBezierCurve3(
-        new THREE.Vector3(0.6, 0.7, 0),           // Start at stem
-        new THREE.Vector3(1.4, 0.9, 0),           // Control point 1
-        new THREE.Vector3(1.4, 1.4, 0),           // Control point 2
-        new THREE.Vector3(0.9, 1.5, 0)            // End at upper bowl
+      new THREE.Vector3(0.6, 0.7, 0),
+      new THREE.Vector3(1.4, 0.9, 0),
+      new THREE.Vector3(1.4, 1.4, 0),
+      new THREE.Vector3(0.9, 1.5, 0)
     );
-    
+
     const rightExtrudeSettings = {
-        steps: 40,              // More steps for smoother curve
-        bevelEnabled: false,
-        extrudePath: rightHandleCurve
+      steps: 40,
+      bevelEnabled: false,
+      extrudePath: rightHandleCurve
     };
-    
+
     const rightHandleGeometry = new THREE.ExtrudeGeometry(handleShape, rightExtrudeSettings);
     const rightHandle = new THREE.Mesh(rightHandleGeometry, material);
-    rightHandle.scale.set(1.5, 1.5, 1.5); // Scale to match chalice
+    rightHandle.scale.set(1.5, 1.5, 1.5);
     chaliceGroup.add(rightHandle);
 
-    // Rotate the entire chalice for optimal ASCII rendering
+    // Slight rotation for better ASCII angle
     chaliceGroup.rotation.z = Math.PI * 0.05;
-    chaliceGroup.rotation.x = Math.PI * 0.15;  // Tilt forward to show handles
-    
-    // Improved ASCII effect with more distinct characters for better handle visibility
-    const ascii = new THREE.AsciiEffect(renderer, ' .,:;i1tfLCG08@', { invert: true, resolution: 0.1 }); // Higher resolution for more detail
-    ascii.setSize(window.innerWidth, window.innerHeight);
-    ascii.domElement.id = 'ascii-container';
-    document.body.appendChild(ascii.domElement);
+    chaliceGroup.rotation.x = Math.PI * 0.15;
 
-    // Refined controls with extended zoom range
+    // ASCII Effect
+    const ascii = new THREE.AsciiEffect(
+      renderer,
+      ' .,:;i1tfLCG08@',
+      { invert: true, resolution: 0.1 }
+    );
+    ascii.setSize(window.innerWidth, window.innerHeight);
+
+    // Instead of giving it the same 'id', append it to a container
+    const asciiContainer = document.getElementById('ascii-display');
+    asciiContainer.appendChild(ascii.domElement);
+
+    // OrbitControls
     const controls = new THREE.OrbitControls(camera, ascii.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.1;
     controls.autoRotate = true;
     controls.autoRotateSpeed = 1.0;
-    controls.minDistance = 1;    // Allow closer zoom
-    controls.maxDistance = 20;   // Allow much further zoom out
+    controls.minDistance = 1;
+    controls.maxDistance = 20;
 
+    // Handle resizing for all devices (desktop/mobile)
     window.addEventListener('resize', () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
@@ -199,10 +192,11 @@
       ascii.setSize(width, height);
     });
 
+    // Animation loop
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
-      chaliceGroup.rotation.y += 0.001; // Slight additional rotation for smoother movement
+      chaliceGroup.rotation.y += 0.001;
       ascii.render(scene, camera);
     }
     animate();
