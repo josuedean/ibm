@@ -4,12 +4,17 @@
   <meta charset="UTF-8">
   <!-- Ensures proper scaling on mobile -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D ASCII Chalice</title>
+  <title>3D ASCII Chalice (Mobile Touch-Friendly)</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&display=swap">
   <style>
-    body {
+    /* Make sure the page and container occupy the full screen
+       and prevent default overflow behaviors on mobile. */
+    html, body {
       margin: 0;
-      overflow: hidden;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden; 
       background-color: #000;
       color: #fff;
       font-family: monospace;
@@ -18,6 +23,7 @@
       justify-content: flex-start;
       align-items: center;
     }
+
     .title {
       font-family: 'Tangerine', cursive;
       font-size: 32px;
@@ -28,12 +34,23 @@
       max-width: 80%;
       z-index: 10;
     }
-    /* Container for the ASCII output */
+
+    /* This container holds the ASCII output. "touch-action: none"
+       is critical on mobile so pinch/drag events go to OrbitControls. */
     #ascii-display {
       white-space: pre;
       line-height: 0.9;
       font-size: 10px;
       letter-spacing: -0.5px;
+      touch-action: none;     /* Prevent default browser gestures */
+      user-select: none;      /* Disables text selection highlight on touch */
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      flex: 1; /* Let it fill remaining space */
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   </style>
 </head>
@@ -41,7 +58,6 @@
   <div class="title">
     An intricately rendered chalice made entirely of ASCII characters, awarded to true text-command masters.
   </div>
-  <!-- We keep a container to hold our ASCII content -->
   <div id="ascii-display"></div>
 
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
@@ -66,7 +82,7 @@
     // Lights
     const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
     scene.add(ambientLight);
-    
+
     const frontLight = new THREE.DirectionalLight(0xffffff, 1.2);
     frontLight.position.set(5, 5, 5);
     scene.add(frontLight);
@@ -83,7 +99,7 @@
     const chaliceGroup = new THREE.Group();
     scene.add(chaliceGroup);
 
-    // Main Chalice Lathe points
+    // Main chalice profile
     const points = [];
     points.push(new THREE.Vector2(0.05, 0.0));
     points.push(new THREE.Vector2(1.0, 0.0));
@@ -106,12 +122,12 @@
 
     const geometry = new THREE.LatheGeometry(points, 192);
     const material = new THREE.MeshPhongMaterial({
-        color: 0xffd700,
-        shininess: 120,
-        specular: 0xffffdd,
-        side: THREE.DoubleSide
+      color: 0xffd700,
+      shininess: 120,
+      specular: 0xffffdd,
+      side: THREE.DoubleSide
     });
-    
+
     const chalice = new THREE.Mesh(geometry, material);
     chalice.scale.set(1.5, 1.5, 1.5);
     chaliceGroup.add(chalice);
@@ -121,6 +137,7 @@
     const handleShape = new THREE.Shape();
     handleShape.ellipse(0, 0, handleWidth, handleWidth, 0, Math.PI * 2);
 
+    // Left handle
     const leftHandleCurve = new THREE.CubicBezierCurve3(
       new THREE.Vector3(-0.6, 0.7, 0),
       new THREE.Vector3(-1.4, 0.9, 0),
@@ -133,12 +150,12 @@
       bevelEnabled: false,
       extrudePath: leftHandleCurve
     };
-
     const leftHandleGeometry = new THREE.ExtrudeGeometry(handleShape, leftExtrudeSettings);
     const leftHandle = new THREE.Mesh(leftHandleGeometry, material);
     leftHandle.scale.set(1.5, 1.5, 1.5);
     chaliceGroup.add(leftHandle);
 
+    // Right handle
     const rightHandleCurve = new THREE.CubicBezierCurve3(
       new THREE.Vector3(0.6, 0.7, 0),
       new THREE.Vector3(1.4, 0.9, 0),
@@ -151,17 +168,16 @@
       bevelEnabled: false,
       extrudePath: rightHandleCurve
     };
-
     const rightHandleGeometry = new THREE.ExtrudeGeometry(handleShape, rightExtrudeSettings);
     const rightHandle = new THREE.Mesh(rightHandleGeometry, material);
     rightHandle.scale.set(1.5, 1.5, 1.5);
     chaliceGroup.add(rightHandle);
 
-    // Slight rotation for better ASCII angle
+    // Slight tilt
     chaliceGroup.rotation.z = Math.PI * 0.05;
     chaliceGroup.rotation.x = Math.PI * 0.15;
 
-    // ASCII Effect
+    // ASCII effect
     const ascii = new THREE.AsciiEffect(
       renderer,
       ' .,:;i1tfLCG08@',
@@ -169,20 +185,35 @@
     );
     ascii.setSize(window.innerWidth, window.innerHeight);
 
-    // Instead of giving it the same 'id', append it to a container
+    // Attach to the #ascii-display container
     const asciiContainer = document.getElementById('ascii-display');
     asciiContainer.appendChild(ascii.domElement);
 
-    // OrbitControls
+    // OrbitControls with explicit touch settings
     const controls = new THREE.OrbitControls(camera, ascii.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.1;
-    controls.autoRotate = true;
+
+    // Disable auto-rotate to let users rotate with a single finger
+    controls.autoRotate = false;
     controls.autoRotateSpeed = 1.0;
+
+    // Pinch-to-zoom, rotate with one finger
+    controls.enableZoom = true;
+    controls.enableRotate = true;
+    controls.enablePan = false;  // Turn off panning if you like
+
+    // Touch configuration for better mobile gestures
+    controls.touches = {
+      ONE: THREE.TOUCH.ROTATE,    // Single-finger move = rotate
+      TWO: THREE.TOUCH.DOLLY_PAN  // Two-fingers = pinch (zoom) or move both fingers (pan)
+    };
+
+    // Set desired distance range
     controls.minDistance = 1;
     controls.maxDistance = 20;
 
-    // Handle resizing for all devices (desktop/mobile)
+    // Resize handling
     window.addEventListener('resize', () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
@@ -192,11 +223,10 @@
       ascii.setSize(width, height);
     });
 
-    // Animation loop
+    // Animation
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
-      chaliceGroup.rotation.y += 0.001;
       ascii.render(scene, camera);
     }
     animate();
