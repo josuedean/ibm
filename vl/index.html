@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Virtual Library</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Three.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls for camera movement -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>3D Virtual Library</h1>
+        </header>
+        
+        <div class="upload-section">
+            <h2>Upload Library Data</h2>
+            <div class="file-upload">
+                <input type="file" id="csvFile" accept=".csv" />
+                <button id="uploadBtn">Upload and Visualize</button>
+            </div>
+            <div id="validationMessage" class="validation-message"></div>
+        </div>
+
+        <!-- Removed genre filter dropdown -->
+        
+        <div id="libraryContainer" class="library-container">
+            <!-- Three.js canvas will be inserted here -->
+        </div>
+        
+        <div id="bookInfo" class="book-info">
+            <h3>Book Information</h3>
+            <div id="bookDetails">
+                <p>Click on a book to see details</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript files -->
+    <script src="js/csvUtils.js"></script>
+    <script src="js/visualizer.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
