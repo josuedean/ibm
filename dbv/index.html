@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV Table Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Library for CSV parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <!-- Library for draggable elements -->
+  <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+  <!-- Library for drawing connections between elements -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPlumb/2.15.6/js/jsplumb.min.js"></script>
+</head>
+<body>
+  <div id="visualization-container">
+    <div class="floating-ui">
+      <div class="app-title">CSV Table Visualizer</div>
+      <div class="file-upload-container">
+        <label for="csv-upload" class="upload-label">Upload CSV Files</label>
+        <input type="file" id="csv-upload" accept=".csv" multiple>
+        <p class="file-info">Multiple files allowed. First column will be treated as primary key.</p>
+      </div>
+    </div>
+    
+    <div id="zoom-controls">
+      <button id="zoom-in" title="Zoom In">+</button>
+      <button id="zoom-out" title="Zoom Out">−</button>
+    </div>
+    
+    <div id="visualization-area">
+      <!-- The grid background remains on visualization-area -->
+      <!-- New child container for all table windows -->
+      <div id="tables-layer"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
