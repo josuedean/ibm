@@ -1,0 +1,281 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f5f7fa;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px 0;
+    border-bottom: 1px solid #e1e4e8;
+}
+
+header h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+/* Controls Section */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.view-selector, .user-selector {
+    margin: 10px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+select, button {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background-color: white;
+}
+
+select {
+    min-width: 180px;
+}
+
+#user-select {
+    height: 120px;
+    overflow-y: auto;
+}
+
+button {
+    cursor: pointer;
+    margin-left: 5px;
+    background-color: #4a6da7;
+    color: white;
+    border: none;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #3a5a8c;
+}
+
+/* Views */
+.views {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.view {
+    display: none;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+.view.active {
+    display: block;
+    position: relative;
+    opacity: 1;
+    z-index: 2;
+}
+
+/* Calendar View */
+#calendar-view {
+    height: auto;
+    min-height: 600px;
+}
+
+/* Make calendar event text bold */
+.fc-event-title {
+    font-weight: bold !important;
+}
+
+/* List View */
+#availability-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#availability-table th, #availability-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+/* Make names bold and white in list view */
+#availability-table td:first-child {
+    font-weight: bold;
+    color: white;
+}
+
+#availability-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+#availability-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Timeline View */
+.timeline-container {
+    position: relative;
+    padding: 20px 0;
+    width: 100%;
+    overflow-x: auto;
+}
+
+.timeline-hours {
+    display: flex;
+    margin-bottom: 10px;
+    padding-left: 120px; /* Space for labels */
+    min-width: 850px; /* Ensure enough width for all hours */
+}
+
+.timeline-hour {
+    width: 45px; /* Fixed width for each hour */
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    flex-shrink: 0;
+}
+
+.timeline-row {
+    display: flex;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.timeline-label {
+    width: 120px;
+    padding-right: 15px;
+    text-align: right;
+    font-weight: bold;
+    color: white;
+}
+
+.timeline-slots {
+    flex: 1;
+    position: relative;
+    height: 30px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
+
+.timeline-slot {
+    position: absolute;
+    height: 100%;
+    /* Default color moved to JS for dynamic coloring */
+    opacity: 0.8;
+    border-radius: 4px;
+}
+
+/* Overlapping Section */
+.overlap-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.overlap-section h2 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.overlap-day {
+    margin-bottom: 15px;
+}
+
+.overlap-day h3 {
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 10px;
+}
+
+.overlap-slot {
+    padding: 8px;
+    background-color: #e8f4ff;
+    border-left: 4px solid #4a6da7;
+    margin-bottom: 5px;
+    border-radius: 4px;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border-left-color: #4a6da7;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .controls {
+        flex-direction: column;
+    }
+    
+    .view-selector, .user-selector {
+        width: 100%;
+    }
+    
+    #user-select {
+        width: 100%;
+    }
+}
