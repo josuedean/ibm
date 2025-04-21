@@ -52,18 +52,34 @@
 <body>
   <div class="container">
     <h1>Grade Breakdown</h1>
-    <div id="grades">
-      Loading grades...
-    </div>
+    <div id="grades">Loading grades...</div>
     <p><a href="index.html">← Back to Home</a></p>
   </div>
 
   <script>
-    const gradesUrl = 'https://script.google.com/macros/s/AKfycbzUbfpXUjYTeD4gGxgBm_rG_BNR5Pp-1-GaRBD4oyzS9U0gWjgmMQM_318RFi7fGZ3t/exec';
+    const gradesUrl = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec'; // Replace with yours
 
     fetch(gradesUrl)
       .then(response => response.json())
       .then(data => {
-        const grades
-::contentReference[oaicite:6]{index=6}
- 
+        const gradesContainer = document.getElementById('grades');
+        gradesContainer.innerHTML = '';
+        data.grades.forEach(grade => {
+          const gradeItem = document.createElement('div');
+          gradeItem.classList.add('grade-item');
+          gradeItem.innerHTML = `
+            <h3>${grade.gradeName} (${grade.gradeType})</h3>
+            <p>Received: ${grade.fraction}</p>
+            <p>Percentage: ${grade.percentage}</p>
+            <p>Course: ${grade.courseCode}</p>
+          `;
+          gradesContainer.appendChild(gradeItem);
+        });
+      })
+      .catch(error => {
+        console.error('Error loading grades:', error);
+        document.getElementById('grades').textContent = 'Error loading grades.';
+      });
+  </script>
+</body>
+</html>
