@@ -1,65 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IBM Student Resources</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f8ff;
-            color: #333;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-        }
-        h1 {
-            color: #007acc;
-        }
-        .links {
-            margin-top: 30px;
-        }
-        .links a {
-            display: block;
-            margin: 10px 0;
-            padding: 10px 15px;
-            background-color: #007acc;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .links a:hover {
-            background-color: #005f99;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IBM Student Resources</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at 20% 20%, #0f0c29, #302b63, #24243e);
+      color: #0ff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 80px auto;
+      padding: 30px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #0ff;
+      border-radius: 15px;
+      box-shadow: 0 0 25px #0ff;
+    }
+
+    h1, h2 {
+      color: #ff00cc;
+      text-shadow: 0 0 10px #ff00cc;
+    }
+
+    .links a {
+      display: block;
+      margin: 10px 0;
+      padding: 12px 20px;
+      background-color: #111;
+      border: 2px solid #0ff;
+      color: #0ff;
+      text-decoration: none;
+      border-radius: 10px;
+      transition: all 0.3s;
+      text-shadow: 0 0 8px #0ff;
+    }
+
+    .links a:hover {
+      background-color: #0ff;
+      color: #111;
+      text-shadow: none;
+    }
+
+    #grade-summary {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(0, 255, 255, 0.1);
+      border: 1px solid #0ff;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: right;
+      box-shadow: 0 0 15px #0ff;
+    }
+
+    .summary-card p {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+
+    #grades {
+      margin-top: 30px;
+    }
+
+    .grade-item {
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: 1px solid #ff00cc;
+      box-shadow: 0 0 15px #ff00cc;
+    }
+
+    .grade-item h3 {
+      color: #ff00cc;
+      margin-bottom: 8px;
+    }
+
+    .grade-item p {
+      font-size: 14px;
+      margin: 5px 0;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>IBM Student Resources</h1>
-        <div class="links">
-            <h2>Accounting Resources</h2>
-            <a href="adapak_simple.html">New Product Example: Adapak</a>
-            <a href="optimizer.html">Linear Optimizer</a>
-            <a href="lets_take_a_vote.html">Hold a vote</a>
-            <a href="DRPV.html">Dice Roll Probability Visualizer</a>
-        </div>
-        <div class="links">
-            <h2>Programming Resources</h2>
-            <a href="crypter.html">Encryption and Decryption Tool</a>
-            <a href="a7_tool.html">Assignment 7 Tool - Outlier Detection</a>
-            <a href="tournament_results_analyzer.html">Assignment 6: Analysis of Tournament 1 Results</a>
-            <a href="river_crossing_problem.html">River Crossing Visualizer</a>
-            <a href="tower_of_hanoi.html">Tower of Hanoi</a>
-        </div>
+  <div id="grade-summary"></div>
+
+  <div class="container">
+    <h1>IBM Student Resources</h1>
+
+    <div id="grades"></div>
+
+    <div class="links">
+      <h2>Accounting Resources</h2>
+      <a href="adapak_simple.html">New Product Example: Adapak</a>
+      <a href="optimizer.html">Linear Optimizer</a>
+      <a href="lets_take_a_vote.html">Hold a vote</a>
+      <a href="DRPV.html">Dice Roll Probability Visualizer</a>
     </div>
+
+    <div class="links">
+      <h2>Programming Resources</h2>
+      <a href="crypter.html">Encryption and Decryption Tool</a>
+      <a href="a7_tool.html">Assignment 7 Tool - Outlier Detection</a>
+      <a href="tournament_results_analyzer.html">Assignment 6: Analysis of Tournament 1 Results</a>
+      <a href="river_crossing_problem.html">River Crossing Visualizer</a>
+      <a href="tower_of_hanoi.html">Tower of Hanoi</a>
+    </div>
+  </div>
+
+  <script>
+    const gradesUrl = 'https://docs.google.com/spreadsheets/d/18zvzGyrOjGUzxLUv5nwpPDSsZ5eaqgi3P6hybCMZbao/edit?usp=sharing';
+
+    function fetchGrades() {
+      fetch(gradesUrl)
+        .then(response => response.json())
+        .then(data => {
+          const summaryEl = document.getElementById('grade-summary');
+          summaryEl.innerHTML = `
+            <div class="summary-card">
+              <p><strong>Grade Summary:</strong></p>
+              <p>${data.summary.percentage}</p>
+              <p>${data.summary.fraction}</p>
+            </div>
+          `;
+
+          const gradesContainer = document.getElementById('grades');
+          data.grades.forEach(grade => {
+            const gradeItem = document.createElement('div');
+            gradeItem.classList.add('grade-item');
+            gradeItem.innerHTML = `
+              <h3>${grade.gradeName} (${grade.gradeType})</h3>
+              <p>Grade Received: ${grade.fraction}</p>
+              <p>Percentage: ${grade.percentage}</p>
+              <p>Course: ${grade.courseCode}</p>
+            `;
+            gradesContainer.appendChild(gradeItem);
+          });
+        })
+        .catch(error => console.error('Error fetching grades:', error));
+    }
+
+    window.onload = fetchGrades;
+  </script>
 </body>
 </html>
