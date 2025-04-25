@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CLI Dungeon Crawl Walkthrough</title>
+  <style>
+    html, body {
+      overflow-x: hidden;
+    }
+    body {
+      background-color: #2d1a42;
+      color: #e8d8ff;
+      font-family: system-ui, sans-serif;
+      line-height: 1.8;
+      padding: 2rem;
+      max-width: 650px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      color: #d0a0ff;
+    }
+    p {
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    ul, ol {
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    code {
+      background-color: #19102a;
+      color: #6bd3ff;
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    pre {
+      background-color: #19102a;
+      padding: 1em;
+      border-radius: 6px;
+      overflow-x: auto;
+      color: #e8d8ff;
+      max-width: 650px;
+      margin-left: auto;
+      margin-right: auto;
+      /* Hide scrollbar but allow horizontal scrolling */
+      scrollbar-width: none;          /* Firefox */
+      -ms-overflow-style: none;       /* IE 10+ */
+    }
+    pre::-webkit-scrollbar {
+      display: none;               /* Chrome, Safari, Opera */
+    }
+    /* CLI styling with increased contrast */
+    .cli-prompt {
+      color: #ff9cf9;
+      font-weight: bold;
+    }
+    .cli-cmd {
+      color: #6bd3ff;
+    }
+    .cli-out {
+      color: #c0c0c0;
+      display: block;
+    }
+    .section {
+      margin-top: 3em;
+    }
+    a {
+      color: #d0a0ff;
+      text-decoration: none;
+    }
+    strong {
+      color: #ffb3f3;
+    }
+  </style>
+</head>
+<body>
+  <h1>CLI Dungeon Crawl Walkthrough</h1>
+
+  <p>Welcome, adventurer! Many have wandered into the darkness of this fortress and, baffled by a blinking prompt, never returned. But fear not—we’ll light the way with glowing code blocks and just a touch of snark.</p>
+
+  <div class="section">
+    <h2>Step 1: Type <code>help</code> – Don’t Be Shy</h2>
+    <p>The first and most obvious thing to do in a mysterious command line world is... well... ask for help. If you didn’t try this, it’s okay. Some of us learn through fire. The <code>help</code> command shows you what tools are in your metaphorical backpack:</p>
+    <pre>
+<span class="cli-prompt">C:\&gt;</span> <span class="cli-cmd">help</span>
+<span class="cli-out">  
+dir [options]                 - Displays a list of files and subdirectories in a directory.
+cd [dir]                      - Change directory. Use 'cd ..' to go up one directory level.
+type [file]                   - Displays the contents of a text file.
+rename [old] [new]            - Renames a file or files.
+tree                          - Graphically displays the structure of the directories that you have visited.
+cls                           - Clears the screen. Enter this command to remove distractions.
+findstr [pattern] [file]      - Searches for text patterns in files.
+attrib [options] [file]       - Displays or changes file attributes.
+copy [file] [destination]     - Copies a file to a destination dir.
+move [file] [destination]     - Moves a file to a destination dir.
+del [file]                    - Deletes a file.
+echo [message]                - Displays messages to the terminal window.
+title [new_title]             - Sets a new window title.
+color [option]                - Sets console foreground and background colors (0A, 0F, 0P, 07).
+help                          - Show this help.
+
+TIP: Press Tab for command auto-completion</span></pre>
+    <p>Now you know the commands, but where are you?</p>
+  </div>
+
+  <div class="section">
+    <h2>Step 2: Find Your Bearings</h2>
+    <p>You wouldn’t just run into a maze without looking around first, right? Right?! Use <code>dir</code> to list the contents of your current working directory:</p>
+    <pre>
+<span class="cli-prompt">C:\&gt;</span> <span class="cli-cmd">dir</span>
+<span class="cli-out">          EntranceGrounds     &lt;DIR&gt;
+          FortressLore.txt    &lt;file&gt;
+          README.md           &lt;file&gt;</span></pre>
+    <p>Now we’re cooking. We’ve got some files and a directory. Like any responsible adventurer, let’s read what’s lying around first. Who knows—maybe the README actually tells you something useful!</p>
+
+    <p>We will use the <code>type</code> command to read the contents of the README.md file.</p>
+    <pre>
+<span class="cli-prompt">C:\&gt;</span> <span class="cli-cmd">type README.md</span>
+<span class="cli-out">  
+# Abandoned Fortress
+
+**Your Objective:** Retrieve the legendary ASCII Chalice hidden within these ancient walls.
+
+- Explore directories (like levels and rooms of the fortress) using `dir` and `cd`.
+- Some rooms or files may be hidden; use `dir /A` to reveal things hidden.
+- You may need to rename, move, or delete certain files to progress.
+- Use `findstr` to search files with a large amount of text for hidden clues.
+- `attrib -r` might be needed on read-only files before deletion.
+- Use the Tab key to auto complete file and directory names.
+- Use the up and down arrows to cycle through past commands you've used.
+- All file and directory names are CASE SENSITIVE! Type carefully.
+
+** Assignment Requirements: **
+
+- Read everything carefully!
+- Complete the deliverables.
+
+Proceed carefully, adventurer... Good luck!</span></pre>
+    <p>There are a few gems in here so, again, <strong>read carefully.</strong> The most notable are:</p>
+    <ul>
+      <li><code>cd ..</code> moves up one level in the directory tree.</li>
+      <li><code>dir /a</code> shows hidden files and folders – essential for discovering secret paths.</li>
+      <li><code>findstr</code> helps you search large documents for key clues.</li>
+      <li>Use relative paths like <code>..\</code> or <code>.\</code> depending on where you are.</li>
+    </ul>
+    <p>Next we will use the <code>type</code> command again to read FortressLore.txt.</h3>
+    <pre>
+<span class="cli-prompt">C:\&gt;</span> <span class="cli-cmd">type FortressLore.txt</span>
+<span class="cli-out">  Legends speak of an abandoned fortress once ruled by a brilliant CLI Wizard. Within its depths lies a relic said to grant eternal command line mastery: the ASCII Chalice. Many have ventured here, few returned. Will you succeed?</span></pre>
+    <p><strong>Oh yes, now it’s officially a quest!</strong> You are not just poking around a file system—you’re chasing legends.</p>
+  </div>
+
+<div class="section">
+  <h2>Step 3: Exploring the Entrance Grounds</h2>
+  <p>Let's explore the <code>EntranceGrounds</code> directory by using <code>cd</code> to enter the directory and <code>dir</code> to list the contents:</p>
+  <pre>
+<span class="cli-prompt">C:\&gt;</span> <span class="cli-cmd">cd EntranceGrounds</span>
+<span class="cli-prompt">C:\EntranceGrounds\&gt;</span> <span class="cli-cmd">dir</span>
+<span class="cli-out">          OuterWalls  &lt;DIR&gt;
+          Gatehouse.info  &lt;file&gt;</span></pre>
+  <p>Next, we will use the <code>type</code> command to read the contents of the <code>Gatehouse.info</code> file:</p>
+  <pre>
+<span class="cli-prompt">C:\EntranceGrounds\&gt;</span> <span class="cli-cmd">type Gatehouse.info</span> 
+<span class="cli-out">You stand before the Entrance Grounds. The gate creaks open. Rumors say the Outer Walls lie ahead, and hidden paths might exist nearby.</span></pre>
+<p>Now we learn of a hidden path so we will use the <code>dir /a</code> command to list hidden files and directories:</p>
+<pre>
+<span class="cli-prompt">C:\EntranceGrounds\&gt;</span> <span class="cli-cmd">dir /a</span>
+<span class="cli-out">          SidePath  &lt;DIR&gt;
+          OuterWalls  &lt;DIR&gt;
+          Gatehouse.info  &lt;file&gt;</span></pre>
+    <p>Now we will use the <code>cd</code> command to enter the <code>SidePath</code> directory:</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\&gt;</span> <span class="cli-cmd">cd SidePath</span>
+<span class="cli-prompt">C:\EntranceGrounds\SidePath\&gt;</span> <span class="cli-cmd">dir</span>
+<span class="cli-out">          DiscardedNote.txt  &lt;file&gt;</span></pre>
+    <p>Next, we will use the <code>type</code> command to read the contents of the <code>DiscardedNote.txt</code> file:</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\SidePath\&gt;</span> <span class="cli-cmd">type DiscardedNote.txt</span>
+<span class="cli-out"> A weathered note reading: 'The Chalice has been moved or hidden away in the fortress. There is a door sealed by magic that we could not open. We believe the Tome of Records contains a clue.'</span></pre>
+    <p><strong>Clue: </strong>Maybe we should look for a file that resembles a "Tome of Records".</p>
+    <h3>The Process: </h3>
+    <p>In this step, I've outlined the necessary process and commands for exploring the dungeon.
+      <ul>
+        <li>Enter new directories with <code  >cd</code></li>
+        <li>Explore hidden files and directories with <code>dir /a</code></li>
+        <li>Read files with <code>type</code></li>
+        <li>Find clues in the file contents.</li>
+        <li><strong>Rinse and Repeat!</strong></li>
+      </ul>
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>The Path to Success: Puzzle Breakdown</h2>
+    <p>Now let's break down the three main puzzles to the dungeon and their clues.</p>
+    <h3>Puzzle 1: The Stone Key and the Locked Door</h3>
+    <p>From the <code>EntranceGrounds</code>, we will enter the <code>OuterWalls</code> where we find a Crumbling Tower (<code>CrumblingTower.tlook</code>):</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\&gt;</span> <span class="cli-cmd">cd OuterWalls</span>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\&gt;</span> <span class="cli-cmd">type CrumblingTower.look</span> 
+<span class="cli-out">From atop the tower, you glimpse the Inner Keep in the distance and another structure hidden behind overgrowth of old trees and vines.</span></pre>
+    <p>Now we know there is a hidden structure to be found with <code>dir /a</code>.</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\&gt;</span> <span class="cli-cmd">dir /a</span>
+<span class="cli-out">          StorageRoom  &lt;DIR&gt;
+          InnerKeep  &lt;DIR&gt;
+          CrumblingTower.look  &lt;file&gt;</span></pre>
+    <p>Upon entering the StorageRoom we find a <code>StoneKey.key</code>. This might be useful later.</p>
+    <p>Now we will enter the <code>InnerKeep</code> and explore:</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\StorageRoom\&gt;</span> <span class="cli-cmd">cd ..</span>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\&gt;</span> <span class="cli-cmd">cd InnerKeep</span> 
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\InnerKeep\&gt;</span> <span class="cli-cmd">dir</span>
+<span class="cli-out">          LockedDoor  &lt;DIR&gt;
+          GreatHall.info  &lt;file&gt;
+          OldRecords.tome  &lt;file&gt;</span></pre>
+    <p>Trying to <code>cd</code> into the <code>LockedDoor</code> fails:</p>
+    <pre>
+<span class="cli-out"><strong>This door is locked and holds strong when you attempt to force it open.</strong>
+</span></pre>
+    <p>Maybe we should look around more. Remember to read all files you find.</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\InnerKeep\&gt;</span> <span class="cli-cmd">type GreatHall.info</span> 
+<span class="cli-out">Great Hall resonates with echoes of a long-departed wizard. A locked doorway stands further in. If only you had a key...</span></pre>
+  
+    <p>We know just where to get a key! Move the <code>StoneKey.key</code> to the <code>InnerKeep</code> to unlock the door.</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\InnerKeep\&gt;</span> <span class="cli-cmd">move C:\EntranceGrounds\OuterWalls\StorageRoom\StoneKey.key .\</span>
+<span class="cli-out">Moved C:\EntranceGrounds\OuterWalls\StorageRoom\StoneKey.key to .\
+
+<strong>The Stone Key glows brightly as you place it in the Inner Keep. The massive locked door slowly swings open!</strong></span></pre>
+    <p>The move command is made up of three parts: the command <code>move</code>, the source, and the destination. Looking at the command above I am using the absolute path of the source file and the relative path of the destination.</p>
+    <p>Relative paths are paths that start from the current working directory (<code>.\</code>). In this case I am at <code>C:\EntranceGrounds\OuterWalls\InnerKeep</code> which is == <code>.\</code></p>
+    <p>Now that the door is unlocked, we can see that the <code>LockedDoor</code> has changed to <code>OpenedDoor</code> and that the key has been moved.</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\InnerKeep\&gt;</span> <span class="cli-cmd">dir</span>
+<span class="cli-out">          OpenedDoor  &lt;DIR&gt;
+          GreatHall.info  &lt;file&gt;
+          OldRecords.tome  &lt;file&gt;
+          StoneKey.key  &lt;file&gt;</span></pre>
+    <p>That solves the first puzzle of the locked door.</p>
+
+    <h3>Puzzle 2: Elim-inating the Cursed Book</h3>
+    <p><strong>Clue 1:</strong> Remember that DiscardedNote.txt mentioned a Tome of Records? Well here's the tome.</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\InnerKeep\&gt;</span> <span class="cli-cmd">type OldRecords.tome</span> 
+<span class="cli-out">1. Ancient fortress archives - Year 1562
+2. Weather patterns in the northern region
+3. List of supplies for the eastern wing
+4. Inventory of magical artifacts (incomplete)
+5. Staff rotation schedules
+.
+.
+.
+100. Final notes: The grand wizard has left. All is not as it seems.</span></pre>
+    <p>However there is too much to read to find anything useful quickly (you could eyeball it). The real tip come from the sword...</p>
+    <p>Let's check to see if we missed anything.</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\InnerKeep\&gt;</span> <span class="cli-cmd">dir /a</span>
+<span class="cli-out">          OpenedDoor  &lt;DIR&gt;
+          Armory  &lt;DIR&gt;
+          GreatHall.info  &lt;file&gt;
+          OldRecords.tome  &lt;file&gt;</span></pre>
+    <p>Indeed there is a hidden room. After exploring and opening the box we find more information.</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\InnerKeep\Armory\&gt;</span> <span class="cli-cmd">type Weapon.box</span> 
+<span class="cli-out">Inside is an ancient, rusty sword...
+#####################################################
+                ~Sword of Elim~
+Forged in the 83rd year and imbued His dark energies.
+#####################################################</span></pre>
+
+    <p>Indeed there is a hidden room. After exploring and opening the box we find more information.</p>
+    <p><strong>Clue 2: </strong>The year number 83 seems relevant. Back to the records!</p>
+    <p>Since the tome contains so much text we can use the <code>findstr</code> command to find the relevant line.</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\InnerKeep\&gt;</span> <span class="cli-cmd">findstr 83 OldRecords.tome</span></pre>
+    <pre><span class="cli-out">Line 83: 83. *SECURITY NOTICE* For cursed objects that resist removal, remember the emergency elimination protocol must be invoked with 'attrib -elim [filename]'</span></pre>
+
+    <p>After moving back to the InnerKeep we continue exploring:</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\InnerKeep\Armory\&gt;</span> <span class="cli-cmd">cd ..</span>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\InnerKeep\&gt;</span> <span class="cli-cmd">cd OpenedDoor</span> 
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\InnerKeep\OpenedDoor\&gt;</span> <span class="cli-cmd">cd ForbiddenLibrary</span> 
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\InnerKeep\OpenedDoor\ForbiddenLibrary\&gt;</span> <span class="cli-cmd">dir</span>
+<span class="cli-out">          Vault  &lt;DIR&gt;
+          CursedBook.tome  &lt;file&gt;</span></pre>
+    <p>Upon discovering the Cursed book you immediately try to destroy it with <code>del</code> but it does not work. Then you remember the clue from the Old Records.</p>
+    <pre>
+<span class="cli-prompt">C:\...\ForbiddenLibrary\&gt;</span> <span class="cli-cmd">del CursedBook.tome</span> 
+<span class="cli-out">The Cursed Book resists your attempt to destroy it. Use 'attrib [option] CursedBook.tome' to remove its read-only attribute to weaken its magic first.</span></pre>
+    <pre>
+<span class="cli-prompt">C:\...\ForbiddenLibrary\&gt;</span> <span class="cli-cmd">attrib -elim CursedBook.tome</span> 
+<span class="cli-out">Emergency elimination counter curse initiated on cursed object...
+The cursed book disintegrates completely! 
+The dark energy dissipates, revealing a hidden reading chamber that you can now enter.</span></pre>
+    <p>After the elimination of the book, the <code>ReadingChamber</code> is revealed!</p>
+    <pre>
+<span class="cli-prompt">C:\...\ForbiddenLibrary\&gt;</span> <span class="cli-cmd">dir</span>
+<span class="cli-out">          Vault  &lt;DIR&gt;
+          ReadingChamber  &lt;DIR&gt;</span></pre>
+
+    <h3>Puzzle 3: Claiming the Treasure</h3>
+    <p>Now that you have access to the <code>ReadingChamber</code>, you'll discover the <code>Treasure.txt</code>.</p>
+    <pre>
+<span class="cli-prompt">C:\...\ForbiddenLibrary\&gt;</span> <span class="cli-cmd">cd ReadingChamber</span> 
+<span class="cli-prompt">C:\...\ForbiddenLibrary\ReadingChamber\&gt;</span> <span class="cli-cmd">type Treasure.txt</span> 
+<span class="cli-out">You have discovered the ASCII Chalice! Follow this link to claim your reward: 
+https://<code>your_teacher_s_site</code>/treasure.html</span></pre>
+    <p>Undoubtedly you tried to click the link or paste it into your browser and you were met with disappointment, undoubtedly.</p>
+    <p>In order to find the ASCII Chalice you need to replace <code>your_teacher_s_site</code> with my domain and repo to my github site: <br>
+    <a href="https://josuedean.github.io/ibm/treasure.html">https://<strong>josuedean.github.io/ibm</strong>/treasure.html</a></p>
+  </div>
+
+  <div class="section">
+    <h2>Seeing Where You've Been</h2>
+    <p>After the treasure, you might want to see where you've been. After changing your directory back to the root directory (C:), you can use <code>tree</code> to view the rooms of the dungeon (folder structure):</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\OuterWalls\InnerKeep\OpenedDoor\ForbiddenLibrary\ReadingChamber\&gt;</span> <span class="cli-cmd">cd c:\</span>
+<span class="cli-prompt">C:\&gt;</span> <span class="cli-cmd">tree</span>
+<span class="cli-out">C:\
+├── FortressLore.txt
+├── README.md
+└── EntranceGrounds
+    ├── Gatehouse.info
+    ├── SidePath
+    │   └── DiscardedNote.txt
+    └── OuterWalls
+        ├── CrumblingTower.look
+        ├── StorageRoom
+        └── InnerKeep
+            ├── GreatHall.info
+            ├── OldRecords.tome
+            ├── OpenedDoor
+            │   └── ForbiddenLibrary
+            │       ├── Vault
+            │       │   └── StoneSentinel.dat
+            │       └── ReadingChamber
+            │           └── Treasure.txt
+            ├── Armory
+            │   └── Weapon.box
+            └── StoneKey.key</span></pre>
+    <p>This is important for completing your map of the dungeon. You were using this command during your playthrough right???</p>
+  </div>
+
+  <div class="section">
+    <h2>Making Mistakes with Confidence</h2>
+    <h3>Fat-Fingered Commands</h3>
+    <p>Let’s be real, nobody gets through this game without at least one fat-fingered command. Here are a few from my own adventure:</p>
+    <pre>
+<span class="cli-prompt">C:\&gt;</span> <span class="cli-cmd">cd va</span>
+<span class="cli-out">Directory not found: va</span></pre>
+    <p>This one’s classic. I meant to type <code>cd Vault</code>. Happens to the best of us.</p>
+    <h3>Syntax Errors and Spelling</h3>
+    <pre>
+<span class="cli-prompt">C:\&gt;</span> <span class="cli-cmd">cd C:\entrancegrounds</span>
+<span class="cli-out">Directory not found: C:\entrancegrounds</span></pre>
+<p>As you can see, capitalization is important.</p>
+    <h3>Usage Errors</h3> 
+    <p>Sometimes, you'll try commands that need more parameters than you provided:</p>
+    <pre>
+<span class="cli-prompt">C:\&gt;</span> <span class="cli-cmd">move</span>
+<span class="cli-out">The syntax of the command is incorrect. Type 'help move' for proper usage.</span></pre>
+    
+    <p>Or you'll try to perform an action on a file that doesn't exist yet:</p>
+    <pre>
+<span class="cli-prompt">C:\&gt;</span> <span class="cli-cmd">type MissingMap.txt</span>
+<span class="cli-out">File not found: MissingMap.txt</span></pre>
+    
+    <p>Most frustrating are the permission errors, which require special handling:</p>
+    <pre>
+<span class="cli-prompt">C:\EntranceGrounds\&gt;</span> <span class="cli-cmd">del ImportantNote.txt</span>
+<span class="cli-out">Access denied: ImportantNote.txt is read-only</span></pre>
+    <p>For these, remember to use <code>attrib -r [filename]</code> first to remove the read-only attribute, then try deleting again.</p>
+    
+    <p>And who hasn't forgotten to close quotes at least once?</p>
+    <pre>
+<span class="cli-prompt">C:\&gt;</span> <span class="cli-cmd">echo "I found the chalice!</span>
+<span class="cli-out">Unclosed string literal. Don't forget to close your quotes.</span></pre>
+    
+    <h3>Navigation Mishaps</h3>
+    <p>Lost in the dungeon? It happens! Try these orientation commands:</p>
+    <pre>
+<span class="cli-prompt">C:\SomeDeepDungeon\&gt;</span> <span class="cli-cmd">cd \</span>
+<span class="cli-out">Changed to C:\</span></pre>
+    <p>The <code>cd \</code> command immediately takes you back to the root directory when you're completely lost.</p>
+    
+  </div>
+
+  <div class="section">
+    <h2>What Comes Next?</h2>
+    <p>If you’ve reached this far and found the ASCII Chalice, congratulations. You’ve proven mastery over mysterious files, cursed books, and magical doors.</p>
+    <p>But there’s more you can do with what you’ve learned:</p>
+    <ul>
+      <li>Try adding your own fake files and see if others can solve your dungeon.</li>
+      <li>Create a map of the folder structure based on your travels.</li>
+      <li>Write a new puzzle using <code>attrib</code>, <code>findstr</code>, or even <code>rename</code>.</li>
+    </ul>
+    <p>Above all, keep exploring, keep typing, and never trust a file named <code>harmless.txt</code>.</p>
+    <p>Or don't... whatever.</p>
+  </div>
+</body>
+</html>
