@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nova Post‑Mortem – Recon Cohort One</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    color: #FFFFFF;
+    font-family: 'Share Tech Mono', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: 
+        radial-gradient(white, rgba(255, 255, 255, 0.2) 2px, transparent 40px),
+        radial-gradient(white, rgba(255, 255, 255, 0.15) 1px, transparent 30px),
+        radial-gradient(white, rgba(255, 255, 255, 0.1) 2px, transparent 40px);
+    background-size: 550px 550px, 350px 350px, 250px 250px;
+    animation: stars 120s linear infinite;
+}
+
+@keyframes stars {
+    0% { background-position: 0 0, 0 0, 0 0; }
+    100% { background-position: 550px 550px, 350px 350px, 250px 250px; }
+}
+
+.terminal {
+    background: rgba(20, 20, 20, 0.9);
+    border: 2px solid #FFFFFF;
+    border-radius: 10px;
+    width: 70vw;
+    max-width: 600px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    position: relative;
+    padding: 2rem;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+.logo {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 10px #FFFFFF;
+    text-align: center;
+}
+
+.blinking {
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-top: 0;
+    color: #a0f0ff;
+    text-shadow: 0 0 10px #a0f0ff;
+}
+
+p, ol {
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+ol {
+    padding-left: 1.5rem;
+}
+
+li {
+    margin-bottom: 0.5rem;
+}
+
+em {
+    font-style: normal;
+    color: #dcc0ff;
+}
+
+strong {
+    color: #ffb380;
+    font-weight: normal;
+}
+
+.form-control {
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #a0f0ff;
+}
+
+input {
+    background: rgba(40, 40, 40, 0.7);
+    border: 1px solid #FFFFFF;
+    color: #FFFFFF;
+    padding: 0.6rem;
+    margin: 0.2rem 0;
+    width: 100%;
+    font-family: 'Share Tech Mono', monospace;
+    box-sizing: border-box;
+}
+
+input:focus {
+    outline: none;
+    border-color: #a0f0ff;
+    box-shadow: 0 0 5px #a0f0ff;
+}
+
+button {
+    background: rgba(40, 40, 40, 0.8);
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    padding: 0.6rem 1.2rem;
+    margin-top: 0.8rem;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    transition: all 0.3s;
+}
+
+button:hover {
+    background: rgba(80, 80, 80, 0.8);
+    box-shadow: 0 0 10px #FFFFFF;
+}
+
+#msg {
+    margin-top: 1.5rem;
+    font-weight: bold;
+    color: #dcc0ff;
+    text-shadow: 0 0 5px #b388ff;
+    min-height: 1.5rem;
+}
+
+.success-message {
+    color: #90ee90;
+    text-shadow: 0 0 5px #90ee90;
+}
+
+.error-message {
+    color: #ff6666;
+    text-shadow: 0 0 5px #ff6666;
+}
+
+.processing-message {
+    color: #ffd700;
+    text-shadow: 0 0 5px #ffd700;
+}
+</style>
+</head>
+<body>
+
+<div class="terminal">
+    <div class="header">
+        <div class="logo">
+            [NOVA INCIDENT]<br>
+            === POST-PUZZLE BRIEFING ===
+        </div>
+    </div>
+
+    <p>Cadet—Nova's EVA tragedy is a sober reminder: <em>always double-check your work.</em>  
+    Before your first planetary drop, confirm you can follow protocol to the letter.</p>
+
+    <ol>
+      <li>Ask <strong>HIF‑Lumen</strong> for <em>a short random seed word</em>.</li>
+      <li>Enter <strong>your Student ID</strong> and that <strong>seed</strong> below.</li>
+      <li>Click <strong>Submit</strong>. Successful submission is permanently logged.</li>
+    </ol>
+
+    <div class="form-control">
+        <label>Student ID</label>
+        <input id="sid">
+    </div>
+
+    <div class="form-control">
+        <label>Seed word</label>
+        <input id="seed">
+    </div>
+
+    <button onclick="submitSeed()">Submit</button>
+
+    <p id="msg"></p>
+</div>
+
+<script>
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbyGz0NVdsGoIUp1T9lJipCEhlGS6dTwl517Ly1q1ThE-A24R82Bzbb4Aa3hQ1AF5A9luQ/exec";   // <-- paste the Apps‑Script /exec URL
+
+async function submitSeed() {
+  const id   = document.getElementById("sid").value.trim();
+  const seed = document.getElementById("seed").value.trim();
+
+  if (!id || !seed) { alert("Please enter both ID and seed."); return; }
+
+  // Show "Talking to the Apps Script..." message
+  const msgElement = document.getElementById("msg");
+  msgElement.className = "processing-message";
+  msgElement.textContent = "Talking to the Apps Script...";
+
+  const url  = `${ENDPOINT}?id=${encodeURIComponent(id)}&seed=${encodeURIComponent(seed)}`;
+  try {
+    const res  = await fetch(url);
+    const data = await res.json();
+
+    if (data.status === "ok") {
+      msgElement.className = "success-message";
+      msgElement.innerHTML =
+        "✅ Logged! Now copy your entire chat with HIF‑Lumen and publish it on your portfolio site <strong>under Week 10</strong>.";
+    } else if (data.status === "denied") {
+      msgElement.className = "error-message";
+      msgElement.textContent =
+        "⛔ Seed already registered for this ID. If you believe this is an error, contact your instructor.";
+    } else {
+      msgElement.className = "error-message";
+      msgElement.textContent = "⚠️ " + data.message;
+    }
+  } catch (err) {
+    // Remove from cache if the request failed (network error)
+    submissionCache.delete(submissionKey);
+    
+    msgElement.className = "error-message";
+    msgElement.textContent = "Network error – please try again.";
+  }
+}
+</script>
+
+</body>
+</html>
