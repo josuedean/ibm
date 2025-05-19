@@ -1,0 +1,736 @@
+{
+  "title": "The Last Person on Earth",
+  "startNode": "L1",
+  "nodes": {
+    "L1": {
+      "id": "L1",
+      "narrativeText": "You open your eyes to a silent cityscape. The streets are empty, with abandoned cars scattered around. No sounds of traffic or people fill the air. Your phone has no signal, and there's no electricity in your building. As the realization dawns that something extraordinary has happened, you must decide your next move in this seemingly abandoned world.",
+      "image": "images/l1.png",
+      "choices": [
+        { "label": "Explore the downtown avenue", "targetId": "L2-A" },
+        { "label": "Investigate a distant hum", "targetId": "L2-B" },
+        { "label": "Seek higher ground", "targetId": "L2-C" }
+      ],
+      "writingPrompts": [
+        "What emotions might you feel in an empty city?",
+        "How would you prepare for the next step?",
+        "Why do you think everyone is gone?"
+      ]
+    },
+    "L2-A": {
+      "id": "L2-A",
+      "narrativeText": "You wander through the empty downtown streets. Storefront windows reflect your solitary figure. Papers flutter in the gentle breeze. The silence is broken only by the sound of your footsteps on the pavement. Several buildings have doors ajar, and you notice a grocery store that might contain supplies. A deep, narrow alley between buildings seems to have some movement in the shadows.",
+      "image": "images/l2a.png",
+      "choices": [
+        { "label": "Search the grocery store for supplies", "targetId": "L3-A1" },
+        { "label": "Continue deeper into downtown", "targetId": "L3-A2" },
+        { "label": "Investigate the movement in the alley", "targetId": "L2A-END" }
+      ],
+      "writingPrompts": [
+        "What does it feel like to explore an abandoned city?",
+        "What would you look for first in a grocery store?",
+        "Why might you be drawn to or afraid of unusual movements?"
+      ]
+    },
+    "L2-B": {
+      "id": "L2-B",
+      "narrativeText": "Following the humming sound, you trek through several blocks until you reach a hospital with emergency generators still running. The building stands as an island of power in the powerless city. Yellow emergency lights cast eerie shadows in the corridors. The humming grows louder as you approach the basement level. The hospital seems to have been evacuated in a hurry, with equipment left on and papers scattered everywhere.",
+      "image": "images/l2b.png",
+      "choices": [
+        { "label": "Search for medical supplies", "targetId": "L3-B1" },
+        { "label": "Investigate the generator room", "targetId": "L3-B2" },
+        { "label": "Look for survivors in patient rooms", "targetId": "L2B-END" }
+      ],
+      "writingPrompts": [
+        "Why might a hospital be one of the last places with power?",
+        "What would you feel when walking through an empty hospital?",
+        "What dangers might exist in an abandoned medical facility?"
+      ]
+    },
+    "L2-C": {
+      "id": "L2-C",
+      "narrativeText": "You climb to the roof of your apartment building to get a better view of the city. The skyline is eerily still, with no signs of human activity as far as you can see. In the distance, you notice a thin column of smoke rising from what appears to be a park area. To the east, a tall radio tower's lights are still blinking, suggesting it might have power. Nearby, a helicopter sits abandoned on a skyscraper's helipad.",
+      "image": "images/l2c.png",
+      "choices": [
+        { "label": "Head toward the smoke in the park", "targetId": "L3-C1" },
+        { "label": "Try to reach the radio tower", "targetId": "L3-C2" },
+        { "label": "Attempt to reach the helicopter", "targetId": "L2C-END" }
+      ],
+      "writingPrompts": [
+        "What might the smoke in the distance indicate?",
+        "How would you feel seeing an entire city without people from above?",
+        "What skills would be valuable in this situation?"
+      ]
+    },
+    "L2A-END": {
+      "id": "L2A-END",
+      "narrativeText": "You follow the movement into the alley, your curiosity overwhelming your caution. As you venture deeper into the shadows, you realize too late that a pack of dogs, now feral and hungry without their owners, has made this alley their territory. Cut off from escape and overwhelmed by their numbers, your journey ends here, a victim of the new wilderness taking hold in the abandoned city.",
+      "image": "images/l2aend.png",
+      "choices": [],
+      "writingPrompts": [
+        "What might you have done differently to avoid this fate?",
+        "How quickly might domesticated animals return to wild behaviors?",
+        "What dangers exist in cities beyond human threats?"
+      ]
+    },
+    "L2B-END": {
+      "id": "L2B-END",
+      "narrativeText": "The patient rooms are dark and mostly empty, but in one, you find an isolation ward with hazard warnings. Ignoring the signs in your search for survivors, you enter without proper protection. The room contains research samples of a highly contagious pathogen—possibly the cause of the world's emptiness. Within days, you develop symptoms, with no one left to provide medical care. Your search for answers ends in discovering the very thing that claimed humanity.",
+      "image": "images/l2bend.png",
+      "choices": [],
+      "writingPrompts": [
+        "Why is it important to heed warning signs, even in emergencies?",
+        "Could this ending suggest what happened to everyone else?",
+        "What precautions should be taken when exploring unknown environments?"
+      ]
+    },
+    "L2C-END": {
+      "id": "L2C-END",
+      "narrativeText": "The helicopter on the helipad seems like a perfect way to search for survivors or escape the city. You manage to access the skyscraper and reach the roof, but as you approach the helicopter, you realize you have no idea how to fly it. In a desperate attempt to figure it out, you accidentally activate the engine while the rotor lock is still engaged. The mechanical failure causes a catastrophic breakdown, leaving you stranded without this valuable resource and injured from flying debris.",
+      "image": "images/l2cend.png",
+      "choices": [],
+      "writingPrompts": [
+        "Why is it dangerous to attempt to use complex machinery without training?",
+        "What skills would be most valuable in a post-apocalyptic world?",
+        "How might overconfidence lead to disaster in survival situations?"
+      ]
+    },
+    "L3-A1": {
+      "id": "L3-A1",
+      "narrativeText": "The grocery store is dimly lit by skylights, casting long shadows across the aisles. Most perishables have spoiled, but there's still a good supply of canned goods and bottled water. As you fill a backpack with supplies, you notice a bulletin board with a map of the city and some marked locations. One location is circled in red and labeled 'Emergency Meeting Point.' Another note mentions a 'Research Facility' on the outskirts of town.",
+      "image": "images/l3a1.png",
+      "choices": [
+        { "label": "Head to the Emergency Meeting Point", "targetId": "L4-A1" },
+        { "label": "Investigate the Research Facility", "targetId": "L4-A2" },
+        { "label": "Continue gathering supplies and set up a base here", "targetId": "L3A1-END" }
+      ],
+      "writingPrompts": [
+        "What might be happening at an emergency meeting point?",
+        "How would you prioritize which supplies to gather?",
+        "What clues might a research facility provide about the disappearance?"
+      ]
+    },
+    "L3-A2": {
+      "id": "L3-A2",
+      "narrativeText": "Deeper downtown, the buildings grow taller and cast the streets in shadow. You find evidence of hasty evacuation--dropped belongings, open doors, and even running water in some buildings. In a central plaza, you discover a military blockade with abandoned vehicles and equipment. A portable radio on one of the jeeps occasionally crackles with static. Nearby, a subway entrance leads underground, and a police station stands across the street.",
+      "image": "images/l3a2.png",
+      "choices": [
+        { "label": "Try to fix the military radio", "targetId": "L4-A3" },
+        { "label": "Enter the police station", "targetId": "L4-A4" },
+        { "label": "Explore the subway tunnels", "targetId": "L3A2-END" }
+      ],
+      "writingPrompts": [
+        "Why might the military have set up a blockade?",
+        "What information might be found in a police station?",
+        "What dangers could exist in underground tunnels?"
+      ]
+    },
+    "L3-B1": {
+      "id": "L3-B1",
+      "narrativeText": "The hospital pharmacy is surprisingly well-stocked, allowing you to gather antibiotics, painkillers, and first aid supplies. In one of the doctors' offices, you find a recent memo discussing a 'containment protocol' for a 'situation.' It mentions that 'unaffected individuals' should proceed to a quarantine zone at the city stadium. Another document refers to a military checkpoint at the main bridge leading out of the city.",
+      "image": "images/l3b1.png",
+      "choices": [
+        { "label": "Go to the stadium quarantine zone", "targetId": "L4-B1" },
+        { "label": "Head to the military checkpoint at the bridge", "targetId": "L4-B2" },
+        { "label": "Search the hospital's records room for more information", "targetId": "L3B1-END" }
+      ],
+      "writingPrompts": [
+        "What kind of 'situation' might require a containment protocol?",
+        "How would you feel reading about quarantine zones?",
+        "Why might the military have established checkpoints?"
+      ]
+    },
+    "L3-B2": {
+      "id": "L3-B2",
+      "narrativeText": "The generator room in the basement is hot and filled with the sound of machinery. The emergency system is slowly failing, with warning lights indicating low fuel. On a workbench, you find a maintenance log and a set of keys. The log's last entry from three days ago mentions 'mass evacuation orders' and that the engineer was 'heading to the airport.' The key ring has a tag labeled 'Maintenance Tunnels' and another for 'Roof Access.'",
+      "image": "images/l3b2.png",
+      "choices": [
+        { "label": "Use the tunnels to navigate to other buildings", "targetId": "L4-B3" },
+        { "label": "Take the roof access and look for helicopter evacuation signs", "targetId": "L4-B4" },
+        { "label": "Try to refuel the generator", "targetId": "L3B2-END" }
+      ],
+      "writingPrompts": [
+        "Why might maintenance tunnels be useful in this situation?",
+        "What signs of evacuation might be visible from a rooftop?",
+        "How important is electricity in a crisis?"
+      ]
+    },
+    "L3-C1": {
+      "id": "L3-C1",
+      "narrativeText": "You make your way to the city park where the smoke is rising. There, you discover a small campsite with a controlled fire. The occupant—an older man named Marcus—is startled but relieved to see another person. He explains he's a former wilderness guide who was outside the city when 'it happened.' He's been living here for weeks, observing strange lights at night near the old observatory on the hill, and occasional drone flights from the direction of the airport.",
+      "image": "images/l3c1.png",
+      "choices": [
+        { "label": "Ask Marcus to join you in investigating the observatory", "targetId": "L4-C1" },
+        { "label": "Suggest exploring the airport together", "targetId": "L4-C2" },
+        { "label": "Stay at the camp and learn survival skills from Marcus", "targetId": "L3C1-END" }
+      ],
+      "writingPrompts": [
+        "How would you feel meeting another person after thinking you were alone?",
+        "What questions would you ask someone who survived whatever happened?",
+        "Why might strange lights or drone flights be significant?"
+      ]
+    },
+    "L3-C2": {
+      "id": "L3-C2",
+      "narrativeText": "The radio tower is secured behind a chain-link fence, but a fallen tree provides access. Inside the small control building, equipment hums with backup power. A logbook reveals the staff evacuated after receiving an 'Emergency Broadcast System' alert. The broadcasting equipment is still functional, and a frequency scanner picks up weak, automated signals. One repeating message mentions 'safe zones' outside the city. Another signal sounds like a data transmission rather than voice communication.",
+      "image": "images/l3c2.png",
+      "choices": [
+        { "label": "Broadcast your own message seeking other survivors", "targetId": "L4-C3" },
+        { "label": "Try to decode the data transmission", "targetId": "L4-C4" },
+        { "label": "Follow directions to the nearest safe zone", "targetId": "L3C2-END" }
+      ],
+      "writingPrompts": [
+        "What would you say in a broadcast to potential survivors?",
+        "Why might some communications be encoded?",
+        "What risks might come with revealing your location?"
+      ]
+    },
+    "L3A1-END": {
+      "id": "L3A1-END",
+      "narrativeText": "You decide the grocery store is secure enough to serve as a base. Over several days, you organize supplies and create a comfortable living space. However, without proper knowledge of food preservation, many of your supplies spoil faster than expected. Worse, the building's ventilation system fails, allowing mold to grow undetected. You develop a severe respiratory infection with no access to proper medical care. Your story ends as you realize too late that comfort without knowledge is a deadly combination in this new world.",
+      "image": "images/l3a1end.png",
+      "choices": [],
+      "writingPrompts": [
+        "What survival skills would be most important in an abandoned city?",
+        "How might someone prepare for living alone long-term?",
+        "What unseen dangers exist in modern buildings without maintenance?"
+      ]
+    },
+    "L3A2-END": {
+      "id": "L3A2-END",
+      "narrativeText": "The subway entrance leads down into darkness. Using your phone's flashlight, you navigate the eerie tunnels, hoping they might lead to another part of the city or provide clues. Hours into your exploration, your light begins to fade. In your haste to find an exit, you become disoriented in the labyrinthine tunnels. Your phone dies, leaving you in complete darkness. Without light, food, or a way to navigate, you wander until exhaustion claims you, never finding your way back to the surface.",
+      "image": "images/l3a2end.png",
+      "choices": [],
+      "writingPrompts": [
+        "Why is it dangerous to explore unfamiliar areas without proper equipment?",
+        "How could you mark your path to avoid getting lost?",
+        "What emotions might someone experience when lost in total darkness?"
+      ]
+    },
+    "L3B1-END": {
+      "id": "L3B1-END",
+      "narrativeText": "The hospital records room is a maze of filing cabinets and computer terminals. As you dig through files, you discover reports of a 'containment breach' at a research facility and evidence of a rapidly spreading pathogen. Your search keeps you in the records room for hours, breathing recycled air through the building's ventilation system. By the time you realize the hospital itself was a treatment center for the infected, it's too late. The lingering airborne pathogen, while weakened, is still present enough to infect you. With no treatment available, your quest for knowledge becomes your undoing.",
+      "image": "images/l3b1end.png",
+      "choices": [],
+      "writingPrompts": [
+        "Was the knowledge gained worth the risk taken?",
+        "How might understanding what happened change your survival approach?",
+        "What precautions should be taken when investigating potentially contaminated areas?"
+      ]
+    },
+    "L3B2-END": {
+      "id": "L3B2-END",
+      "narrativeText": "The generator requires diesel fuel, and you recall seeing a maintenance closet with fuel cans earlier. After bringing them to the basement, you carefully begin refueling the hot generator. However, without proper training, you fail to vent the area adequately. Carbon monoxide builds up in the enclosed space, and the fumes gradually overcome you. The generator continues running, but you collapse, overcome by the invisible, odorless gas. The lights stay on, but your journey ends in the basement, a casualty of good intentions without proper knowledge.",
+      "image": "images/l3b2end.png",
+      "choices": [],
+      "writingPrompts": [
+        "What technical skills would be most valuable after a societal collapse?",
+        "Why are some tasks too dangerous to attempt without training?",
+        "How might someone learn essential skills in a world without teachers?"
+      ]
+    },
+    "L3C1-END": {
+      "id": "L3C1-END",
+      "narrativeText": "You decide to stay with Marcus and learn survival skills. He teaches you to find water, identify edible plants, and build shelters. Weeks pass in relative comfort, but Marcus grows increasingly paranoid, convinced that 'they' are watching. He refuses to leave the park or let you go, destroying your supplies when you suggest exploring. One night, you wake to find him standing over you, muttering about 'necessary sacrifices.' You realize too late that isolation and trauma have broken his mind, and your trust in this stranger becomes your final mistake.",
+      "image": "images/l3c1end.png",
+      "choices": [],
+      "writingPrompts": [
+        "How might extreme isolation affect different personalities?",
+        "What signs might indicate someone is not mentally stable?",
+        "How would you balance the need for companionship with caution toward strangers?"
+      ]
+    },
+    "L3C2-END": {
+      "id": "L3C2-END",
+      "narrativeText": "The coordinates for the nearest safe zone indicate a location about 20 miles outside the city. Without transportation, you begin the long walk. The journey takes you through increasingly desolate suburbs and into rural areas. Days pass as you follow the directions, but as you approach the supposed safe zone coordinates, you find only an empty field. The broadcast was either outdated or deliberately misleading. Exhausted and now far from any resources, with night falling and no shelter, you realize you've been lured away from safety on a fool's errand.",
+      "image": "images/l3c2end.png",
+      "choices": [],
+      "writingPrompts": [
+        "Why might someone broadcast false information after a disaster?",
+        "What preparations should be made before undertaking a long journey?",
+        "How would you verify information before acting on it in a crisis?"
+      ]
+    },
+    "L4-A1": {
+      "id": "L4-A1",
+      "narrativeText": "The Emergency Meeting Point turns out to be a community center. Inside, you find evidence that people were here recently—half-empty water bottles, personal items, and a wall covered with photos and notes from people looking for missing loved ones. A large map on the wall shows several locations marked as 'evacuation zones' and 'quarantine areas.' A handwritten note on a desk mentions a 'last convoy leaving tomorrow at dawn' dated just three days ago.",
+      "image": "images/l4a1.png",
+      "choices": [
+        { "label": "Follow the map to the nearest evacuation zone", "targetId": "L5-A" },
+        { "label": "Look for clues about the convoy's destination", "targetId": "L4A1-END" },
+        { "label": "Search for supplies in the community center", "targetId": "L4A1-END2" }
+      ],
+      "writingPrompts": [
+        "What emotions might you feel seeing messages from missing people?",
+        "How would you decide whether to follow others or make your own path?",
+        "What would these evacuation zones tell you about the scale of the event?"
+      ]
+    },
+    "L4-A2": {
+      "id": "L4-A2",
+      "narrativeText": "The Research Facility is surrounded by high fences and warning signs. A security gate stands open, and abandoned military vehicles are parked outside. Inside the main building, laboratories show signs of hasty evacuation. Computer screens still display data and warnings. In one lab, you find documentation about 'Project Awakening'—an experiment involving human consciousness and something called 'mass neural synchronization.' A terminal shows the location of a backup facility in the mountains where the project leaders evacuated.",
+      "image": "images/l4a2.png",
+      "choices": [
+        { "label": "Download the research data and head to the mountain facility", "targetId": "L5-B" },
+        { "label": "Investigate the quarantine section of the facility", "targetId": "L4A2-END" },
+        { "label": "Search for survivors in the staff dormitory", "targetId": "L4A2-END2" }
+      ],
+      "writingPrompts": [
+        "What ethical questions might arise from advanced consciousness research?",
+        "How might experiments on human consciousness go wrong?",
+        "What responsibility would scientists have in this situation?"
+      ]
+    },
+    "L4-A3": {
+      "id": "L4-A3",
+      "narrativeText": "After some tinkering, you get the military radio working. Most channels have only static, but one has an automated message repeating: 'All personnel report to Fort Meridian for extraction. Civilian evacuations complete. Remaining units initiate Protocol Omega and withdraw.' Another channel has a weak signal with voices discussing 'asset containment' and 'specimen retrieval.' You can hear enough to determine they're coordinating from a base camp at the Natural History Museum.",
+      "image": "images/l4a3.png",
+      "choices": [
+        { "label": "Try to contact the team at the museum", "targetId": "L5-C" },
+        { "label": "Head to Fort Meridian for potential evacuation", "targetId": "L4A3-END" },
+        { "label": "Use the radio to broadcast your location to any listeners", "targetId": "L4A3-END2" }
+      ],
+      "writingPrompts": [
+        "What might 'Protocol Omega' signify in a crisis?",
+        "Who might still be operating in an abandoned city and why?",
+        "What risks and benefits come with using a military radio?"
+      ]
+    },
+    "L4-A4": {
+      "id": "L4-A4",
+      "narrativeText": "The police station is dark but accessible. Inside, you find evidence of a coordinated emergency response that eventually broke down. Computer monitors still show evacuation routes and incident reports. In the captain's office, a classified file details 'Operation Blackout'—a contingency plan for 'mass civil disturbance related to the incident at the research facility.' A map shows a police safe house outside the city where command staff relocated with key witnesses.",
+      "image": "images/l4a4.png",
+      "choices": [
+        { "label": "Check the holding cells for any left-behind detainees", "targetId": "L4A4-END" },
+        { "label": "Look through the evidence room for useful supplies", "targetId": "L4A4-END2" },
+        { "label": "Find the safe house location and travel there", "targetId": "L5-A" }
+      ],
+      "writingPrompts": [
+        "What role would law enforcement play in a major disaster?",
+        "What kind of incident might cause 'mass civil disturbance'?",
+        "Why would police relocate certain witnesses during a crisis?"
+      ]
+    },
+    "L4-B1": {
+      "id": "L4-B1",
+      "narrativeText": "The stadium has been converted into a massive quarantine zone, with medical tents, supplies, and equipment—but no people. A large operations board shows that the last group was evacuated three days ago to 'Secure Location Alpha.' Medical logs describe a 'neurological anomaly' affecting most of the population, causing them to follow subsonic signals only certain people could resist. A doctor's personal journal theorizes that those immune have a rare inner ear formation.",
+      "image": "images/l4b1.png",
+      "choices": [
+        { "label": "Look for a route to Secure Location Alpha", "targetId": "L5-A" },
+        { "label": "Search for medical supplies and survival gear", "targetId": "L4B1-END" },
+        { "label": "Try to access the stadium's secure communications room", "targetId": "L4B1-END2" }
+      ],
+      "writingPrompts": [
+        "How would you feel learning that a biological difference saved you?",
+        "What might 'subsonic signals' do to human behavior?",
+        "Why might some people be immune to effects that influence others?"
+      ]
+    },
+    "L4-B2": {
+      "id": "L4-B2",
+      "narrativeText": "The military checkpoint at the bridge is abandoned but fortified. Concrete barriers, sandbags, and heavy weaponry suggest they were prepared for conflict. In the command tent, you find a tactical map showing the city divided into 'Affected' and 'Cleared' zones. A final order from command indicates all remaining personnel were to rendezvous at a bunker facility beneath the old Cold War museum outside of town. There's also a logbook of evacuees, with thousands of names.",
+      "image": "images/l4b2.png",
+      "choices": [
+        { "label": "Cross the bridge to the 'Cleared' zone of the city", "targetId": "L4B2-END" },
+        { "label": "Look through military supplies for weapons and gear", "targetId": "L4B2-END2" },
+        { "label": "Head to the bunker facility at the Cold War museum", "targetId": "L5-B" }
+      ],
+      "writingPrompts": [
+        "What would military intervention tell you about the severity of a crisis?",
+        "How would you feel seeing thousands of evacuee names?",
+        "Why might underground bunkers be used in this situation?"
+      ]
+    },
+    "L4-B3": {
+      "id": "L4-B3",
+      "narrativeText": "The maintenance tunnels form a labyrinth beneath the city, connecting major buildings. Using your phone as a light, you navigate through them, finding occasional signs of others who passed this way--discarded food wrappers, graffiti with dates, even sleeping bags. Eventually, you discover a maintenance room converted to a living space. A journal details how a group of survivors used these tunnels to avoid 'whatever was affecting everyone above ground' before heading to the subway system's abandoned southern line.",
+      "image": "images/l4b3.png",
+      "choices": [
+        { "label": "Follow their path to the southern subway line", "targetId": "L5-C" },
+        { "label": "Take supplies from their abandoned camp", "targetId": "L4B3-END" },
+        { "label": "Use the tunnels to access other buildings", "targetId": "L4B3-END2" }
+      ],
+      "writingPrompts": [
+        "How might people adapt to living underground?",
+        "What psychological effects might come from hiding for extended periods?",
+        "What resources would be most valuable in the tunnels?"
+      ]
+    },
+    "L4-B4": {
+      "id": "L4-B4",
+      "narrativeText": "The roof access key takes you to the helicopter landing pad atop the hospital. From this vantage point, you can see evacuation instructions painted on the roof, visible from the air. A logbook in the small control station indicates the last medical evacuation was three days ago, with remaining staff ordered to proceed to the university research center where a 'containment team' was working on a 'response to the signal.' A pair of powerful binoculars reveals lights still on at the university in the distance.",
+      "image": "images/l4b4.png",
+      "choices": [
+        { "label": "Try to signal for evacuation using the rooftop equipment", "targetId": "L4B4-END" },
+        { "label": "Use the binoculars to search for other signs of life", "targetId": "L4B4-END2" },
+        { "label": "Make your way to the university research center", "targetId": "L5-B" }
+      ],
+      "writingPrompts": [
+        "What might be visible from the highest points in an abandoned city?",
+        "What emotions would you feel seeing distant lights from another building?",
+        "What kind of 'signal' might need to be contained?"
+      ]
+    },
+    "L4-C1": {
+      "id": "L4-C1",
+      "narrativeText": "Marcus agrees to join you in investigating the observatory. As you hike up the hill, he shares his theory that the event wasn't natural but orchestrated. At the observatory, you find sophisticated equipment still running on backup power. Screens display data about 'signal propagation' and 'neural wave synchronization.' In the director's office, a recorded message explains that a small team of scientists unaffected by the signal have retreated to a research submarine in the harbor to continue their work away from the signal's influence.",
+      "image": "images/l4c1.png",
+      "choices": [
+        { "label": "Try to use the observatory equipment to block the signal", "targetId": "L4C1-END" },
+        { "label": "Search the facility for more information about the signal", "targetId": "L4C1-END2" },
+        { "label": "Head to the harbor to find the research submarine", "targetId": "L5-C" }
+      ],
+      "writingPrompts": [
+        "What kind of signal could affect human consciousness?",
+        "How would you feel learning the event wasn't natural?",
+        "Why might scientists choose a submarine as a refuge?"
+      ]
+    },
+    "L4-C2": {
+      "id": "L4-C2",
+      "narrativeText": "You and Marcus journey to the airport. The main terminal is abandoned, but you notice recent activity—fresh tire tracks, organized supplies, powered emergency lights. Following these signs, you reach a private hangar where several research planes and a helicopter bear the logo of the Princeton Neurological Institute. A whiteboard shows a schedule of supply runs to 'mountain base.' Marcus points out a map marking a research facility high in the nearby mountains.",
+      "image": "images/l4c2.png",
+      "choices": [
+        { "label": "Try to start one of the smaller aircraft", "targetId": "L4C2-END" },
+        { "label": "Look for supplies and survival gear", "targetId": "L4C2-END2" },
+        { "label": "Prepare for the journey to the mountain research base", "targetId": "L5-A" }
+      ],
+      "writingPrompts": [
+        "What skills would be needed to pilot an aircraft?",
+        "Why might researchers establish a base in the mountains?",
+        "What preparations would be essential for a mountain journey?"
+      ]
+    },
+    "L4-C3": {
+      "id": "L4-C3",
+      "narrativeText": "You broadcast a message identifying yourself and asking for contact from any survivors. After several tense minutes, a response comes through—a woman identifying herself as Dr. Rivera from the university's neuroscience department. She explains that she and a small research team are working on a way to counteract a 'neural disruption event' that affected most of the population. She instructs you to stay where you are, as they'll send someone to bring you to their secure lab beneath the university's science building.",
+      "image": "images/l4c3.png",
+      "choices": [
+        { "label": "Wait for their team to arrive", "targetId": "L5-B" },
+        { "label": "Ask more questions about what happened", "targetId": "L4C3-END" },
+        { "label": "Broadcast your skepticism and ask for proof", "targetId": "L4C3-END2" }
+      ],
+      "writingPrompts": [
+        "How would you feel hearing another human voice after days of silence?",
+        "What questions would be most important to ask?",
+        "Would you trust strangers in this situation? Why or why not?"
+      ]
+    },
+    "L4-C4": {
+      "id": "L4-C4",
+      "narrativeText": "Using the radio equipment, you manage to decode part of the data transmission. It contains coordinates, timestamps, and code phrases like 'Lighthouse Project' and 'Beacon Protocol.' The most recent data points to activity at the harbor, where a converted cargo ship has been established as a floating research station. The transmission indicates they're accepting survivors who show 'signal immunity' and are working on a larger-scale solution to 'the event.'",
+      "image": "images/l4c4.png",
+      "choices": [
+        { "label": "Follow the coordinates to the harbor", "targetId": "L5-C" },
+        { "label": "Attempt to send a response to the data transmission", "targetId": "L4C4-END" },
+        { "label": "Research 'Lighthouse Project' in the station's database", "targetId": "L4C4-END2" }
+      ],
+      "writingPrompts": [
+        "What might a 'Lighthouse Project' be designed to do?",
+        "How could a ship serve as a research station?",
+        "What does it mean to have 'signal immunity' in this context?"
+      ]
+    },
+    "L4A1-END": {
+      "id": "L4A1-END",
+      "narrativeText": "Searching for clues about the convoy's destination, you find a bulletin board with a map and route instructions. The convoy planned to travel north through mountain roads to a government facility. As night falls, you decide to set out immediately, eager to catch up. The mountain roads are treacherous in the darkness, and without working streetlights or other vehicles, you miss a sharp turn. Your vehicle plummets into a ravine. Your last thoughts are of how close you came to finding others.",
+      "image": "images/l4a1end.png",
+      "choices": [],
+      "writingPrompts": [
+        "Why is patience sometimes more important than urgency in survival situations?",
+        "What precautions should be taken when traveling at night?",
+        "How might hope and desperation affect decision-making?"
+      ]
+    },
+    "L4A1-END2": {
+      "id": "L4A1-END2",
+      "narrativeText": "The community center seems like it might have valuable supplies. As you search, you discover a storage room with food, water, and equipment. While sorting through supplies, you accidentally knock over a shelf, which crashes into a support column weakened by recent structural damage. The ceiling partially collapses, trapping you under debris. With no one to hear your calls for help, and pinned in place with limited supplies within reach, your story reaches its end in the very place meant to offer sanctuary.",
+      "image": "images/l4a1end2.png",
+      "choices": [],
+      "writingPrompts": [
+        "How might one assess structural safety in abandoned buildings?",
+        "What emergency skills might have helped in this situation?",
+        "What precautions should be taken when searching unstable environments?"
+      ]
+    },
+    "L4A2-END": {
+      "id": "L4A2-END",
+      "narrativeText": "The quarantine section is sealed with biohazard warnings, but your curiosity about Project Awakening drives you to override the security locks. Inside, you find research subjects in specialized containment units, seemingly unconscious but with brain activity monitors showing intense patterns. As you examine the equipment, an automated system detects your presence and initiates emergency protocols, releasing an experimental neural gas designed to subdue subjects. Your mind is overwhelmed by the same synchronized neural patterns that affected the general population.",
+      "image": "images/l4a2end.png",
+      "choices": [],
+      "writingPrompts": [
+        "What ethical considerations arise in experimental neuroscience?",
+        "How might curiosity lead to danger in scientific settings?",
+        "What safety protocols should exist in high-risk research facilities?"
+      ]
+    },
+    "L4A2-END2": {
+      "id": "L4A2-END2",
+      "narrativeText": "The staff dormitory is eerily quiet. Personal belongings are strewn about, suggesting a hasty departure. As you search for survivors or supplies, you notice a subtle humming sound emanating from an unmarked room. Inside, you discover a prototype of the neural synchronization device—still active and generating the signal on a local scale. Before you can react, the equipment surges with power, overwhelming your nervous system with the concentrated signal. You collapse, your consciousness merging with the collective neural pattern that claimed the city's population.",
+      "image": "images/l4a2end2.png",
+      "choices": [],
+      "writingPrompts": [
+        "What responsible procedures should be followed when decommissioning experimental technology?",
+        "How might dangerous technology be concealed in ordinary settings?",
+        "What warning signs might indicate active but dangerous equipment?"
+      ]
+    },
+    "L4A3-END": {
+      "id": "L4A3-END",
+      "narrativeText": "Fort Meridian is located on the outskirts of the city. After a day's journey, you reach the military base to find it largely abandoned, with signs of a completed evacuation. However, automated defense systems remain active. As you approach the main gate, motion sensors activate turrets that mistake you for an unauthorized intruder. Without proper military identification or the correct approach protocols, you become another casualty of systems designed to protect but now operating without human oversight.",
+      "image": "images/l4a3end.png",
+      "choices": [],
+      "writingPrompts": [
+        "What dangers might automated security systems pose after societal collapse?",
+        "How might military protocols change during evacuations?",
+        "What failsafes should exist for automated weapons systems?"
+      ]
+    },
+    "L4A3-END2": {
+      "id": "L4A3-END2",
+      "narrativeText": "Desperate for human contact, you broadcast your location and situation to any listeners. For several days, there's no response, but eventually, a vehicle approaches your position. However, instead of the military or scientific personnel you hoped for, you're met by opportunistic scavengers who monitored emergency frequencies. Outnumbered and unprepared for violence in this new world, you lose both your supplies and your freedom, forced to guide them to other resource-rich locations you've discovered.",
+      "image": "images/l4a3end2.png",
+      "choices": [],
+      "writingPrompts": [
+        "How might societal collapse bring out both the best and worst in people?",
+        "What security precautions should be taken when communicating with strangers?",
+        "Why is caution necessary even when desperate for human contact?"
+      ]
+    },
+    "L4A4-END": {
+      "id": "L4A4-END",
+      "narrativeText": "The holding cells are mostly empty, but in one remote cell, you find a single detainee still locked inside, forgotten in the evacuation. He claims to be a whistleblower who tried to warn about the research facility's experiments. As you attempt to free him, he becomes increasingly agitated and violent. When the cell door opens, he attacks you, ranting about 'joining the collective.' In his deranged state—driven mad by isolation and partial exposure to the neural signal—he overwhelms you before you can escape.",
+      "image": "images/l4a4end.png",
+      "choices": [],
+      "writingPrompts": [
+        "How might isolation affect mental health in crisis situations?",
+        "What dangers might exist in helping strangers without precautions?",
+        "How could you verify someone's claims in a world without working communications?"
+      ]
+    },
+    "L4A4-END2": {
+      "id": "L4A4-END2",
+      "narrativeText": "The evidence room seems like a good place to find useful equipment. Using a set of keys from the desk sergeant's office, you gain access and discover weapons, confiscated electronics, and other valuable items. While examining a strange device labeled 'Research Facility Evidence,' you accidentally activate it. The device emits a focused neural pulse—the same technology that affected the population but concentrated. Your consciousness fades as your mind synchronizes with the collective neural pattern, your body operating on instinct but your individual identity lost.",
+      "image": "images/l4a4end2.png",
+      "choices": [],
+      "writingPrompts": [
+        "What dangers exist in handling unknown technology?",
+        "Why might police have confiscated research equipment?",
+        "How could curiosity become dangerous in unfamiliar situations?"
+      ]
+    },
+    "L4B1-END": {
+      "id": "L4B1-END",
+      "narrativeText": "The stadium's medical supplies and survival gear seem like valuable resources. As you gather what you can carry, you discover a sealed medical refrigerator containing vials labeled 'Countermeasure Prototype.' Believing this might help understand or combat whatever affected the population, you attempt to access the secured container. However, without proper authorization or understanding of the biometric locks, you trigger a containment protocol that releases a powerful sedative gas, rendering you unconscious with no one to provide medical attention.",
+      "image": "images/l4b1end.png",
+      "choices": [],
+      "writingPrompts": [
+        "Why are security measures important for sensitive medical materials?",
+        "How might desperation lead to overlooking dangers?",
+        "What specialized knowledge is necessary in medical environments?"
+      ]
+    },
+    "L4B1-END2": {
+      "id": "L4B1-END2",
+      "narrativeText": "The stadium's communications room requires a security code, but after several attempts, you manage to bypass the lock. Inside, sophisticated equipment monitors radio frequencies and satellite data. As you try to establish contact with potential survivors, you inadvertently activate a signal booster designed to amplify the neural synchronization wave as part of a test protocol. The concentrated signal overwhelms your immunity, and your consciousness merges with the collective pattern that claimed the city. Your body remains, but your individual identity dissolves.",
+      "image": "images/l4b1end2.png",
+      "choices": [],
+      "writingPrompts": [
+        "What safeguards should exist for dangerous communications equipment?",
+        "How might technical equipment be dangerous to untrained operators?",
+        "What ethical questions arise about technology that can control human minds?"
+      ]
+    },
+    "L4B2-END": {
+      "id": "L4B2-END",
+      "narrativeText": "You decide to cross the bridge to the 'Cleared' zone, hoping to find more survivors. The bridge appears stable enough, but midway across, you encounter a section where the military had begun demolition work—likely to prevent whatever affected the population from spreading. The weakened structure begins to collapse under your weight. Despite your desperate scramble to reach the other side, the bridge gives way completely, sending you plummeting into the river below. The strong current and debris make survival impossible.",
+      "image": "images/l4b2end.png",
+      "choices": [],
+      "writingPrompts": [
+        "Why might authorities destroy infrastructure during a crisis?",
+        "What precautions should be taken before crossing damaged structures?",
+        "How might hasty decisions lead to overlooking important details?"
+      ]
+    },
+    "L4B2-END2": {
+      "id": "L4B2-END2",
+      "narrativeText": "The military checkpoint contains valuable supplies and weapons. As you sort through the equipment, you find a secured case containing what appears to be experimental sonic weapons designed to 'neutralize subjects affected by the neural signal.' Without proper training, you accidentally activate one of the devices while examining it. The weapon emits a powerful sonic pulse that causes immediate brain hemorrhaging--a lethal dose of the very technology designed to be used at safe distances and controlled settings against affected individuals.",
+      "image": "images/l4b2end2.png",
+      "choices": [],
+      "writingPrompts": [
+        "Why is training essential when handling specialized equipment?",
+        "What responsibility comes with accessing military technology?",
+        "How might experimental weapons be more dangerous than conventional ones?"
+      ]
+    },
+    "L4B3-END": {
+      "id": "L4B3-END",
+      "narrativeText": "The abandoned maintenance camp contains food, water, and equipment that could help your survival. As you gather supplies, you discover a journal detailing how the previous occupants barely escaped tunnel flooding caused by damaged water mains. Before you can process this warning, you hear the ominous sound of rushing water. A major pipe has burst, and water quickly fills the tunnels. You race toward higher ground, but the narrow passageways and your heavy pack of supplies slow you down. The rising water leaves no escape route.",
+      "image": "images/l4b3end.png",
+      "choices": [],
+      "writingPrompts": [
+        "How important is it to heed warnings from others who came before?",
+        "When might the pursuit of resources become too dangerous?",
+        "What infrastructure systems might fail without maintenance?"
+      ]
+    },
+    "L4B3-END2": {
+      "id": "L4B3-END2",
+      "narrativeText": "Using the maintenance tunnels to access other buildings seems like an efficient way to explore the city. However, without proper knowledge of the tunnel layout, you soon become disoriented in the labyrinthine passages. Your phone battery dies, leaving you in complete darkness. As you feel your way forward, you stumble into a maintenance shaft left open by workers who evacuated suddenly. The fall breaks several bones, leaving you immobile in the darkness, far from any hope of rescue.",
+      "image": "images/l4b3end2.png",
+      "choices": [],
+      "writingPrompts": [
+        "What preparations should be made before exploring unknown areas?",
+        "How might power dependency (like phone flashlights) create vulnerability?",
+        "What safety hazards exist in maintenance areas of modern buildings?"
+      ]
+    },
+    "L4B4-END": {
+      "id": "L4B4-END",
+      "narrativeText": "The hospital roof has emergency flares and signal equipment designed for helicopter evacuations. Hoping someone might be monitoring for survivors, you launch several flares into the night sky. The bright signals attract attention, but not the kind you hoped for. A drone appears, seemingly investigating the signals. As it hovers nearby, it releases a canister that bursts open, dispersing a fine mist. This experimental neural agent was designed to subdue anyone still in the city showing signal immunity. You collapse as your neural patterns synchronize with the collective consciousness.",
+      "image": "images/l4b4end.png",
+      "choices": [],
+      "writingPrompts": [
+        "Why might signaling your position be dangerous after a disaster?",
+        "What kind of technology might be deployed against survivors?",
+        "Who might be operating drones in an abandoned city, and for what purpose?"
+      ]
+    },
+    "L4B4-END2": {
+      "id": "L4B4-END2",
+      "narrativeText": "Using the binoculars, you scan the cityscape for any signs of life. After hours of careful observation, you spot movement on a distant rooftop—people setting up what appears to be communications equipment. Excited by the discovery, you focus so intently on watching them that you fail to notice structural damage to the section of roof you're standing on. The concrete, weakened by recent neglect, gives way beneath you. Your discovery comes too late as you plummet through several floors of the abandoned hospital, your journey ending in the very building meant to save lives.",
+      "image": "images/l4b4end2.png",
+      "choices": [],
+      "writingPrompts": [
+        "How might excitement or distraction lead to overlooking dangers?",
+        "What structural risks exist in buildings without maintenance?",
+        "What emotions might someone feel upon seeing other survivors?"
+      ]
+    },
+    "L4C1-END": {
+      "id": "L4C1-END",
+      "narrativeText": "The observatory's equipment is sophisticated but designed for scientific research, not signal blocking. Still, with Marcus's help, you attempt to reconfigure the satellite dishes and transmission equipment to create an interference pattern. However, the power requirements exceed the failing backup generators. As you try to reroute power from critical systems, a massive electrical surge causes an explosion. The fire spreads quickly through the facility, cutting off escape routes. Your attempt to fight the signal ironically creates a beacon of a different kind—a towering pillar of smoke and flame visible for miles.",
+      "image": "images/l4c1end.png",
+      "choices": [],
+      "writingPrompts": [
+        "What dangers come with attempting to repurpose complex equipment?",
+        "How might technical solutions sometimes create worse problems?",
+        "What alternatives might have been safer than this approach?"
+      ]
+    },
+    "L4C1-END2": {
+      "id": "L4C1-END2",
+      "narrativeText": "You and Marcus search the observatory for information about the signal. In a secure laboratory section, you discover experimental equipment and brain scans showing the signal's effects on neural activity. As Marcus examines a device labeled 'Signal Amplifier Prototype,' his demeanor suddenly changes. He admits he wasn't actually immune but was part of the research team, sent to find survivors for 'further studies.' Before you can react, he activates the device, overwhelming your natural immunity with a concentrated neural pulse. Your consciousness fades as you become another test subject in an experiment gone horribly wrong.",
+      "image": "images/l4c1end2.png",
+      "choices": [],
+      "writingPrompts": [
+        "How can you determine who to trust in a crisis situation?",
+        "What might motivate someone to betray others after a disaster?",
+        "What ethical lines might be crossed in the name of scientific research?"
+      ]
+    },
+    "L4C2-END": {
+      "id": "L4C2-END",
+      "narrativeText": "Despite Marcus's warnings about your lack of flight experience, the smaller airplane seems simple enough to operate. You've played flight simulators before and feel confident you can at least get it off the ground. Initially, the takeoff goes surprisingly well, but once airborne, the complexity of actual flight becomes apparent. Unable to maintain proper control or navigate, the aircraft goes into a spin. The last thing you see is the abandoned city rushing up to meet you, your brief flight ending in tragedy before you could reach the mountain base.",
+      "image": "images/l4c2end.png",
+      "choices": [],
+      "writingPrompts": [
+        "Why is overconfidence particularly dangerous in crisis situations?",
+        "What skills require practical training rather than theoretical knowledge?",
+        "How might desperation lead to attempting things beyond our abilities?"
+      ]
+    },
+    "L4C2-END2": {
+      "id": "L4C2-END2",
+      "narrativeText": "The airport hangar contains valuable survival gear and supplies. While Marcus watches the entrance, you search through equipment lockers and storage areas. In a secured cabinet, you discover experimental neural monitoring devices with Princeton Neurological Institute markings. Curious, you examine one closely, accidentally activating it. The device emits a targeted pulse that renders you unconscious. You awaken to find Marcus gone, along with all valuable supplies. The device was a security measure, and your supposed ally was simply waiting for an opportunity to take what he needed without sharing.",
+      "image": "images/l4c2end2.png",
+      "choices": [],
+      "writingPrompts": [
+        "How might scarcity of resources change people's behavior?",
+        "What precautions should be taken when examining unknown technology?",
+        "Why might someone present themselves as helpful while having other motives?"
+      ]
+    },
+    "L4C3-END": {
+      "id": "L4C3-END",
+      "narrativeText": "You ask Dr. Rivera detailed questions about the neural disruption event, seeking to understand what happened. She explains that an experiment in mass neural synchronization went wrong, affecting most of the population except those with certain neural formations. As she speaks, you notice inconsistencies in her explanation. When confronted, her tone changes. 'You ask too many questions,' she says coldly before the radio goes silent. Hours later, a drone appears, releasing a gas that overwhelms your consciousness. The voice was a lure, using your desire for answers to locate independent survivors for 'containment.'",
+      "image": "images/l4c3end.png",
+      "choices": [],
+      "writingPrompts": [
+        "How might communication be weaponized in a crisis?",
+        "What signs might indicate someone is not being truthful?",
+        "Why might certain survivors be targeted for 'containment'?"
+      ]
+    },
+    "L4C3-END2": {
+      "id": "L4C3-END2",
+      "narrativeText": "Skeptical of Dr. Rivera's claims, you demand proof or credentials before revealing your location. Your insistence angers her, and communication breaks down. Deciding the university might still be worth investigating on your own terms, you set out independently. However, without insider knowledge of the security measures, you trigger automated defenses at the science building's perimeter. Originally designed to protect valuable research, these systems now operate autonomously, using non-lethal but incapacitating measures. Unable to move or call for help, exposed to the elements, your journey ends just steps away from potential answers.",
+      "image": "images/l4c3end2.png",
+      "choices": [],
+      "writingPrompts": [
+        "When is skepticism helpful versus harmful?",
+        "What security measures might research facilities employ?",
+        "How might automated systems become dangerous without human oversight?"
+      ]
+    },
+    "L4C4-END": {
+      "id": "L4C4-END",
+      "narrativeText": "You attempt to send a response to the data transmission, using the radio station's equipment to encode your own message with your location and status. After several attempts, you receive acknowledgment and instructions to await extraction. When a small boat arrives at the nearest shore, you eagerly board, believing you've found rescue. Instead, you discover too late that they're not researchers but opportunists who monitored the transmission patterns. They've been collecting immune survivors for unknown purposes, and your carefully crafted message led them straight to you.",
+      "image": "images/l4c4end.png",
+      "choices": [],
+      "writingPrompts": [
+        "What risks come with broadcasting your location?",
+        "How might communications be monitored by unintended recipients?",
+        "What different motivations might people have in a post-disaster world?"
+      ]
+    },
+    "L4C4-END2": {
+      "id": "L4C4-END2",
+      "narrativeText": "The station's database has extensive files on the 'Lighthouse Project'—a government contingency plan for maintaining human consciousness during extreme neural disruption events. As you dig deeper, you discover the disruption was triggered deliberately as a 'controlled test' that went catastrophically wrong. Absorbed in your research, you fail to notice the database is monitored remotely. Your unauthorized access triggers a 'data security protocol,' releasing a localized EMP that destroys all electronics in the building. Without working equipment and with night falling in sub-zero temperatures, the lack of heating seals your fate.",
+      "image": "images/l4c4end2.png",
+      "choices": [],
+      "writingPrompts": [
+        "What moral questions arise from government testing on populations?",
+        "How might the pursuit of knowledge become dangerous?",
+        "What security measures might protect sensitive information?"
+      ]
+    },
+    "L5-A": {
+      "id": "L5-A",
+      "narrativeText": "After a difficult journey, you reach the mountain research facility—a sprawling complex built into the mountainside, powered by its own generators. Initially met with suspicion, you're eventually welcomed into a community of about two hundred survivors—all naturally immune to the neural signal that affected the general population. The scientists explain that a research project on mass neural synchronization was weaponized and deployed prematurely, creating a hive-mind consciousness that absorbed most of humanity. Here, they're developing a counter-signal to restore individual consciousness to those affected. With your particular type of immunity, you become a key participant in their work, offering hope for humanity's restoration.",
+      "image": "images/l5a.png",
+      "choices": [],
+      "writingPrompts": [
+        "How would it feel to be one of the few immune to an event that affected billions?",
+        "What responsibilities come with being crucial to humanity's potential restoration?",
+        "How might society rebuild differently after such a catastrophic event?",
+        "What questions of identity and consciousness does this situation raise?"
+      ]
+    },
+    "L5-B": {
+      "id": "L5-B",
+      "narrativeText": "The university's underground research facility is a hub of frantic activity. Dr. Rivera and her team explain that they were involved in the original neural synchronization project but opposed its weaponization. When it was deployed against their warnings, they retreated here to develop a solution. Their work has created a neural shield technology that can protect small areas from the signal. While they can't yet restore those already affected, they've established contact with similar research groups worldwide. Together, you establish a growing network of safe havens, expanding the protected zones where humans can live free from the signal's influence. Your natural immunity and fresh perspective make you invaluable to their team, and you become a leader in the emerging new society--one that must coexist with the collective consciousness while working to restore those lost to it.",
+      "image": "images/l5b.png",
+      "choices": [],
+      "writingPrompts": [
+        "How might humanity adapt to living in protected zones?",
+        "What new social structures might emerge after such a profound change?",
+        "What ethical questions arise about restoring people who are part of a collective consciousness?",
+        "How would leadership emerge in the new communities of survivors?"
+      ]
+    },
+    "L5-C": {
+      "id": "L5-C",
+      "narrativeText": "The harbor contains a remarkable sight--a converted research vessel housing several dozen scientists and immune survivors. They welcome you aboard what they call 'The Lighthouse,' explaining that the neural signal affecting humanity is weakest over large bodies of water, allowing them to conduct their work with minimal shielding. Their approach differs from other groups: rather than fighting the collective consciousness, they're establishing communication with it. Early results suggest the collective is not malevolent but confused--billions of minds suddenly connected without preparation. As someone with natural immunity who's witnessed the event's progression firsthand, you provide unique insights that help bridge understanding between individual and collective consciousness. A new form of existence is emerging, neither fully individual nor fully collective, with you helping to shape the coevolution of two forms of human consciousness.",
+      "image": "images/l5c.png",
+      "choices": [],
+      "writingPrompts": [
+        "How might communication with a collective consciousness be possible?",
+        "What advantages and disadvantages might come from a collective versus individual consciousness?",
+        "How might humans adapt to a world with two forms of consciousness?",
+        "What role might technology play in bridging individual and collective minds?"
+      ]
+    }
+  }
+}
+

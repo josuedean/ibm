@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Story Node Graph - The Last Person on Earth</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #eee;
+      overflow: hidden;
+    }
+    svg {
+      width: 100vw;
+      height: 100vh;
+    }
+    .node circle {
+      stroke-width: 2px;
+    }
+    .node text {
+      fill: #fff;
+      font-size: 12px;
+      font-weight: bold;
+      text-shadow: 0px 0px 3px #000;
+    }
+    .link {
+      stroke: #888;
+      stroke-opacity: 0.6;
+      stroke-width: 1.5px;
+    }
+    .tooltip {
+      position: absolute;
+      background: rgba(34, 34, 34, 0.95);
+      color: #eee;
+      padding: 12px;
+      border: 1px solid #666;
+      border-radius: 5px;
+      pointer-events: none;
+      max-width: 350px;
+      font-size: 14px;
+      z-index: 10;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: opacity 0.2s;
+    }
+    .tooltip ul {
+      margin: 5px 0;
+      padding-left: 20px;
+    }
+    .controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 20;
+      background: rgba(34, 34, 34, 0.7);
+      border-radius: 5px;
+      padding: 10px;
+    }
+    .controls button {
+      background: #444;
+      color: #fff;
+      border: 1px solid #666;
+      border-radius: 3px;
+      padding: 8px 12px;
+      margin: 0 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .controls button:hover {
+      background: #555;
+    }
+    .legend {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(34, 34, 34, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+    }
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin-right: 10px;
+      border: 2px solid #aaa;
+    }
+    .header {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(34, 34, 34, 0.7);
+      padding: 15px;
+      border-radius: 5px;
+      max-width: 300px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button id="zoom-in">Zoom In</button>
+    <button id="zoom-out">Zoom Out</button>
+    <button id="reset">Reset View</button>
+  </div>
+  
+  <div class="header">
+    <h2>The Last Person on Earth</h2>
+    <p>Story Graph Visualization</p>
+    <p>Navigate by dragging nodes, zooming with mouse wheel, or using the control buttons.</p>
+  </div>
+  
+  <div class="legend">
+    <h3>Legend</h3>
+    <div class="legend-item">
+      <div class="legend-color" style="background: #4682B4;"></div>
+      <span>Start Node</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: #5cb85c;"></div>
+      <span>Story Nodes</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: #d9534f;"></div>
+      <span>Ending Nodes</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: #f0ad4e;"></div>
+      <span>Success Endings</span>
+    </div>
+  </div>
+  
+  <svg></svg>
+  <div class="tooltip" style="opacity: 0;"></div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    const svg = d3.select("svg");
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const tooltip = d3.select(".tooltip");
+    let zoomHandler; // Store zoom handler for button controls
+
+    // Setup zoom behavior
+    function setupZoom() {
+      zoomHandler = d3.zoom()
+        .extent([[0, 0], [width, height]])
+        .scaleExtent([0.1, 4])
+        .on("zoom", ({ transform }) => {
+          svg.selectAll("g.graph-container").attr("transform", transform);
+        });
+        
+      svg.call(zoomHandler);
+      
+      // Reset to initial position
+      return zoomHandler;
+    }
+
+    // Promise to load story data
+    Promise.all([
+      fetch("storyData.json").then(r => r.json())
+    ]).then(([data]) => {
+      // Create a container for all graph elements to make zooming smoother
+      const graphContainer = svg.append("g")
+        .attr("class", "graph-container");
+        
+      // Identify node types
+      const startNode = data.startNode;
+      
+      // Map nodes with type information
+      const nodes = Object.values(data.nodes).map(n => {
+        // Determine node type
+        let nodeType;
+        if (n.id === startNode) {
+          nodeType = 'start';
+        } else if (!n.choices || n.choices.length === 0) {
+          // Check if it's a successful ending (Level 5)
+          nodeType = n.id.startsWith('L5') ? 'success' : 'ending';
+        } else {
+          nodeType = 'story';
+        }
+        
+        return {
+          id: n.id,
+          text: n.narrativeText,
+          choices: n.choices ? n.choices.map(c => c.label) : [],
+          type: nodeType
+        };
+      });
+
+      // Create links between nodes
+      const links = [];
+      Object.values(data.nodes).forEach(node => {
+        if (node.choices && node.choices.length > 0) {
+          node.choices.forEach(choice => {
+            if (data.nodes[choice.targetId]) {
+              links.push({ 
+                source: node.id, 
+                target: choice.targetId,
+                label: choice.label
+              });
+            }
+          });
+        }
+      });
+
+      // Set up force simulation
+      const simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d => d.id).distance(120))
+        .force("charge", d3.forceManyBody().strength(-400))
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+      // Create links
+      const link = graphContainer.append("g")
+        .attr("class", "links")
+        .selectAll("line")
+        .data(links)
+        .join("line")
+        .attr("class", "link")
+        .attr("stroke-width", 1.5);
+
+      // Create nodes
+      const node = graphContainer.append("g")
+        .attr("class", "nodes")
+        .selectAll("g")
+        .data(nodes)
+        .join("g")
+        .attr("class", "node")
+        .call(drag(simulation));
+
+      // Add circles to nodes with different colors based on type
+      node.append("circle")
+        .attr("r", d => d.type === 'start' ? 25 : 20)
+        .attr("fill", d => {
+          switch(d.type) {
+            case 'start': return '#4682B4'; // Steel Blue
+            case 'story': return '#5cb85c'; // Green
+            case 'ending': return '#d9534f'; // Red
+            case 'success': return '#f0ad4e'; // Orange
+            default: return '#444';
+          }
+        })
+        .attr("stroke", "#aaa")
+        .attr("stroke-width", d => d.type === 'start' ? 3 : 2)
+        .on("mouseover", (event, d) => {
+          // Highlight connected links
+          link
+            .style("stroke", l => (l.source.id === d.id || l.target.id === d.id) ? "#fff" : "#888")
+            .style("stroke-opacity", l => (l.source.id === d.id || l.target.id === d.id) ? 1 : 0.6)
+            .style("stroke-width", l => (l.source.id === d.id || l.target.id === d.id) ? 2.5 : 1.5);
+            
+          // Show tooltip
+          tooltip.transition().duration(200).style("opacity", .9);
+          
+          // Format tooltip content based on node type
+          let content = `<strong>${d.id}</strong><br/>${d.text}<br/>`;
+          
+          if (d.choices && d.choices.length > 0) {
+            content += `<em>Choices:</em><ul>${d.choices.map(c => `<li>${c}</li>`).join("")}</ul>`;
+          } else {
+            content += `<em>This is a${d.type === 'success' ? ' successful' : 'n'} ending.</em>`;
+          }
+          
+          tooltip.html(content)
+            .style("left", (event.pageX + 15) + "px")
+            .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", () => {
+          // Reset link styles
+          link
+            .style("stroke", "#888")
+            .style("stroke-opacity", 0.6)
+            .style("stroke-width", 1.5);
+            
+          tooltip.transition().duration(500).style("opacity", 0);
+        });
+
+      // Add text labels to nodes
+      node.append("text")
+        .attr("x", 0)
+        .attr("y", 4)
+        .attr("text-anchor", "middle")
+        .text(d => d.id);
+
+      // Update positions on simulation tick
+      simulation.on("tick", () => {
+        // Keep nodes within viewport bounds
+        nodes.forEach(d => {
+          // d.x = Math.max(30, Math.min(width - 30, d.x)); // Commented out X constraint
+          // d.y = Math.max(30, Math.min(height - 30, d.y)); // Commented out Y constraint
+        });
+        
+        link
+          .attr("x1", d => d.source.x)
+          .attr("y1", d => d.source.y)
+          .attr("x2", d => d.target.x)
+          .attr("y2", d => d.target.y);
+
+        node
+          .attr("transform", d => `translate(${d.x},${d.y})`);
+      });
+
+      // Set up zoom handling
+      const zoom = setupZoom();
+      zoom.transform(svg, d3.zoomIdentity); // Start with identity transform
+      
+      // Button controls
+      document.getElementById("zoom-in").addEventListener("click", () => {
+        svg.transition().duration(300).call(zoom.scaleBy, 1.3);
+      });
+      
+      document.getElementById("zoom-out").addEventListener("click", () => {
+        svg.transition().duration(300).call(zoom.scaleBy, 0.7);
+      });
+      
+      document.getElementById("reset").addEventListener("click", () => {
+        svg.transition().duration(500).call(
+          zoom.transform,
+          d3.zoomIdentity.translate(width/2, height/2).scale(0.7).translate(-width/2, -height/2)
+        );
+      });
+
+      // Dragging behavior implementation
+      function drag(simulation) {
+        function dragstarted(event, d) {
+          if (!event.active) simulation.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+          d.fx = event.x;
+          d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+          if (!event.active) simulation.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        }
+
+        return d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended);
+      }
+      
+      // Handle window resize
+      window.addEventListener('resize', () => {
+        const newWidth = window.innerWidth;
+        const newHeight = window.innerHeight;
+        
+        // Update simulation parameters
+        simulation.force('center', d3.forceCenter(newWidth / 2, newHeight / 2));
+        simulation.alpha(0.3).restart();
+      });
+    });
+  </script>
+</body>
+</html>
