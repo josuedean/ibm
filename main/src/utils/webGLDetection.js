@@ -6,7 +6,7 @@
  * Check if WebGL is supported in the current browser
  * @returns {boolean} True if WebGL is supported, false otherwise
  */
-export const isWebGLSupported = () => {
+export const isWebGLAvailable = () => {
   try {
     const canvas = document.createElement('canvas');
     const hasWebGL = !!(

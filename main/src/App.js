@@ -1,19 +1,39 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import Landing from './pages/Landing'
-import Course from './pages/Course'
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Landing from './pages/Landing.js';
+import Course from './pages/Course.js';
+import About from './pages/About.js';
+import Navigation from './components/Navigation.js';
+import SkipLink from './components/SkipLink.js';
+import './styles/main.scss';
 
+/**
+ * Main application component
+ * Sets up routes and global layout
+ */
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/digital-literacy" element={<Course courseId="digital-literacy" />} />
-      <Route path="/accounting" element={<Course courseId="accounting" />} />
-      <Route path="/data-analysis" element={<Course courseId="data-analysis" />} />
-      <Route path="/intro-programming" element={<Course courseId="intro-programming" />} />
-      <Route path="/global-logistics" element={<Course courseId="global-logistics" />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  )
+    <div className="app">
+      <SkipLink />
+      <Navigation />
+      
+      <div className="content">
+        <Routes>
+          {/* Landing page (home) route */}
+          <Route path="/" element={<Landing />} />
+          
+          {/* Course routes with dynamic courseId parameter */}
+          <Route path="/:courseId" element={<Course />} />
+          
+          {/* About page route */}
+          <Route path="/about" element={<About />} />
+          
+          {/* Catch-all redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;

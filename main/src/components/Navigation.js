@@ -1,80 +1,86 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { getAllCourses } from '../data/courses';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { getAllCourses } from '../data/courses.js';
 
 /**
  * Navigation component
- * Provides consistent navigation header across all pages
- * Includes responsive mobile menu
+ * Provides site navigation with responsive mobile menu and dropdown for courses
  */
 const Navigation = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const location = useLocation();
   const courses = getAllCourses();
   
-  // Toggle mobile menu
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location]);
   
-  // Close mobile menu after clicking a link
-  const closeMobileMenu = () => {
-    setMobileMenuOpen(false);
-  };
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
   
   return (
-    <nav className="main-navigation">
+    <nav className="main-nav">
       <div className="container">
-        <div className="nav-wrapper">
-          <Link to="/" className="nav-logo" onClick={closeMobileMenu}>
+        <div className="nav-container">
+          <Link to="/" className="nav-logo">
             University Courses
           </Link>
           
           <button 
-            className={`mobile-menu-toggle ${mobileMenuOpen ? 'active' : ''}`}
-            onClick={toggleMobileMenu}
-            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={mobileMenuOpen}
+            className={`nav-toggle ${isMenuOpen ? 'open' : ''}`}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-expanded={isMenuOpen}
+            aria-label="Toggle navigation menu"
           >
-            <span className="hamburger-line"></span>
-            <span className="hamburger-line"></span>
-            <span className="hamburger-line"></span>
+            <span className="toggle-bar"></span>
+            <span className="toggle-bar"></span>
+            <span className="toggle-bar"></span>
           </button>
           
-          <div className={`nav-menu ${mobileMenuOpen ? 'open' : ''}`}>
-            <Link 
-              to="/" 
-              className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}
-              onClick={closeMobileMenu}
-            >
-              Home
-            </Link>
-            
-            <div className="nav-dropdown">
-              <button className="nav-dropdown-toggle">
-                Courses <span className="dropdown-arrow">▼</span>
-              </button>
-              <div className="nav-dropdown-content">
-                {courses.map(course => (
-                  <Link 
-                    key={course.id}
-                    to={`/${course.id}`}
-                    className={`nav-dropdown-item ${location.pathname === `/${course.id}` ? 'active' : ''}`}
-                    onClick={closeMobileMenu}
-                  >
-                    {course.title}
-                  </Link>
-                ))}
-              </div>
-            </div>
-            
-            <Link 
-              to="/about" 
-              className={`nav-item ${location.pathname === '/about' ? 'active' : ''}`}
-              onClick={closeMobileMenu}
-            >
-              About
-            </Link>
+          <div className={`nav-links-container ${isMenuOpen ? 'open' : ''}`}>
+            <ul className="nav-links">
+              <li>
+                <NavLink to="/" end>Home</NavLink>
+              </li>
+              <li className="dropdown" ref={dropdownRef}>
+                <button 
+                  className={`dropdown-toggle ${isDropdownOpen ? 'open' : ''}`}
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  aria-expanded={isDropdownOpen}
+                >
+                  Courses <span className="dropdown-icon">▼</span>
+                </button>
+                <ul className={`dropdown-menu ${isDropdownOpen ? 'show' : ''}`}>
+                  {courses.map((course) => (
+                    <li key={course.id}>
+                      <NavLink 
+                        to={`/${course.id}`}
+                        className={({ isActive }) => isActive ? 'active' : ''}
+                      >
+                        {course.title}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+              <li>
+                <NavLink to="/about">About</NavLink>
+              </li>
+            </ul>
           </div>
         </div>
       </div>

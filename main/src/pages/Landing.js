@@ -1,85 +1,91 @@
 import React, { useState, useEffect } from 'react';
-import Cube from '../components/Cube';
-import CourseCards from '../components/CourseCards';
-import { getAllCourses } from '../data/courses';
+import Cube from '../components/Cube.js';
+import CourseCards from '../components/CourseCards.js';
+import Footer from '../components/Footer.js';
+import { getAllCourses } from '../data/courses.js';
+import { isWebGLAvailable, isWebGLPerformant } from '../utils/webGLDetection.js';
 
 /**
  * Landing page component
- * Shows either the 3D Cube or fallback cards based on WebGL support
+ * Displays either 3D cube or fallback cards based on WebGL support
  */
 const Landing = () => {
-  const [webGLSupported, setWebGLSupported] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasWebGL, setHasWebGL] = useState(false);
   const courses = getAllCourses();
-  
-  // Check for WebGL support on component mount
+
+  // Check WebGL support on component mount
   useEffect(() => {
-    const checkWebGLSupport = () => {
-      try {
-        const canvas = document.createElement('canvas');
-        const hasWebGL = !!(
-          window.WebGLRenderingContext && 
-          (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
-        );
-        return hasWebGL;
-      } catch (e) {
-        return false;
+    // Set page title for SEO
+    document.title = 'University Courses | Interactive Course Selection';
+    
+    // Check WebGL availability and performance
+    const checkWebGL = async () => {
+      const webGLAvailable = await isWebGLAvailable();
+      
+      // If WebGL is available, check if it's performant enough
+      if (webGLAvailable) {
+        const webGLPerformant = await isWebGLPerformant();
+        setHasWebGL(webGLPerformant);
+      } else {
+        setHasWebGL(false);
       }
+      
+      // Finish loading regardless of result
+      setIsLoading(false);
     };
     
-    // Set WebGL support status
-    setWebGLSupported(checkWebGLSupport());
+    checkWebGL();
   }, []);
-  
-  // Show loading state while checking WebGL support
-  if (webGLSupported === null) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading courses...</p>
-      </div>
-    );
-  }
-  
+
   return (
     <div className="landing-page">
       <header className="landing-header">
-        <h1>University Courses Portal</h1>
-        <p>Explore our course offerings through the interactive display below</p>
+        <div className="container">
+          <h1>University Courses</h1>
+          <p className="lead">
+            Explore our interactive course selection and find the perfect path for your education
+          </p>
+        </div>
       </header>
-      
-      <main className="landing-main">
-        {webGLSupported ? (
-          <div className="cube-wrapper">
-            <Cube />
-            <p className="interaction-hint">
-              Click on any face of the cube to explore that course. Use arrow keys to rotate.
+
+      <main id="main" className="landing-content">
+        <div className="container">
+          <section className="interactive-section">
+            <h2 className="section-title">Select a Course</h2>
+            <p className="section-description">
+              {hasWebGL 
+                ? 'Rotate the cube and click on a face to explore that course' 
+                : 'Choose a course from the options below'}
             </p>
-          </div>
-        ) : (
-          <div className="fallback-wrapper">
-            <p className="fallback-message">
-              Explore our course offerings below:
-            </p>
-            <CourseCards />
-          </div>
-        )}
+
+            {isLoading ? (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p>Loading course selection...</p>
+              </div>
+            ) : (
+              <div className="course-selector">
+                {hasWebGL ? <Cube /> : <CourseCards />}
+              </div>
+            )}
+          </section>
+
+          <section className="courses-preview">
+            <h2 className="section-title">Available Courses</h2>
+            <div className="courses-list">
+              {courses.map(course => (
+                <div key={course.id} className={`course-preview ${course.id}`}>
+                  <h3>{course.title}</h3>
+                  <p>{course.shortDescription || course.description.substring(0, 120)}...</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
       </main>
       
-      <section className="courses-preview">
-        <h2>Available Courses</h2>
-        <div className="courses-list">
-          {courses.map(course => (
-            <div key={course.id} className={`course-preview ${course.color}`}>
-              <h3>{course.title}</h3>
-              <p>{course.description.substring(0, 100)}...</p>
-            </div>
-          ))}
-        </div>
-      </section>
-      
-      <footer className="landing-footer">
-        <p>© 2025 University Name | All Rights Reserved</p>
-      </footer>
+      <Footer />
     </div>
   );
 };

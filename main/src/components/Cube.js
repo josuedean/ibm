@@ -1,6 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { useNavigate } from 'react-router-dom';
+import { loadTexture, createPlaceholderMaterial, preloadTextures } from '../utils/textureLoader.js';
+import { announceToScreenReader } from '../utils/accessibility.js';
 
 // Course textures will be loaded from these paths
 const texturePaths = {
@@ -20,6 +22,16 @@ const courseRoutes = {
   'intro-programming': '/intro-programming',
   'global-logistics': '/global-logistics',
   'university': '/', // Homepage
+};
+
+// Course colors (matching our theme variables)
+const courseColors = {
+  'digital-literacy': 0x1E90FF, // Blue
+  'accounting': 0x4CAF50, // Green
+  'data-analysis': 0x9C27B0, // Purple
+  'intro-programming': 0xFF9800, // Amber
+  'global-logistics': 0xFF5252, // Red
+  'university': 0x004A99, // Dark Blue
 };
 
 const Cube = () => {
@@ -85,14 +97,12 @@ const Cube = () => {
     const geometry = new THREE.BoxGeometry(3, 3, 3);
     
     // Create placeholder materials with course colors
-    const materials = [
-      new THREE.MeshBasicMaterial({ color: 0x1E90FF }), // Digital Literacy - Blue
-      new THREE.MeshBasicMaterial({ color: 0x4CAF50 }), // Accounting - Green
-      new THREE.MeshBasicMaterial({ color: 0x9C27B0 }), // Data Analysis - Purple
-      new THREE.MeshBasicMaterial({ color: 0xFF9800 }), // Intro to Programming - Amber
-      new THREE.MeshBasicMaterial({ color: 0xFF5252 }), // Global Logistics - Red
-      new THREE.MeshBasicMaterial({ color: 0x004A99 })  // University - Dark Blue
-    ];
+    const materials = Object.keys(faceIndices).map(index => {
+      const courseId = faceIndices[index];
+      const color = courseColors[courseId];
+      const texturePath = texturePaths[courseId];
+      return createPlaceholderMaterial(color, texturePath);
+    });
     
     // Create cube
     const cube = new THREE.Mesh(geometry, materials);
@@ -103,30 +113,35 @@ const Cube = () => {
     const raycaster = new THREE.Raycaster();
     raycasterRef.current = raycaster;
     
-    // Add texture loader
-    const loadTextures = () => {
-      const textureLoader = new THREE.TextureLoader();
+    // Load textures and apply them to the cube
+    const loadTextures = async () => {
+      // Preload all textures first
+      await preloadTextures(texturePaths);
       
-      // Load each texture and apply to corresponding face
+      // Apply textures to cube faces
       Object.entries(texturePaths).forEach(([courseId, path], index) => {
-        textureLoader.load(
-          path, 
+        loadTexture(
+          path,
           (texture) => {
             // Apply texture to material
             materials[index].map = texture;
             materials[index].needsUpdate = true;
             
-            // Add ARIA labels and metadata to faces for accessibility
-            const face = cube.geometry.faces ? cube.geometry.faces[index] : null;
-            if (face) {
-              face.courseId = courseId;
-              face.altText = `${courseId.replace('-', ' ')} course`;
-            }
+            // Add accessibility metadata
+            materials[index].userData = {
+              courseId,
+              altText: `${courseId.replace('-', ' ')} course`
+            };
           },
-          undefined,
-          (err) => console.error(`Error loading texture: ${path}`, err)
+          (error) => {
+            console.error(`Failed to load texture for ${courseId}:`, error);
+            // Keep the colored placeholder material
+          }
         );
       });
+      
+      // Announce to screen readers that the cube is ready
+      announceToScreenReader('Interactive course selection cube is ready. Use arrow keys to rotate and Enter to select a course.', 'polite');
     };
     
     // Call texture loading function
@@ -148,6 +163,8 @@ const Cube = () => {
     
     // Handle window resize
     const handleResize = () => {
+      if (!mountRef.current) return;
+      
       camera.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
@@ -176,7 +193,15 @@ const Cube = () => {
         
         // Get the face index
         const faceIndex = Math.floor(intersects[0].faceIndex / 2);
-        selectedFaceRef.current = faceIndex;
+        
+        // Update selected face
+        if (selectedFaceRef.current !== faceIndex) {
+          selectedFaceRef.current = faceIndex;
+          
+          // Announce the currently focused course
+          const courseName = faceIndices[faceIndex].replace('-', ' ');
+          announceToScreenReader(`Focused on ${courseName} course. Press Enter to view.`, 'polite');
+        }
       } else {
         selectedFaceRef.current = null;
       }
@@ -240,16 +265,28 @@ const Cube = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('keydown', handleKeyDown);
-      renderer.domElement.removeEventListener('mousemove', handleMouseMove);
-      renderer.domElement.removeEventListener('click', handleClick);
-      renderer.domElement.removeEventListener('mouseenter', handleMouseEnter);
-      renderer.domElement.removeEventListener('mouseleave', handleMouseLeave);
+      
+      if (renderer && renderer.domElement) {
+        renderer.domElement.removeEventListener('mousemove', handleMouseMove);
+        renderer.domElement.removeEventListener('click', handleClick);
+        renderer.domElement.removeEventListener('mouseenter', handleMouseEnter);
+        renderer.domElement.removeEventListener('mouseleave', handleMouseLeave);
+      }
       
       // Clean up Three.js resources
-      mountRef.current.removeChild(renderer.domElement);
-      cube.geometry.dispose();
-      materials.forEach(material => material.dispose());
-      renderer.dispose();
+      if (mountRef.current && renderer) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
+      
+      if (geometry) geometry.dispose();
+      if (materials) {
+        materials.forEach(material => {
+          if (material.map) material.map.dispose();
+          material.dispose();
+        });
+      }
+      
+      if (renderer) renderer.dispose();
     };
   }, [navigate]);
   
