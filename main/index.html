@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="University Courses Portal - Interactive course selection for Digital Literacy, Accounting, Data Analysis, Intro to Programming, and Global Logistics" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <title>University Courses</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <!-- WebGL detection for fallback -->
+    <script>
+      window.hasWebGL = (function() {
+        try {
+          const canvas = document.createElement('canvas');
+          return !!window.WebGLRenderingContext && 
+            (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+        } catch (e) {
+          return false;
+        }
+      })();
+    </script>
+  </body>
+</html>
