@@ -41,36 +41,38 @@ input,select,button{padding:.35rem .5rem;font-size:1rem}
 
 <script>
 /* ---------- CONFIG ---------- */
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzn3fcAIG60ooXdPQ5swvTnmIRbi68gVoje6fUtyeClJTTKKYzug5ujHqUunrRJezqA-w/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx2EL9AbD3UMu2zCJxEoqViAmqeUIlqp1wQfPE9A1Ajky1_dNKnJvmPbnUHeBDP0bOK0Q/exec';     // ← paste /exec URL here
 
-/* ---------- UI logic ---------- */
+/* ---------- SHORTCUT ---------- */
 const $ = id => document.getElementById(id);
 
+/* ---------- LOGIN SUBMIT ---------- */
 $('frm').addEventListener('submit', async e=>{
   e.preventDefault();
   $('err').textContent = 'Checking…';
 
-  /* build query-string */
   const qs = new URLSearchParams({
     class: $('cls').value,
     id:    $('sid').value.trim(),
     pw:    $('pw').value,
-    tab:   'Totals'
+    tab:   'Totals'               // always the same
   });
 
   try {
-    const res = await fetch(`${GAS_ENDPOINT}?${qs}`);
+    const res  = await fetch(`${GAS_ENDPOINT}?${qs}`);   // plain GET, no headers
     const json = await res.json();
+
     if (json.status !== 'ok') throw new Error(json.message);
     render(json.data);
-  } catch (err){
+
+  } catch (err) {
     $('err').textContent = err.message || err;
   }
 });
 
-/* ---------- render grades ---------- */
+/* ---------- RENDER GRADES ---------- */
 function render(d){
-  $('login').style.display = 'none';
+  $('login').style.display  = 'none';
   $('grades').style.display = 'block';
 
   const g = $('grades');
@@ -80,9 +82,9 @@ function render(d){
     <p><b>Current %:</b> ${(+d.currentPercent).toFixed(1)}%</p>
     <p><b>Max Possible Points:</b> ${d.maxPossiblePoints}</p><hr>`;
 
-  for(const [cat, items] of Object.entries(d.categories)){
-    g.insertAdjacentHTML('beforeend', `<h3>${cat}</h3><ul id="list-${cat}"></ul>`);
-    const ul = document.getElementById(`list-${cat}`);
+  for (const [cat, items] of Object.entries(d.categories)) {
+    g.insertAdjacentHTML('beforeend', `<h3>${cat}</h3><ul id="ul-${cat}"></ul>`);
+    const ul = document.getElementById(`ul-${cat}`);
     items.forEach(it=>{
       ul.insertAdjacentHTML('beforeend',
         `<li>${it.label}: <strong>${it.score ?? 0}/${it.total ?? 0}</strong></li>`);
