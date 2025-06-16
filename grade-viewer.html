@@ -1,101 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Grade Checker</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-    :root { --brand:#0066cc; --bg:#f7f9fc; --border:#dde; }
-    body      { font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); margin:2rem; color:#222;}
-    h1,h2,h3  { margin:0 0 .6rem }
-    .wrap     { max-width:640px; margin:auto; }
-    label     { display:block; margin-top:1rem; font-weight:600; }
-    input,select,button { width:100%; padding:.65rem; font-size:1rem; }
-    button    { background:var(--brand); color:#fff; border:0; border-radius:4px; cursor:pointer; margin-top:1.2rem;}
-    button:disabled{opacity:.6;cursor:not-allowed}
-    .error    { color:#c00; margin-top:1rem; }
-    table     { width:100%; border-collapse:collapse; margin-top:1rem; }
-    th,td     { padding:.5rem; border:1px solid var(--border); text-align:left; }
-    th        { background:#eef; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grade Viewer</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:2rem;max-width:38rem}
+h2{margin-top:2rem}
+.error{color:#d00}
+ul{list-style:none;padding:0}
+li{margin:.25rem 0}
+label{display:block;margin:.5rem 0 .25rem}
+input,select,button{padding:.35rem .5rem;font-size:1rem}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Student Grade Lookup</h1>
 
-    <form id="gradeForm">
-      <label for="cls">Class</label>
+<!-- ─────────────── LOGIN FORM ─────────────── -->
+<section id="login">
+  <h1>Grade Viewer</h1>
+  <form id="frm">
+    <label>Class
       <select id="cls" required>
-        <option value="">— choose a class —</option>
-        <option value="digital">Digital Literacy</option>
-        <option value="logistics">Logistics</option>
+        <option value="" disabled selected>Choose…</option>
+        <option>Digital Literacy</option>
+        <option>Global Logistics</option>
       </select>
+    </label>
 
-      <label for="sid">Student ID</label>
-      <input id="sid" required>
+    <label>Student&nbsp;ID <input id="sid" required></label>
+    <label>Password&nbsp;&nbsp;&nbsp; <input id="pw" type="password" required></label>
 
-      <label for="pw">Password</label>
-      <input id="pw" type="password" required>
+    <button type="submit">View Grades</button>
+  </form>
+  <p id="err" class="error"></p>
+</section>
 
-      <button id="btn">Check grade</button>
-    </form>
-
-    <div id="result"></div>
-  </div>
+<!-- ─────────────── GRADE DISPLAY ─────────────── -->
+<section id="grades" style="display:none;"></section>
 
 <script>
-/*  Map class-key ➜ deployed Apps Script URL  */
-const ENDPOINT = {
-  digital  : 'https://script.google.com/macros/s/AKfycbz8VI_R2VLect6BYNqszOtdqPKVOrw7GWHcijqy-X6Gn8HaQn2GE7VLeaYx6UVg1U4k/exec',
-  logistics: 'https://script.google.com/macros/s/AKfycbylzFWbS3zoWAPcJ08r3hcmuBBu3ihyxbsb5gnu_-TZSBdWAJJDtx7PQ5MqO7WqjeQJTg/exec'
-};
+/* ---------- CONFIG ---------- */
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzn3fcAIG60ooXdPQ5swvTnmIRbi68gVoje6fUtyeClJTTKKYzug5ujHqUunrRJezqA-w/exec';
 
-const form   = document.getElementById('gradeForm');
-const resBox = document.getElementById('result');
-const btn    = document.getElementById('btn');
+/* ---------- UI logic ---------- */
+const $ = id => document.getElementById(id);
 
-form.addEventListener('submit', async evt => {
-  evt.preventDefault();
-  resBox.innerHTML = '';
-  const cls = document.getElementById('cls').value;
-  const id  = document.getElementById('sid').value.trim();
-  const pw  = document.getElementById('pw' ).value.trim();
+$('frm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  $('err').textContent = 'Checking…';
 
-  if (!cls || !ENDPOINT[cls]) {
-    resBox.innerHTML = '<p class="error">Please select a valid class.</p>';
-    return;
-  }
+  /* build query-string */
+  const qs = new URLSearchParams({
+    class: $('cls').value,
+    id:    $('sid').value.trim(),
+    pw:    $('pw').value,
+    tab:   'Totals'
+  });
 
-  btn.disabled = true;
   try {
-    const url   = `${ENDPOINT[cls]}?id=${encodeURIComponent(id)}&password=${encodeURIComponent(pw)}`;
-    const resp  = await fetch(url);
-    const data  = await resp.json();
-
-    if (data.status !== 'ok') {
-      resBox.innerHTML = `<p class="error">${data.message}</p>`;
-    } else {
-      render(data);
-    }
-  } catch(e) {
-    resBox.innerHTML = '<p class="error">Could not reach the grade server. Try again later.</p>';
-    console.error(e);
-  } finally {
-    btn.disabled = false;
+    const res = await fetch(`${GAS_ENDPOINT}?${qs}`);
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error(json.message);
+    render(json.data);
+  } catch (err){
+    $('err').textContent = err.message || err;
   }
 });
 
+/* ---------- render grades ---------- */
 function render(d){
-  let html = `
-    <h2>Hi ${d.name}</h2>
-    <p><strong>Overall:</strong> ${d.availablePointsFraction}  (${d.percent} %)</p>
-    <h3>Breakdown</h3>
-    <table><thead><tr><th>Category</th><th>Points</th></tr></thead><tbody>`;
-  for (const [k,v] of Object.entries(d.breakdown)){
-    html += `<tr><td>${k}</td><td>${v}</td></tr>`;
+  $('login').style.display = 'none';
+  $('grades').style.display = 'block';
+
+  const g = $('grades');
+  g.innerHTML = `
+    <h2>Hello, ${d.name}</h2>
+    <p><b>Current Points:</b> ${d.currentAvailablePoints.student}/${d.currentAvailablePoints.max}</p>
+    <p><b>Current %:</b> ${(+d.currentPercent).toFixed(1)}%</p>
+    <p><b>Max Possible Points:</b> ${d.maxPossiblePoints}</p><hr>`;
+
+  for(const [cat, items] of Object.entries(d.categories)){
+    g.insertAdjacentHTML('beforeend', `<h3>${cat}</h3><ul id="list-${cat}"></ul>`);
+    const ul = document.getElementById(`list-${cat}`);
+    items.forEach(it=>{
+      ul.insertAdjacentHTML('beforeend',
+        `<li>${it.label}: <strong>${it.score ?? 0}/${it.total ?? 0}</strong></li>`);
+    });
   }
-  html += '</tbody></table>';
-  resBox.innerHTML = html;
 }
 </script>
 </body>
