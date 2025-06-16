@@ -177,44 +177,73 @@ document.querySelectorAll('[data-set-theme]').forEach(btn=>{
 $('frm').addEventListener('submit', async e=>{
   e.preventDefault();
   $('err').textContent='Checking…';
-
-  const qs = new URLSearchParams({
-    class:$('cls').value,
-    id:   $('sid').value.trim(),
-    pw:   $('pw').value,
-    tab:  'Totals'
-  });
+  const cls=$('cls').value,id=$('sid').value.trim(),pw=$('pw').value;
 
   try{
-    const res  = await fetch(`${GAS_ENDPOINT}?${qs}`);   /* simple GET */
-    const json = await res.json();
+    const res=await fetch(`${GAS_ENDPOINT}?`+new URLSearchParams({
+      class:cls,id:id,pw:pw,tab:'Totals'}));
+    const json=await res.json();
     if(json.status!=='ok') throw new Error(json.message);
+    window._login={cls,id,pw};          // keep creds for pw-change
     render(json.data);
-  }catch(err){
-    $('err').textContent=err.message||err;
-  }
+  }catch(err){$('err').textContent=err.message||err;}
 });
 
-/* ---------- RENDER GRADES ---------- */
+/* ---------- RENDER GRADES + “Change PW” BTN ---------- */
 function render(d){
   $('login').style.display='none';
-  $('grades').style.display='block';
-  const g=$('grades');
-  g.innerHTML=`
+  const g=$('grades'); g.style.display='block'; g.innerHTML=`
     <h2>Welcome, ${d.name}</h2>
     <p><b>Current Points:</b> ${d.currentAvailablePoints.student}/${d.currentAvailablePoints.max}</p>
     <p><b>Current %:</b> ${(+d.currentPercent).toFixed(1)}%</p>
     <p><b>Max Possible Points:</b> ${d.maxPossiblePoints}</p>
+    <button id="openPw" style="margin-top:1rem">Change Password</button>
     <hr>`;
   for(const [cat,it] of Object.entries(d.categories)){
     g.insertAdjacentHTML('beforeend',`<h3>${cat}</h3><ul id="u-${cat}"></ul>`);
     const ul=document.getElementById(`u-${cat}`);
-    it.forEach(o=>{
-      ul.insertAdjacentHTML('beforeend',
-        `<li>${o.label}: <strong>${o.score??0}/${o.total??0}</strong></li>`);
-    });
+    it.forEach(o=>ul.insertAdjacentHTML('beforeend',
+      `<li>${o.label}: <strong>${o.score??0}/${o.total??0}</strong></li>`));
   }
+  /* show dialog */
+  $('openPw').addEventListener('click',()=>{ $('overlay').style.display=$('pwCard').style.display='block'; });
 }
+
+/* ---------- PW-CHANGE FORM ---------- */
+$('cancelPw').onclick=()=>{ $('overlay').style.display=$('pwCard').style.display='none'; $('pwMsg').textContent=''; $('pwForm').reset(); };
+
+$('pwForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const oldPw=$('oldPw').value,new1=$('newPw').value,new2=$('newPw2').value;
+  if(new1!==new2){ $('pwMsg').textContent='New passwords do not match.'; return;}
+  if(!window._login){ $('pwMsg').textContent='Please log in again.'; return;}
+
+  $('pwMsg').textContent='Updating…';
+
+  const body = new URLSearchParams({
+    action:'changePw',
+    class:_login.cls,
+    id:_login.id,
+    oldPw:oldPw,
+    newPw:new1,
+    tab:'Totals'
+  });
+
+  try{
+    const res=await fetch(GAS_ENDPOINT,{method:'POST',body});
+    const json=await res.json();
+    if(json.status!=='ok') throw new Error(json.message);
+
+    $('pwMsg').style.color='var(--accent)';
+    $('pwMsg').textContent='Password updated!';
+    _login.pw=new1;   // update cached password
+    setTimeout(()=>{ $('cancelPw').click(); },1200);
+
+  }catch(err){
+    $('pwMsg').style.color='#e11d48';
+    $('pwMsg').textContent=err.message||err;
+  }
+});
 </script>
 </body>
 </html>
