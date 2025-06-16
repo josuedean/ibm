@@ -1,23 +1,134 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Grade Viewer</title>
+<title>Grade Viewer · v2</title>
+
+<!-- ─────────────── STYLE ─────────────── -->
 <style>
-body{font-family:system-ui,sans-serif;margin:2rem;max-width:38rem}
-h2{margin-top:2rem}
-.error{color:#d00}
-ul{list-style:none;padding:0}
-li{margin:.25rem 0}
-label{display:block;margin:.5rem 0 .25rem}
-input,select,button{padding:.35rem .5rem;font-size:1rem}
+/* ---------- Root tokens for all themes ---------- */
+:root{
+  --font-main: 'Inter', system-ui, sans-serif;
+  --radius: 12px;
+  --speed: 320ms;
+}
+
+/* ---------- THEME: LIGHT (default) ---------- */
+[data-theme="light"]{
+  --bg:            #f8fafc;
+  --surface:       #ffffff;
+  --text:          #0f172a;
+  --muted:         #475569;
+  --accent:        #06b6d4;   /* cyan */
+  --accent-soft:   #a5f3fc;
+}
+
+/* ---------- THEME: DARK ---------- */
+[data-theme="dark"]{
+  --bg:            #0f172a;
+  --surface:       #1e293b;
+  --text:          #e2e8f0;
+  --muted:         #94a3b8;
+  --accent:        #22d3ee;   /* bright cyan */
+  --accent-soft:   #0e7490;
+}
+
+/* ---------- THEME: CRAZY (neon gradient) ---------- */
+[data-theme="crazy"]{
+  --bg:            #090114;
+  --surface:       rgba(15,15,35,.85);
+  --text:          #f5f5f5;
+  --muted:         #cbd5e1;
+  --accent:        #ff26a8;   /* neon pink */
+  --accent-soft:   #9b5de5;
+  animation: hue 10s linear infinite;
+}
+@keyframes hue{
+  from{filter:hue-rotate(0deg);} to{filter:hue-rotate(360deg);}
+}
+
+/* ---------- Layout & common ---------- */
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--font-main);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:2rem;
+  transition:background var(--speed),color var(--speed),filter var(--speed);
+}
+.card{
+  width:min(100%,38rem);
+  background:var(--surface);
+  border-radius:var(--radius);
+  box-shadow:0 0 12px rgba(0,0,0,.15);
+  padding:2rem 2.5rem;
+}
+h1,h2,h3{margin-bottom:.75rem;font-weight:600}
+h1{font-size:1.75rem;text-align:center;color:var(--accent)}
+h2{font-size:1.5rem}
+h3{font-size:1.15rem;margin-top:1.2rem;border-bottom:1px solid var(--accent-soft);padding-bottom:.2rem}
+label{display:block;margin:.9rem 0 .25rem;font-weight:500}
+input,select,button{
+  width:100%;
+  padding:.55rem .8rem;
+  border-radius:var(--radius);
+  border:2px solid var(--accent-soft);
+  background:var(--bg);
+  color:var(--text);
+  font-size:1rem;
+  transition:border var(--speed),background var(--speed);
+}
+input:focus,select:focus{outline:none;border-color:var(--accent)}
+button{
+  cursor:pointer;
+  margin-top:1rem;
+  background:var(--accent);
+  color:#fff;
+  border:none;
+}
+button:hover{background:var(--text);color:var(--bg)}
+.error{color:#e11d48;margin-top:.7rem;text-align:center}
+
+ul{list-style:none;margin-top:.4rem}
+li{margin:.25rem 0;color:var(--muted)}
+li strong{color:var(--accent)}
+
+/* ---------- Theme switcher ---------- */
+.theme-toggle{
+  position:fixed;top:1rem;right:1rem;display:flex;gap:.5rem;
+}
+.theme-toggle button{
+  width:2.25rem;height:2.25rem;border-radius:50%;border:none;
+  cursor:pointer;transition:transform .2s;
+}
+.theme-toggle button:hover{transform:scale(1.1)}
+[data-theme="light"] .btn-light,
+[data-theme="dark"]  .btn-dark,
+[data-theme="crazy"] .btn-crazy{outline:3px solid var(--accent)}
+
+/* ---------- Colors for toggle dots ---------- */
+.btn-light {background:#f8fafc}
+.btn-dark  {background:#0f172a}
+.btn-crazy {background:linear-gradient(135deg,#ff26a8 0%,#22d3ee 100%);}
 </style>
 </head>
+
 <body>
 
-<!-- ─────────────── LOGIN FORM ─────────────── -->
-<section id="login">
+<!-- ─────────────── THEME SWITCHER ─────────────── -->
+<div class="theme-toggle">
+  <button class="btn-light"  title="Light" data-set-theme="light"></button>
+  <button class="btn-dark"   title="Dark"  data-set-theme="dark"></button>
+  <button class="btn-crazy"  title="Crazy" data-set-theme="crazy"></button>
+</div>
+
+<!-- ─────────────── LOGIN CARD ─────────────── -->
+<section id="login" class="card">
   <h1>Grade Viewer</h1>
   <form id="frm">
     <label>Class
@@ -28,66 +139,79 @@ input,select,button{padding:.35rem .5rem;font-size:1rem}
       </select>
     </label>
 
-    <label>Student&nbsp;ID <input id="sid" required></label>
-    <label>Password&nbsp;&nbsp;&nbsp; <input id="pw" type="password" required></label>
+    <label>Student ID
+      <input id="sid" required>
+    </label>
+
+    <label>Password
+      <input id="pw" type="password" required>
+    </label>
 
     <button type="submit">View Grades</button>
   </form>
   <p id="err" class="error"></p>
 </section>
 
-<!-- ─────────────── GRADE DISPLAY ─────────────── -->
-<section id="grades" style="display:none;"></section>
+<!-- ─────────────── GRADES CARD (hidden until login) ─────────────── -->
+<section id="grades" class="card" style="display:none;"></section>
 
+<!-- ─────────────── SCRIPT ─────────────── -->
 <script>
 /* ---------- CONFIG ---------- */
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx2EL9AbD3UMu2zCJxEoqViAmqeUIlqp1wQfPE9A1Ajky1_dNKnJvmPbnUHeBDP0bOK0Q/exec';     // ← paste /exec URL here
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx2EL9AbD3UMu2zCJxEoqViAmqeUIlqp1wQfPE9A1Ajky1_dNKnJvmPbnUHeBDP0bOK0Q/exec';   // ← paste /exec URL
 
-/* ---------- SHORTCUT ---------- */
+/* ---------- QS shortcut ---------- */
 const $ = id => document.getElementById(id);
 
-/* ---------- LOGIN SUBMIT ---------- */
+/* ---------- THEME SWITCH ---------- */
+document.querySelectorAll('[data-set-theme]').forEach(btn=>{
+  btn.addEventListener('click',()=> {
+    document.documentElement.setAttribute('data-theme',btn.dataset.setTheme);
+    // update outline
+    document.querySelectorAll('.theme-toggle button').forEach(b=>b.style.outline='none');
+    btn.style.outline='3px solid var(--accent)';
+  });
+});
+
+/* ---------- LOGIN ---------- */
 $('frm').addEventListener('submit', async e=>{
   e.preventDefault();
-  $('err').textContent = 'Checking…';
+  $('err').textContent='Checking…';
 
   const qs = new URLSearchParams({
-    class: $('cls').value,
-    id:    $('sid').value.trim(),
-    pw:    $('pw').value,
-    tab:   'Totals'               // always the same
+    class:$('cls').value,
+    id:   $('sid').value.trim(),
+    pw:   $('pw').value,
+    tab:  'Totals'
   });
 
-  try {
-    const res  = await fetch(`${GAS_ENDPOINT}?${qs}`);   // plain GET, no headers
+  try{
+    const res  = await fetch(`${GAS_ENDPOINT}?${qs}`);   /* simple GET */
     const json = await res.json();
-
-    if (json.status !== 'ok') throw new Error(json.message);
+    if(json.status!=='ok') throw new Error(json.message);
     render(json.data);
-
-  } catch (err) {
-    $('err').textContent = err.message || err;
+  }catch(err){
+    $('err').textContent=err.message||err;
   }
 });
 
 /* ---------- RENDER GRADES ---------- */
 function render(d){
-  $('login').style.display  = 'none';
-  $('grades').style.display = 'block';
-
-  const g = $('grades');
-  g.innerHTML = `
-    <h2>Hello, ${d.name}</h2>
+  $('login').style.display='none';
+  $('grades').style.display='block';
+  const g=$('grades');
+  g.innerHTML=`
+    <h2>Welcome, ${d.name}</h2>
     <p><b>Current Points:</b> ${d.currentAvailablePoints.student}/${d.currentAvailablePoints.max}</p>
     <p><b>Current %:</b> ${(+d.currentPercent).toFixed(1)}%</p>
-    <p><b>Max Possible Points:</b> ${d.maxPossiblePoints}</p><hr>`;
-
-  for (const [cat, items] of Object.entries(d.categories)) {
-    g.insertAdjacentHTML('beforeend', `<h3>${cat}</h3><ul id="ul-${cat}"></ul>`);
-    const ul = document.getElementById(`ul-${cat}`);
-    items.forEach(it=>{
+    <p><b>Max Possible Points:</b> ${d.maxPossiblePoints}</p>
+    <hr>`;
+  for(const [cat,it] of Object.entries(d.categories)){
+    g.insertAdjacentHTML('beforeend',`<h3>${cat}</h3><ul id="u-${cat}"></ul>`);
+    const ul=document.getElementById(`u-${cat}`);
+    it.forEach(o=>{
       ul.insertAdjacentHTML('beforeend',
-        `<li>${it.label}: <strong>${it.score ?? 0}/${it.total ?? 0}</strong></li>`);
+        `<li>${o.label}: <strong>${o.score??0}/${o.total??0}</strong></li>`);
     });
   }
 }
