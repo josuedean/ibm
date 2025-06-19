@@ -129,7 +129,7 @@ function render(d){
     <p><b>Current %:</b> ${pct.toFixed(1)}%
        <span class="letter-big" style="color:${gradeColour(letter)}">${letter}</span>
     </p>
-    ${need>0?`<p class="points-msg sparkle">Need <b>${need}</b> pt to reach <b>${nextLetter}</b>!</p>`:''}
+    ${need>0?`<p class="points-msg sparkle">You need <b>${need}</b> pt to reach <b>${nextLetter}</b>!</p>`:''}
     <p><b>Current Points:</b> ${d.currentAvailablePoints.student}/${d.currentAvailablePoints.max}</p>
     <p><b>Max Possible Points:</b> ${d.maxPossiblePoints}</p>
     <button id="openPw" style="margin-top:1rem">Change Password</button><hr>`;
