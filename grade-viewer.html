@@ -120,27 +120,44 @@ $('frm').addEventListener('submit',async e=>{
 
 /* RENDER */
 function render(d){
-  $('login').style.display='none';$('grades').style.display='block';
-  const pct=+d.currentPercent,letter=d.letterGrade||letterFromPercent(pct);
-  const need=pointsToNext(pct),nextLetter=letterFromPercent(pct+need);
-  const g=$('grades');
-  g.innerHTML=`
+  $('login').style.display = 'none';
+  $('grades').style.display = 'block';
+
+  const pct     = +d.currentPercent;
+  const letter  = d.letterGrade || letterFromPercent(pct);
+  const need    = pointsToNext(pct);
+  const showMsg = letter !== 'A+' && need > 0;           // ⇦ NEW
+
+  const nextLetter = showMsg ? letterFromPercent(pct + need) : '';
+
+  const g = $('grades');
+  g.innerHTML = `
     <h2>Welcome, ${d.name}</h2>
+
     <p><b>Current %:</b> ${pct.toFixed(1)}%
        <span class="letter-big" style="color:${gradeColour(letter)}">${letter}</span>
     </p>
-    ${need>0?`<p class="points-msg sparkle">You need <b>${need}</b> pt to reach <b>${nextLetter}</b>!</p>`:''}
+
+    ${showMsg ? `<p class="points-msg sparkle">
+        Need <b>${need}</b> pt to reach <b>${nextLetter}</b>!
+      </p>` : ''}
+
     <p><b>Current Points:</b> ${d.currentAvailablePoints.student}/${d.currentAvailablePoints.max}</p>
     <p><b>Max Possible Points:</b> ${d.maxPossiblePoints}</p>
-    <button id="openPw" style="margin-top:1rem">Change Password</button><hr>`;
-  for(const [cat,items] of Object.entries(d.categories)){
-    g.insertAdjacentHTML('beforeend',`<h3>${cat}</h3><ul id="ul-${cat}"></ul>`);
-    const ul=$(`ul-${cat}`);
-    items.forEach(o=>ul.insertAdjacentHTML('beforeend',
-      `<li><strong>${o.score??0}/${o.total??0}</strong>${o.label}</li>`));
+
+    <button id="openPw" style="margin-top:1rem">Change Password</button>
+    <hr>`;
+
+  /* grade list (unchanged) */
+  for (const [cat, items] of Object.entries(d.categories)) {
+    g.insertAdjacentHTML('beforeend', `<h3>${cat}</h3><ul id="ul-${cat}"></ul>`);
+    const ul = $(`ul-${cat}`);
+    items.forEach(o => ul.insertAdjacentHTML('beforeend',
+      `<li><strong>${o.score ?? 0}/${o.total ?? 0}</strong>${o.label}</li>`));
   }
-  $('openPw').onclick=()=>{$('overlay').style.display=$('pwCard').style.display='block';};
+  $('openPw').onclick = () => { $('overlay').style.display = $('pwCard').style.display = 'block'; };
 }
+
 
 /* PW change (unchanged) */
 $('cancelPw').onclick=()=>{$('overlay').style.display=$('pwCard').style.display='none';$('pwMsg').textContent='';$('pwForm').reset();};
