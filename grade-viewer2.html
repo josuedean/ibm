@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grade Viewer · cyber-punk</title>
+
+<style>
+:root{
+  --font-main:'Inter',system-ui,sans-serif;
+  --radius:12px; --speed:320ms;
+}
+/* light / dark / crazy themes (unchanged) */
+[data-theme="light"]{--bg:#f8fafc;--surface:#fff;--text:#0f172a;--muted:#475569;--accent:#06b6d4;--accent-soft:#a5f3fc}
+[data-theme="dark"] {--bg:#0f172a;--surface:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--accent:#22d3ee;--accent-soft:#0e7490}
+[data-theme="crazy"]{--bg:#090114;--surface:rgba(15,15,35,.85);--text:#f5f5f5;--muted:#cbd5e1;--accent:#ff26a8;--accent-soft:#9b5de5;animation:hue 10s linear infinite}@keyframes hue{from{filter:hue-rotate(0)}to{filter:hue-rotate(360deg)}}
+/* layout */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-main);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;transition:background var(--speed),color var(--speed),filter var(--speed)}
+.card{width:min(100%,38rem);background:var(--surface);padding:2rem 2.5rem;border-radius:var(--radius);box-shadow:0 0 12px rgba(0,0,0,.15)}
+h1,h2,h3{margin-bottom:.75rem;font-weight:600}
+h1{font-size:1.75rem;text-align:center;color:var(--accent)}
+h2{font-size:1.5rem}
+h3{font-size:1.15rem;margin-top:1.2rem;border-bottom:1px solid var(--accent-soft)}
+label{display:block;margin:.9rem 0 .25rem;font-weight:500}
+input,select,button{width:100%;padding:.55rem .8rem;font-size:1rem;border-radius:var(--radius);border:2px solid var(--accent-soft);background:var(--bg);color:var(--text);transition:border var(--speed),background var(--speed)}
+input:focus,select:focus{outline:none;border-color:var(--accent)}
+button{cursor:pointer;margin-top:1rem;background:var(--accent);color:#fff;border:none}
+button:hover{background:var(--text);color:var(--bg)}
+.error{color:#e11d48;margin-top:.7rem;text-align:center}
+ul{list-style:none;margin-top:.4rem}
+li{margin:.25rem 0;color:var(--muted)}li strong{color:var(--accent)}
+/* theme toggle */
+.theme-toggle{position:fixed;top:1rem;right:1rem;display:flex;gap:.5rem}
+.theme-toggle button{width:2.25rem;height:2.25rem;border-radius:50%;border:none;cursor:pointer;transition:transform .2s}
+.theme-toggle button:hover{transform:scale(1.1)}
+[data-theme="light"] .btn-light,
+[data-theme="dark"]  .btn-dark,
+[data-theme="crazy"] .btn-crazy{outline:3px solid var(--accent)}
+.btn-light{background:#f8fafc}.btn-dark{background:#0f172a}.btn-crazy{background:linear-gradient(135deg,#ff26a8 0%,#22d3ee 100%)}
+/* letter display */
+.letter-big{font-size:2.4rem;font-weight:700;margin-left:.6rem;vertical-align:middle}
+.points-msg{margin:.6rem 0 .8rem;font-weight:500;color:var(--muted)}
+</style>
+</head>
+
+<body>
+
+<!-- theme switcher -->
+<div class="theme-toggle">
+  <button class="btn-light" title="Light" data-set-theme="light"></button>
+  <button class="btn-dark"  title="Dark"  data-set-theme="dark"></button>
+  <button class="btn-crazy" title="Crazy" data-set-theme="crazy"></button>
+</div>
+
+<!-- LOGIN -->
+<section id="login" class="card">
+  <h1>Grade Viewer</h1>
+  <form id="frm">
+    <label>Class
+      <select id="cls" required>
+        <option value="" disabled selected>Choose…</option>
+        <option>Digital Literacy</option>
+        <option>Global Logistics</option>
+      </select>
+    </label>
+    <label>Student ID <input id="sid" required></label>
+    <label>Password   <input id="pw" type="password" required></label>
+    <button type="submit">View Grades</button>
+  </form>
+  <p id="err" class="error"></p>
+</section>
+
+<!-- GRADES -->
+<section id="grades" class="card" style="display:none;"></section>
+
+<!-- PW dialog and overlay   (same HTML as before, omitted for brevity) -->
+<section id="pwCard" class="card" style="display:none;position:fixed;inset:0;margin:auto;max-width:26rem;z-index:50">
+  <h2>Change Password</h2>
+  <form id="pwForm">
+    <label>Current Password <input id="oldPw" type="password" required></label>
+    <label>New Password     <input id="newPw" type="password" required></label>
+    <label>Confirm New      <input id="newPw2" type="password" required></label>
+    <button type="submit">Save</button>
+    <button type="button" id="cancelPw" style="margin-top:.5rem;background:var(--surface);color:var(--text)">Cancel</button>
+  </form>
+  <p id="pwMsg" class="error"></p>
+</section>
+<div id="overlay" style="display:none;position:fixed;inset:0;background:#0008;backdrop-filter:blur(2px)"></div>
+
+<!-- SCRIPT -->
+<script>
+const GAS_ENDPOINT='https://script.google.com/macros/s/AKfycbySoqqH4USnSa1I0iGgdpEKpWeNejYOluBbsTBwg8dbKyZSz6kkVF735oWkz7nmUeV73Q/exec';
+const $=id=>document.getElementById(id);
+
+/* theme switching */
+document.querySelectorAll('[data-set-theme]').forEach(btn=>{
+  btn.onclick=()=>{document.documentElement.setAttribute('data-theme',btn.dataset.setTheme);
+    document.querySelectorAll('.theme-toggle button').forEach(b=>b.style.outline='none');
+    btn.style.outline='3px solid var(--accent)';};
+});
+
+/* ----- grade helpers (no “minus” grades) ----- */
+const LADDER=["A+","A","B+","B","C+","C","D","F"];
+function letterFromPercent(p){
+  if(p>=95) return "A+"; if(p>=90) return "A";
+  if(p>=85) return "B+"; if(p>=80) return "B";
+  if(p>=75) return "C+"; if(p>=70) return "C";
+  if(p>=60) return "D";  return "F";
+}
+function gradeColour(letter){
+  if(letter==='F') return '#000';
+  const idx=LADDER.indexOf(letter); if(idx===-1) return 'var(--accent)';
+  const hue=220-idx*(220/(LADDER.length-2)); /* map A+ (blue) → D (red) */
+  return `hsl(${hue}, 80%, 55%)`;
+}
+function pointsToNext(p){
+  const rem=(100-Math.floor(p))%5;
+  return rem===0?0:rem;
+}
+
+/* ----- login ----- */
+$('frm').addEventListener('submit',async e=>{
+  e.preventDefault(); $('err').textContent='Checking…';
+  const cls=$('cls').value,id=$('sid').value.trim(),pw=$('pw').value;
+  try{
+    const res=await fetch(`${GAS_ENDPOINT}?`+new URLSearchParams({class:cls,id,pw,tab:'Totals'}));
+    const json=await res.json(); if(json.status!=='ok') throw new Error(json.message);
+    window._login={cls,id,pw}; render(json.data);
+  }catch(err){$('err').textContent=err.message||err;}
+});
+
+/* ----- main render ----- */
+function render(d){
+  $('login').style.display='none'; $('grades').style.display='block';
+  const pct=+d.currentPercent;
+  const letter=d.letterGrade||letterFromPercent(pct);
+  const need=pointsToNext(pct);
+  const nextLetter=letterFromPercent(pct+need);
+  const g=$('grades');
+  g.innerHTML=`
+    <h2>Welcome, ${d.name}</h2>
+    <p><b>Current %:</b> ${pct.toFixed(1)}%
+       <span class="letter-big" style="color:${gradeColour(letter)}">${letter}</span>
+    </p>
+    ${need>0?`<p class="points-msg">You need <b>${need}</b> more points to get an <b>${nextLetter}</b>.</p>`:''}
+    <p><b>Current Points:</b> ${d.currentAvailablePoints.student}/${d.currentAvailablePoints.max}</p>
+    <p><b>Max Possible Points:</b> ${d.maxPossiblePoints}</p>
+    <button id="openPw" style="margin-top:1rem">Change Password</button><hr>`;
+  for(const [cat,it] of Object.entries(d.categories)){
+    g.insertAdjacentHTML('beforeend',`<h3>${cat}</h3><ul id="u-${cat}"></ul>`);
+    const ul=$(`u-${cat}`);
+    it.forEach(o=>ul.insertAdjacentHTML('beforeend',
+      `<li>${o.label}: <strong>${o.score??0}/${o.total??0}</strong></li>`));
+  }
+  $('openPw').onclick=()=>{$('overlay').style.display=$('pwCard').style.display='block';};
+}
+
+/* ----- password change (unchanged) ----- */
+$('cancelPw').onclick=()=>{$('overlay').style.display=$('pwCard').style.display='none';$('pwMsg').textContent='';$('pwForm').reset();};
+$('pwForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const oldPw=$('oldPw').value,new1=$('newPw').value,new2=$('newPw2').value;
+  if(new1!==new2){$('pwMsg').textContent='New passwords do not match.';return;}
+  $('pwMsg').textContent='Updating…';
+  const body=new URLSearchParams({action:'changePw',class:_login.cls,id:_login.id,oldPw,newPw:new1,tab:'Totals'});
+  try{
+    const res=await fetch(GAS_ENDPOINT,{method:'POST',body});
+    const json=await res.json(); if(json.status!=='ok') throw new Error(json.message);
+    $('pwMsg').style.color='var(--accent)'; $('pwMsg').textContent='Password updated!'; _login.pw=new1;
+    setTimeout(()=>$('cancelPw').click(),1200);
+  }catch(err){$('pwMsg').style.color='#e11d48';$('pwMsg').textContent=err.message||err;}
+});
+</script>
+</body>
+</html>
