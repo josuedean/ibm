@@ -1,7 +1,7 @@
 const form = document.getElementById('loginForm');
 const messageEl = document.getElementById('message');
 
-const GAS_ENDPOINT = 'YOUR_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycby9v0Fa4OkVYdKEku2x-lfPTLCwKcrGyBYj9vL-O4rNJi9RAjVdLZCER_nzpAIIUUVtXA/exec';
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
