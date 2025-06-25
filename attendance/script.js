@@ -7,17 +7,10 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   messageEl.textContent = 'Signing in...';
 
-  let ip = '';
-  try {
-    const ipRes = await fetch('https://api.ipify.org?format=json');
-    const ipData = await ipRes.json();
-    ip = ipData.ip;
-  } catch (_) {}
-
   const payload = new URLSearchParams({
     id: document.getElementById('studentId').value.trim(),
     password: document.getElementById('password').value,
-    ip,
+    ip: '', // just for testing — hardcoded empty
   });
 
   try {
@@ -25,6 +18,7 @@ form.addEventListener('submit', async (e) => {
       method: 'POST',
       body: payload,
     });
+
     const data = await resp.json();
     if (data.success) {
       messageEl.textContent = 'Attendance recorded';
