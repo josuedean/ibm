@@ -20,10 +20,9 @@ function doPost(e) {
 
     var credsSheet = SpreadsheetApp.openById(CREDS_SHEET_ID).getSheetByName('Credentials');
     var creds = credsSheet.getDataRange().getValues();
-    var passHash = hash(pass);
 
     for (var i = 1; i < creds.length; i++) {
-      if (creds[i][0] == id && creds[i][1] == passHash) {
+      if (creds[i][0] == id && creds[i][1] == pass) {
         recordAttendance(id, ip);
         return jsonOutput({ success:true });
       }
@@ -36,16 +35,8 @@ function doPost(e) {
 
 function recordAttendance(id, ip) {
   var sheet = SpreadsheetApp.openById(ATTENDANCE_SHEET_ID).getSheetByName('Attendance');
-  sheet.appendRow([new Date(), id, ip]);
+  sheet.appendRow([id, new Date(), ip]);
   SpreadsheetApp.flush();
-}
-
-function hash(str) {
-  var raw = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, str, Utilities.Charset.UTF_8);
-  return raw.map(function(b){
-    var v = (b < 0 ? b + 256 : b).toString(16);
-    return v.length === 1 ? '0' + v : v;
-  }).join('');
 }
 
 function jsonOutput(obj) {
