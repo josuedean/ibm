@@ -22,8 +22,8 @@ form.addEventListener('submit', async (e) => {
   try {
     const resp = await fetch('YOUR_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL', {
       method: 'POST',
-      body: JSON.stringify(payload),
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(payload).toString()
     });
     const data = await resp.json();
     if (data.success) {
