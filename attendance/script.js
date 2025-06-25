@@ -20,7 +20,7 @@ form.addEventListener('submit', async (e) => {
   };
 
   try {
-    const resp = await fetch('https://script.google.com/macros/s/AKfycbzUAxBdqFhnhtaMI7sJv7pCMkxUG94pgL9n-X9prGRZIh_cY8l4wsFKlyyovL--4oy0MQ/exec', {
+    const resp = await fetch('https://script.google.com/macros/s/AKfycbzjQFbv5ptBYYGxKoQmdesJyRDZMXibVnR9lLPa3X35rFsANrmll3YxKAbW1za4SwP3Fg/exec', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams(payload).toString()
