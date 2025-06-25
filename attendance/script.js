@@ -10,7 +10,7 @@ fetch('https://api.ipify.org?format=json')
   .catch(() => {});
 
 
-const GAS_ENDPOINT = 'YOUR_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwu8j7ytDnki-AiPUGO2KYMGa9_S3i4EBq3EK0yDVkM5mbTpIIKqHJaM1e7VJMkKcuWPA/exec';
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
