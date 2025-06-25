@@ -42,7 +42,7 @@ function signIn(e) {
 function recordAttendance(id, ip) {
   var sheet = SpreadsheetApp.openById(ATTENDANCE_SHEET_ID).getSheetByName('Attendance');
   sheet.appendRow([id, new Date(), ip]);
-  SpreadsheetApp.flush();
+  SpreadsheetApp.flush()
 }
 
 function jsonOutput(obj) {

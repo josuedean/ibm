@@ -9,12 +9,12 @@ fetch('https://api.ipify.org?format=json')
   .then(d => clientIp = d.ip)
   .catch(() => {});
 
+
 const GAS_ENDPOINT = 'YOUR_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL';
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   messageEl.textContent = 'Signing in...';
-
   const payload = new URLSearchParams({
     id: document.getElementById('studentId').value.trim(),
     password: document.getElementById('password').value,
@@ -26,6 +26,7 @@ form.addEventListener('submit', async (e) => {
       method: 'POST',
       body: payload,
     });
+
     const data = await resp.json();
     if (data.success) {
       messageEl.textContent = 'Attendance recorded';
