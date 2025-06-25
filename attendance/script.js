@@ -9,12 +9,12 @@ fetch('https://api.ipify.org?format=json')
   .then(d => clientIp = d.ip)
   .catch(() => {});
 
-
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwu8j7ytDnki-AiPUGO2KYMGa9_S3i4EBq3EK0yDVkM5mbTpIIKqHJaM1e7VJMkKcuWPA/exec';
+const GAS_ENDPOINT = 'YOUR_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL';
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   messageEl.textContent = 'Signing in...';
+
   const payload = new URLSearchParams({
     id: document.getElementById('studentId').value.trim(),
     password: document.getElementById('password').value,

@@ -42,16 +42,12 @@ function signIn(e) {
 function recordAttendance(id, ip) {
   var sheet = SpreadsheetApp.openById(ATTENDANCE_SHEET_ID).getSheetByName('Attendance');
   sheet.appendRow([id, new Date(), ip]);
-  SpreadsheetApp.flush()
+  SpreadsheetApp.flush();
 }
 
 function jsonOutput(obj) {
-  var out = ContentService.createTextOutput(JSON.stringify(obj))
+  return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
-  out.setHeader('Access-Control-Allow-Origin', '*');
-  out.setHeader('Access-Control-Allow-Methods', 'GET, POST');
-  out.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  return out;
 }
 
 function isSignInOpen() {
