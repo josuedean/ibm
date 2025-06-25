@@ -5,10 +5,10 @@ function doPost(e) {
   var lock = LockService.getDocumentLock();
   lock.waitLock(30000);
   try {
-    var data = JSON.parse(e.postData.contents);
-    var id = data.id;
-    var pass = data.password;
-    var ip = data.ip || '';
+    var id = e.parameter.id;
+    var pass = e.parameter.password;
+    var ip = e.parameter.ip || '';
+
 
     if (!id || !pass) {
       return jsonOutput({ success:false, error:'Missing fields' });
@@ -42,7 +42,10 @@ function recordAttendance(id, ip) {
 function jsonOutput(obj) {
   return ContentService
     .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
+    .setMimeType(ContentService.MimeType.JSON)
+    .setHeader('Access-Control-Allow-Origin', '*')
+    .setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+    .setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
 function isSignInOpen() {
