@@ -1,24 +1,23 @@
 const form = document.getElementById('loginForm');
 const messageEl = document.getElementById('message');
 
-let clientIp = '';
-
-// Fetch client IP via public service
-fetch('https://api.ipify.org?format=json')
-  .then(r => r.json())
-  .then(d => clientIp = d.ip)
-  .catch(() => {});
-
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycby9v0Fa4OkVYdKEku2x-lfPTLCwKcrGyBYj9vL-O4rNJi9RAjVdLZCER_nzpAIIUUVtXA/exec';
+const GAS_ENDPOINT = 'YOUR_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL';
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   messageEl.textContent = 'Signing in...';
 
+  let ip = '';
+  try {
+    const ipRes = await fetch('https://api.ipify.org?format=json');
+    const ipData = await ipRes.json();
+    ip = ipData.ip;
+  } catch (_) {}
+
   const payload = new URLSearchParams({
     id: document.getElementById('studentId').value.trim(),
     password: document.getElementById('password').value,
-    ip: clientIp,
+    ip,
   });
 
   try {
@@ -26,7 +25,6 @@ form.addEventListener('submit', async (e) => {
       method: 'POST',
       body: payload,
     });
-
     const data = await resp.json();
     if (data.success) {
       messageEl.textContent = 'Attendance recorded';
