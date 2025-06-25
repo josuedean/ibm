@@ -20,11 +20,8 @@ form.addEventListener('submit', async (e) => {
   };
 
   try {
-    const resp = await fetch('YOUR_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(payload).toString()
-    });
+    const qs = new URLSearchParams(payload).toString();
+    const resp = await fetch('YOUR_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL?' + qs);
     const data = await resp.json();
     if (data.success) {
       messageEl.textContent = 'Attendance recorded';
