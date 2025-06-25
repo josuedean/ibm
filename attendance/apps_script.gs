@@ -46,9 +46,12 @@ function recordAttendance(id, ip) {
 }
 
 function jsonOutput(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
+  var out = ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+  out.setHeader('Access-Control-Allow-Origin', '*');
+  out.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+  out.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  return out;
 }
 
 function isSignInOpen() {
