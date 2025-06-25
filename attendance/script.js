@@ -21,7 +21,7 @@ form.addEventListener('submit', async (e) => {
 
   try {
     const qs = new URLSearchParams(payload).toString();
-    const resp = await fetch('YOUR_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL?' + qs);
+    const resp = await fetch('https://script.google.com/macros/s/AKfycbwRsqafGHO7utUGggd4Ajk2nAx8sNwYwEAov-GiRoKOyYPIrXBQK0JbhchxXEAP02XbsQ/exec' + qs);
     const data = await resp.json();
     if (data.success) {
       messageEl.textContent = 'Attendance recorded';
