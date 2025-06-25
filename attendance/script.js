@@ -20,11 +20,8 @@ form.addEventListener('submit', async (e) => {
   };
 
   try {
-    const resp = await fetch('https://script.google.com/macros/s/AKfycbzjQFbv5ptBYYGxKoQmdesJyRDZMXibVnR9lLPa3X35rFsANrmll3YxKAbW1za4SwP3Fg/exec', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(payload).toString()
-    });
+    const qs = new URLSearchParams(payload).toString();
+    const resp = await fetch('YOUR_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL?' + qs);
     const data = await resp.json();
     if (data.success) {
       messageEl.textContent = 'Attendance recorded';

@@ -1,14 +1,20 @@
 var CREDS_SHEET_ID = 'YOUR_CREDENTIALS_SHEET_ID';
 var ATTENDANCE_SHEET_ID = 'YOUR_ATTENDANCE_SHEET_ID';
 
+function doGet(e) {
+  return signIn(e);
+}
+
 function doPost(e) {
+  return signIn(e);
+}
+function signIn(e) {
   var lock = LockService.getDocumentLock();
   lock.waitLock(30000);
   try {
     var id = e.parameter.id;
     var pass = e.parameter.password;
     var ip = e.parameter.ip || '';
-
 
     if (!id || !pass) {
       return jsonOutput({ success:false, error:'Missing fields' });
@@ -42,10 +48,7 @@ function recordAttendance(id, ip) {
 function jsonOutput(obj) {
   return ContentService
     .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader('Access-Control-Allow-Origin', '*')
-    .setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
-    .setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function isSignInOpen() {
