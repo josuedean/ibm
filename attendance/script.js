@@ -26,6 +26,7 @@ form.addEventListener('submit', async (e) => {
       method: 'POST',
       body: payload,
     });
+
     const data = await resp.json();
     if (data.success) {
       messageEl.textContent = 'Attendance recorded';
