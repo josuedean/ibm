@@ -156,8 +156,15 @@ function render(d){
       `<li><strong>${o.score ?? 0}/${o.total ?? 0}</strong>${o.label}</li>`));
   }
   $('openPw').onclick = () => { $('overlay').style.display = $('pwCard').style.display = 'block'; };
+  
+  if (d.payload) {
+  g.insertAdjacentHTML('beforeend', `
+    <h3>Payload</h3>
+    <p>${d.payload}</p>
+  `);
 }
 
+}
 
 /* PW change (unchanged) */
 $('cancelPw').onclick=()=>{$('overlay').style.display=$('pwCard').style.display='none';$('pwMsg').textContent='';$('pwForm').reset();};
