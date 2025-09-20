@@ -160,7 +160,7 @@ function render(d){
   if (d.payload) {
   g.insertAdjacentHTML('beforeend', `
     <h3>Payload</h3>
-    <p>${d.payload}</p>
+    <p><a href="${d.payload}" target="_blank" rel="noopener noreferrer">${d.payload}</a></p>
   `);
   }
 }
