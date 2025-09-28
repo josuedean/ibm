@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Schedule Visualizer</title>
+    <meta name="description" content="Visualize student availability for the period of April 1 - June 30, 2025">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.7/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.7/plugin/customParseFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_customParseFormat);</script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Student Schedule Visualizer</h1>
+        </header>
+
+        <div class="controls">
+            <div class="view-selector">
+                <label for="view-type">View Mode:</label>
+                <select id="view-type">
+                    <option value="calendar">Calendar View</option>
+                    <option value="list">List/Table View</option>
+                    <option value="timeline">Timeline View</option>
+                </select>
+            </div>
+
+            <div class="user-selector">
+                <label for="user-select">Select Students:</label>
+                <select id="user-select" multiple>
+                    <!-- User options will be populated from data -->
+                </select>
+                <button id="select-all">Select All</button>
+                <button id="clear-selection">Clear Selection</button>
+            </div>
+        </div>
+
+        <div id="overlapping-times" class="overlap-section">
+            <h2>Overlapping Available Time Slots</h2>
+            <div id="overlap-content">
+                <!-- Overlapping time content will be populated here -->
+            </div>
+        </div>
+
+        <div class="views">
+            <div id="calendar-view" class="view active">
+                <!-- Calendar will be rendered here by FullCalendar -->
+            </div>
+            <div id="list-view" class="view">
+                <table id="availability-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Day</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Table data will be populated from the data -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="timeline-view" class="view">
+                <!-- Timeline visualization will be populated here -->
+            </div>
+        </div>
+        
+        <div style="height: 650px;"><!-- Spacer to ensure room for views --></div>
+
+        <div class="loading-spinner" id="loading">
+            <div class="spinner"></div>
+            <p>Loading schedule data...</p>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
