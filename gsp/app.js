@@ -6,10 +6,6 @@ let calendar = null;
 let selectedUsers = [];
 let userColorMap = {};
 const timeFormat = 'HH:mm'; // 24-hour format
-const targetDateRange = {
-    start: new Date('2025-01-01'),
-    end: new Date('2025-12-31')
-};
 
 // Configuration
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -123,15 +119,16 @@ function handleViewChange(event) {
 }
 
 // Initialize the calendar view
+// Initialize the calendar view
 function initCalendarView() {
     const calendarEl = document.getElementById('calendar-view');
     
     calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
         headerToolbar: {
-            left: '',
+            left: 'prev,next today',  // Add navigation buttons
             center: 'title',
-            right: ''
+            right: 'timeGridWeek,timeGridDay'  // Add view options
         },
         allDaySlot: false,
         slotMinTime: businessHours.start,
@@ -139,13 +136,14 @@ function initCalendarView() {
         height: 'auto',
         expandRows: true,
         stickyHeaderDates: true,
-        nowIndicator: false,
+        nowIndicator: true,  // Show current time indicator
         dayHeaderFormat: { weekday: 'long' },
         slotLabelFormat: {
             hour: '2-digit',
             minute: '2-digit',
-            hour12: false // Use 24-hour format
+            hour12: false
         },
+        initialDate: new Date(), // Start with current date
         events: [] // Will be populated based on selection
     });
     
@@ -208,6 +206,8 @@ function handleUserSelection() {
     const userSelect = document.getElementById('user-select');
     selectedUsers = Array.from(userSelect.selectedOptions).map(option => option.value);
     
+    debugScheduleData();
+
     updateAllViews();
     calculateOverlaps();
 }
@@ -282,52 +282,45 @@ function populateUserSelection() {
 }
 
 // Create calendar events from schedule data
+// Create calendar events from schedule data
 function createCalendarEvents(data) {
     const events = [];
     
-    // Map days to dayOfWeek numbers (0=Sunday, 1=Monday, etc.)
+    // Map days to dayOfWeek numbers for FullCalendar (0=Sunday, 1=Monday, etc.)
     const dayMapping = {
-        'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4,
-        'Friday': 5, 'Saturday': 6, 'Sunday': 0
+        'Sunday': 0,
+        'Monday': 1, 
+        'Tuesday': 2, 
+        'Wednesday': 3, 
+        'Thursday': 4,
+        'Friday': 5, 
+        'Saturday': 6
     };
     
-    // Create individual events for each person, keeping their unique color
+    // Create recurring weekly events for each person's availability
     data.forEach(item => {
         // Get day number (0-6)
         const dayNumber = dayMapping[item.day];
         
-        // Calculate date of first occurrence within our range
-        const firstDate = new Date(targetDateRange.start);
+        // Format times to ensure they're in HH:MM format
+        const formattedStartTime = formatTime(item.available_start_time);
+        const formattedEndTime = formatTime(item.available_end_time);
         
-        // Adjust to first occurrence of this day of week
-        const daysDiff = (dayNumber - firstDate.getDay() + 7) % 7;
-        firstDate.setDate(firstDate.getDate() + daysDiff);
-        
-        // Add weekly recurring events for the entire date range
-        let currentDate = new Date(firstDate);
-        
-        while (currentDate <= targetDateRange.end) {
-            const dateStr = formatYYYYMMDD(currentDate);
-            const formattedStartTime = formatTime(item.available_start_time);
-            const formattedEndTime = formatTime(item.available_end_time);
-            
-            // Create individual event for this person
-            events.push({
-                title: item.name,
-                start: `${dateStr}T${formattedStartTime}:00`,
-                end: `${dateStr}T${formattedEndTime}:00`,
-                backgroundColor: userColorMap[item.name], 
-                textColor: 'white',  // Set text color to white
-                extendedProps: {
-                    day: item.day
-                }
-            });
-            
-            // Move to next week
-            currentDate.setDate(currentDate.getDate() + 7);
-        }
+        // Create a recurring event that repeats weekly
+        events.push({
+            title: item.name,
+            daysOfWeek: [dayNumber], // This makes it recur every week on this day
+            startTime: formattedStartTime + ':00', // Time format: 'HH:MM:SS'
+            endTime: formattedEndTime + ':00',
+            backgroundColor: userColorMap[item.name], 
+            textColor: 'white',
+            extendedProps: {
+                day: item.day
+            }
+        });
     });
     
+    console.log('Created recurring events:', events); // Debug log
     return events;
 }
 
@@ -644,85 +637,15 @@ function getColorForIndex(index) {
     }
 }
 
-  
-// Helper function: Get color for user (consistent color for each user)
-// function getColorForUser(userName) {
-//     // Rainbow colors array: red, orange, yellow, green, blue, purple, violet
-//     const rainbowColors = [
-//         '#FF0000', // red
-//         '#FF7F00', // orange
-//         '#FFFF00', // yellow
-//         '#00FF00', // green
-//         '#0000FF', // blue
-//         '#4B0082', // indigo/purple
-//         '#9400D3'  // violet
-//     ];
+// Temporary debug function - remove after fixing
+function debugScheduleData() {
+    console.log('Total schedule entries:', scheduleData.length);
+    console.log('Selected users:', selectedUsers);
+    const filteredData = scheduleData.filter(item => selectedUsers.includes(item.name));
+    console.log('Filtered data for selected users:', filteredData);
     
-//     // Lighter versions of the same colors
-//     const lighterRainbowColors = [
-//         '#FF6666', // lighter red
-//         '#FFAD66', // lighter orange
-//         '#FFFF66', // lighter yellow
-//         '#66FF66', // lighter green
-//         '#6666FF', // lighter blue
-//         '#8F66B2', // lighter purple
-//         '#C266E3'  // lighter violet
-//     ];
-    
-//     // Simple hash function for string to numeric value
-//     let hash = 0;
-//     for (let i = 0; i < userName.length; i++) {
-//         hash = ((hash << 5) - hash) + userName.charCodeAt(i);
-//         hash |= 0; // Convert to 32bit integer
-//     }
-    
-//     hash = Math.abs(hash);
-//     const colorIndex = hash % 7; // 7 colors in our array
-    
-//     // Use the hash to decide between regular and lighter colors
-//     const useLight = (hash % 14) >= 7;
-    
-//     return useLight ? lighterRainbowColors[colorIndex] : rainbowColors[colorIndex];
-// }
-
-// // Sample data for development/demo purposes
-// function getSampleData() {
-//     return [
-//         {
-//             "name": "황선주",
-//             "day": "Thursday",
-//             "available_start_time": "19:00",
-//             "available_end_time": "21:00"
-//         },
-//         {
-//             "name": "황선주",
-//             "day": "Tuesday",
-//             "available_start_time": "16:00",
-//             "available_end_time": "21:00"
-//         },
-//         {
-//             "name": "Josh",
-//             "day": "Monday",
-//             "available_start_time": "10:00",
-//             "available_end_time": "13:00"
-//         },
-//         {
-//             "name": "Josh",
-//             "day": "Wednesday",
-//             "available_start_time": "10:00",
-//             "available_end_time": "13:00"
-//         },
-//         {
-//             "name": "Josh",
-//             "day": "Tuesday",
-//             "available_start_time": "11:00",
-//             "available_end_time": "15:00"
-//         },
-//         {
-//             "name": "Josh",
-//             "day": "Thursday",
-//             "available_start_time": "11:00",
-//             "available_end_time": "15:00"
-//         }
-//     ];
-// }
+    // Check if times are properly formatted
+    filteredData.forEach(item => {
+        console.log(`${item.name} - ${item.day}: ${item.available_start_time} to ${item.available_end_time}`);
+    });
+}
