@@ -7,8 +7,8 @@ let selectedUsers = [];
 let userColorMap = {};
 const timeFormat = 'HH:mm'; // 24-hour format
 const targetDateRange = {
-    start: new Date('2025-04-01'),
-    end: new Date('2025-06-30')
+    start: new Date('2025-01-01'),
+    end: new Date('2025-12-31')
 };
 
 // Configuration
