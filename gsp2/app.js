@@ -61,7 +61,7 @@ function setupEventListeners() {
 async function fetchScheduleData() {
     try {
         // Google Apps Script web app URL
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbx9U1_mg8ZzWFPpEgb_y2kpHpPvkkjKF9BLIJo4z1Gb_ufVeXVgUTkguskUYmV1lO5dqg/exec';
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbw2CuS6gGVK23JAhgsvSwRgPWHOxVsa9hwrRcJaqmcSXi55ORFTBne7qv_MFYHch1Q/exec';
         
         // Fetch data from Google Apps Script
         const response = await fetch(scriptUrl);
