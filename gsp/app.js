@@ -61,7 +61,7 @@ function setupEventListeners() {
 async function fetchScheduleData() {
     try {
         // Google Apps Script web app URL
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbx9U1_mg8ZzWFPpEgb_y2kpHpPvkkjKF9BLIJo4z1Gb_ufVeXVgUTkguskUYmV1lO5dqg/exec';
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbw2CuS6gGVK23JAhgsvSwRgPWHOxVsa9hwrRcJaqmcSXi55ORFTBne7qv_MFYHch1Q/exec';
         
         // Fetch data from Google Apps Script
         const response = await fetch(scriptUrl);
@@ -334,11 +334,16 @@ function refreshListView() {
     // Filter data for selected users
     const filteredData = scheduleData.filter(item => selectedUsers.includes(item.name));
     
-    // Sort by day then name
+    // Sort by day, then name, then start time
     filteredData.sort((a, b) => {
         const dayOrder = dayIndices[a.day] - dayIndices[b.day];
         if (dayOrder !== 0) return dayOrder;
-        return a.name.localeCompare(b.name);
+        
+        const nameOrder = a.name.localeCompare(b.name);
+        if (nameOrder !== 0) return nameOrder;
+        
+        // Sort by start time for same person on same day
+        return timeToMinutes(a.available_start_time) - timeToMinutes(b.available_start_time);
     });
     
     // Add rows to table
@@ -347,7 +352,8 @@ function refreshListView() {
         
         const nameCell = document.createElement('td');
         nameCell.textContent = item.name;
-        nameCell.style.borderLeft = `4px solid ${userColorMap[item.name]}`;
+        nameCell.style.backgroundColor = userColorMap[item.name];
+        nameCell.style.color = 'white';
         
         const dayCell = document.createElement('td');
         dayCell.textContent = item.day;
@@ -388,41 +394,53 @@ function refreshTimelineView() {
         dayHeader.textContent = day;
         timelineContainer.appendChild(dayHeader);
         
-        // Create timeline rows for each user
+        // Group by user to handle multiple slots per person
+        const userSlots = {};
         dayAvailability.forEach(item => {
+            if (!userSlots[item.name]) {
+                userSlots[item.name] = [];
+            }
+            userSlots[item.name].push(item);
+        });
+        
+        // Create timeline row for each user
+        Object.entries(userSlots).forEach(([userName, slots]) => {
             const row = document.createElement('div');
             row.className = 'timeline-row';
             
             // User label
             const label = document.createElement('div');
             label.className = 'timeline-label';
-            label.textContent = item.name;
+            label.textContent = userName;
             row.appendChild(label);
             
             // Timeline slots container
             const slotsContainer = document.createElement('div');
             slotsContainer.className = 'timeline-slots';
             
-            // Calculate position and width based on time
-            const startMinutes = timeToMinutes(item.available_start_time);
-            const endMinutes = timeToMinutes(item.available_end_time);
-            const businessStartMinutes = timeToMinutes(businessHours.start); // Use the global businessHours config
-            const businessEndMinutes = timeToMinutes(businessHours.end);
-            const totalMinutes = businessEndMinutes - businessStartMinutes;
+            // Add all slots for this user
+            slots.forEach(slot => {
+                // Calculate position and width based on time
+                const startMinutes = timeToMinutes(slot.available_start_time);
+                const endMinutes = timeToMinutes(slot.available_end_time);
+                const businessStartMinutes = timeToMinutes(businessHours.start);
+                const businessEndMinutes = timeToMinutes(businessHours.end);
+                const totalMinutes = businessEndMinutes - businessStartMinutes;
+                
+                // Create slot element
+                const slotEl = document.createElement('div');
+                slotEl.className = 'timeline-slot';
+                slotEl.style.left = `${((startMinutes - businessStartMinutes) / totalMinutes) * 100}%`;
+                slotEl.style.width = `${((endMinutes - startMinutes) / totalMinutes) * 100}%`;
+                slotEl.style.backgroundColor = userColorMap[slot.name];
+                
+                // Tooltip showing the time range
+                slotEl.title = `${slot.name}: ${slot.available_start_time} - ${slot.available_end_time}`;
+                
+                slotsContainer.appendChild(slotEl);
+            });
             
-            // Create slot
-            const slot = document.createElement('div');
-            slot.className = 'timeline-slot';
-            slot.style.left = `${((startMinutes - businessStartMinutes) / totalMinutes) * 100}%`;
-            slot.style.width = `${((endMinutes - startMinutes) / totalMinutes) * 100}%`;
-            slot.style.backgroundColor = userColorMap[item.name];
-            
-            // Tooltip
-            slot.title = `${item.name}: ${item.available_start_time} - ${item.available_end_time}`;
-            
-            slotsContainer.appendChild(slot);
             row.appendChild(slotsContainer);
-            
             timelineContainer.appendChild(row);
         });
     });
@@ -445,7 +463,7 @@ function calculateOverlaps() {
             item => selectedUsers.includes(item.name) && item.day === day
         );
         
-        // Group by user
+        // Group by user to handle multiple slots
         const userAvailability = {};
         dayAvailability.forEach(item => {
             if (!userAvailability[item.name]) {
@@ -457,12 +475,12 @@ function calculateOverlaps() {
             });
         });
         
-        // Only process if we have data for all selected users
+        // Check if all selected users have availability on this day
         const usersWithAvailability = Object.keys(userAvailability);
         if (usersWithAvailability.length !== selectedUsers.length) return;
         
-        // Calculate overlaps
-        let overlaps = findOverlaps(userAvailability);
+        // Calculate overlaps with multiple slots support
+        let overlaps = findOverlapsMultipleSlots(userAvailability);
         
         // If there are overlaps, display them
         if (overlaps.length > 0) {
@@ -497,54 +515,118 @@ function calculateOverlaps() {
     }
 }
 
-// Find overlapping time slots among all selected users
-function findOverlaps(userAvailability) {
-    // Combine all time slots into a single array with start/end times
-    let allTimePoints = [];
+// Find overlapping time slots when users can have multiple slots per day
+function findOverlapsMultipleSlots(userAvailability) {
+    const users = Object.keys(userAvailability);
+    if (users.length === 0) return [];
     
-    for (const user in userAvailability) {
-        userAvailability[user].forEach(slot => {
-            allTimePoints.push({ time: slot.start, isStart: true });
-            allTimePoints.push({ time: slot.end, isStart: false });
-        });
+    // Merge all slots for the first user (baseline)
+    let commonSlots = mergeTimeSlots(userAvailability[users[0]]);
+    
+    // Find intersection with each other user's merged slots
+    for (let i = 1; i < users.length; i++) {
+        const userSlots = mergeTimeSlots(userAvailability[users[i]]);
+        commonSlots = findIntersection(commonSlots, userSlots);
+        
+        // If no common slots remain, we're done
+        if (commonSlots.length === 0) break;
     }
     
-    // Sort time points
-    allTimePoints.sort((a, b) => {
-        if (a.time !== b.time) return a.time - b.time;
-        // If times are equal, end comes before start
-        return a.isStart ? 1 : -1;
-    });
+    return commonSlots;
+}
+
+// Merge overlapping or adjacent time slots for a single user
+function mergeTimeSlots(slots) {
+    if (slots.length === 0) return [];
     
-    // Find overlaps
-    let overlaps = [];
-    let userCount = 0;
-    let overlapStart = null;
+    // Sort slots by start time
+    const sorted = [...slots].sort((a, b) => a.start - b.start);
     
-    for (const point of allTimePoints) {
-        if (point.isStart) {
-            userCount++;
-            
-            // If all users are available now, mark the start of overlap
-            if (userCount === Object.keys(userAvailability).length) {
-                overlapStart = point.time;
-            }
+    const merged = [sorted[0]];
+    
+    for (let i = 1; i < sorted.length; i++) {
+        const last = merged[merged.length - 1];
+        const current = sorted[i];
+        
+        // If slots overlap or are adjacent, merge them
+        if (current.start <= last.end) {
+            last.end = Math.max(last.end, current.end);
         } else {
-            // If we had full overlap and now one user is not available
-            if (userCount === Object.keys(userAvailability).length && overlapStart !== null) {
-                overlaps.push({
-                    start: overlapStart,
-                    end: point.time
-                });
-                overlapStart = null;
-            }
-            
-            userCount--;
+            merged.push({...current});
         }
     }
     
-    return overlaps;
+    return merged;
 }
+
+// Find intersection of two sets of time slots
+function findIntersection(slots1, slots2) {
+    const intersections = [];
+    
+    for (const slot1 of slots1) {
+        for (const slot2 of slots2) {
+            const start = Math.max(slot1.start, slot2.start);
+            const end = Math.min(slot1.end, slot2.end);
+            
+            // If there's an overlap
+            if (start < end) {
+                intersections.push({ start, end });
+            }
+        }
+    }
+    
+    // Merge any overlapping intersections
+    return mergeTimeSlots(intersections);
+}
+
+// // Find overlapping time slots among all selected users
+// function findOverlaps(userAvailability) {
+//     // Combine all time slots into a single array with start/end times
+//     let allTimePoints = [];
+    
+//     for (const user in userAvailability) {
+//         userAvailability[user].forEach(slot => {
+//             allTimePoints.push({ time: slot.start, isStart: true });
+//             allTimePoints.push({ time: slot.end, isStart: false });
+//         });
+//     }
+    
+//     // Sort time points
+//     allTimePoints.sort((a, b) => {
+//         if (a.time !== b.time) return a.time - b.time;
+//         // If times are equal, end comes before start
+//         return a.isStart ? 1 : -1;
+//     });
+    
+//     // Find overlaps
+//     let overlaps = [];
+//     let userCount = 0;
+//     let overlapStart = null;
+    
+//     for (const point of allTimePoints) {
+//         if (point.isStart) {
+//             userCount++;
+            
+//             // If all users are available now, mark the start of overlap
+//             if (userCount === Object.keys(userAvailability).length) {
+//                 overlapStart = point.time;
+//             }
+//         } else {
+//             // If we had full overlap and now one user is not available
+//             if (userCount === Object.keys(userAvailability).length && overlapStart !== null) {
+//                 overlaps.push({
+//                     start: overlapStart,
+//                     end: point.time
+//                 });
+//                 overlapStart = null;
+//             }
+            
+//             userCount--;
+//         }
+//     }
+    
+//     return overlaps;
+// }
 
 // Toggle loading spinner
 function toggleLoading(show) {
