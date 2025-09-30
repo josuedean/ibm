@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal Step in the Accounting Cycle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 60px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .slide h1 {
+            font-size: 3.5rem;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .slide h2 {
+            font-size: 2.8rem;
+            color: #34495e;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .slide h3 {
+            font-size: 2.2rem;
+            color: #34495e;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .slide p {
+            font-size: 1.4rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .slide ul {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            margin-left: 40px;
+            margin-bottom: 20px;
+        }
+
+        .slide li {
+            margin-bottom: 12px;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .journal-entry {
+            /* Shared column widths so header and rows align perfectly */
+            --col-date:  minmax(6ch, 9ch);
+            --col-desc:  minmax(24ch, 2fr);
+            --col-amt:   minmax(10ch, 12ch);
+            --col-debit: 1fr;
+            --col-credit:1fr;
+            /* Subtle card styling to pop out */
+            position: relative;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            box-shadow: 0 6px 18px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
+            padding: 18px;
+        }
+
+        .journal-entry::before {
+            /* thin accent bar */
+            content: "";
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            top: 8px;
+            height: 4px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #4f46e5 0%, #06b6d4 100%);
+            opacity: .9;
+        }
+
+        .journal-entry .je-grid {
+            display: grid;
+            grid-template-columns: var(--col-date) var(--col-desc) var(--col-amt) var(--col-debit) var(--col-credit);
+            gap: 15px;
+            align-items: center;
+            text-align: left;
+        }
+        .journal-entry .je-header { font-weight: bold; margin-bottom: 15px; }
+        .journal-entry .je-body   { border-top: 2px solid #ccc; padding-top: 15px; }
+        .journal-entry .je-grid > div { overflow-wrap: anywhere; word-break: break-word; }
+
+        .journal-entry .je-header {
+            font-weight: 600;
+            margin: 14px 0 12px 0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #fafafa, #f5f5f5);
+        }
+
+        .journal-entry .je-body {
+            border-top: 2px solid #e8e8e8;
+            padding-top: 12px;
+            background: #fcfcfd;
+            border-radius: 10px;
+        }
+
+        .journal-entry .je-grid + .je-grid {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #e5e7eb;
+        }
+        
+        /* Wrapping and numeric alignment */
+        .journal-entry .je-grid > div { overflow-wrap: anywhere; word-break: break-word; }
+        .journal-entry .je-grid > div:nth-child(3) {        /* Amount column */
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+        }
+
+        .journal-entry .je-grid > div:nth-child(4),
+        .journal-entry .je-grid > div:nth-child(5) {        /* Debit / Credit account names */
+            font-weight: 500;
+        }
+
+        .debit-credit-table {
+            display: grid;
+            /* 3 columns: Account Type | Debit(+) | Credit(+) */
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+            font-size: 1.2rem;
+        }
+
+        .table-header {
+            font-weight: bold;
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 6px;
+        }
+
+        .table-cell {
+            background: #ecf0f1;
+            padding: 15px;
+            text-align: center;
+            border-radius: 6px;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .nav-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            z-index: 1000;
+        }
+
+        .title-slide {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .title-slide h1 {
+            color: white;
+            font-size: 4rem;
+            margin-bottom: 40px;
+        }
+
+        .subtitle {
+            font-size: 1.8rem;
+            font-weight: 300;
+            margin-bottom: 40px;
+        }
+
+        .vvv-branding {
+            background: #27ae60;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .process-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .process-step {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 20px;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: #34495e;
+        }
+
+        .key-points {
+            background: #e8f6f3;
+            border-left: 5px solid #27ae60;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        .example-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .example-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+    
+@media (max-width: 768px) {
+    body {
+        overflow: auto;
+    }
+    .presentation-container {
+        height: auto;
+        min-height: 100vh;
+    }
+    .slide {
+        padding: 16px !important;
+        overflow-y: auto;
+    }
+    .slide h1 { font-size: 2rem !important; }
+    .slide h2 { font-size: 1.6rem !important; }
+    .slide h3 { font-size: 1.2rem !important; }
+    .slide p, .slide ul, .slide li { font-size: 1rem !important; line-height: 1.5 !important; }
+    .two-column {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+    .process-step {
+        width: 90px !important;
+        height: 90px !important;
+        font-size: 0.85rem !important;
+        padding: 12px !important;
+    }
+    .debit-credit-table {
+        font-size: 1rem !important;
+        gap: 10px !important;
+    }
+    .navigation {
+        bottom: 12px !important;
+        right: 12px !important;
+        gap: 10px !important;
+    }
+    .nav-btn {
+        padding: 10px 16px !important;
+        font-size: 0.95rem !important;
+    }
+    .slide-counter {
+        top: 12px !important;
+        right: 12px !important;
+        font-size: 0.9rem !important;
+        padding: 6px 12px !important;
+    }
+    .journal-entry { padding: 14px; }
+    .journal-entry .je-grid { gap: 10px; }
+}
+
+</style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="slide-counter">
+            <span id="current-slide">1</span> / <span id="total-slides">10</span>
+        </div>
+
+        <!-- Slide 1: Title -->
+        <div class="slide active title-slide">
+            <h1>Step 2: Journalizing Transactions</h1>
+            <p class="subtitle">The Foundation of Accurate Financial Recording</p>
+            <div class="vvv-branding">
+                Verde Valley Ventures (VVV) Case Study
+            </div>
+            <p style="font-size: 1.2rem; margin-top: 40px;">Principles of Accounting | Master Assignment Series</p>
+        </div>
+
+        <!-- Slide 2: Learning Objectives -->
+        <div class="slide">
+            <h2>Learning Objectives</h2>
+            <div class="key-points">
+                <p><strong>By the end of this lesson, you will be able to:</strong></p>
+                <ul>
+                    <li>Understand the purpose and importance of journalizing in the accounting cycle</li>
+                    <li>Identify the components of a proper journal entry</li>
+                    <li>Apply the rules of debits and credits to various transaction types</li>
+                    <li>Create accurate journal entries for VVV business transactions</li>
+                    <li>Organize journal entries in chronological order</li>
+                    <li>Prepare journal entries for posting to the general ledger</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: What is Journalizing? -->
+        <div class="slide">
+            <h2>What is Journalizing?</h2>
+            <div class="two-column">
+                <div>
+                    <p><span class="highlight">Journalizing</span> is the process of recording business transactions in chronological order in a journal (also called the "book of original entry").</p>
+                    
+                    <div class="key-points">
+                        <p><strong>Think of it as:</strong></p>
+                        <ul>
+                            <li>A detailed diary of all business activities</li>
+                            <li>The bridge between raw transaction data and organized financial records</li>
+                            <li>The foundation for all future financial statements</li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <div class="process-flow" style="flex-direction: column;">
+                        <div class="process-step">Raw Transaction Data</div>
+                        <div class="arrow">↓</div>
+                        <div class="process-step">Journal Entries</div>
+                        <div class="arrow">↓</div>
+                        <div class="process-step">General Ledger</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: The Journal Entry Components -->
+        <div class="slide">
+            <h2>Anatomy of a Journal Entry</h2>
+            <p>Every journal entry must contain these essential components:</p>
+            
+            <div class="journal-entry">
+                <div class="je-grid je-header">
+                  <div>Date</div>
+                  <div>Description</div>
+                  <div>Amount</div>
+                  <div>Debit</div>
+                  <div>Credit</div>
+                </div>
+                <div class="je-body">
+                  <!-- Example row (debit Cash, credit Common Stock) -->
+                  <div class="je-grid">
+                    <div>Jan 15</div>
+                    <div>(Initial investment by shareholders)</div>
+                    <div>$10,000</div>
+                    <div>Cash</div>
+                    <div>Common Stock</div>
+                  </div>
+                  <div class="je-grid">
+                    <div>Jan 20</div>
+                    <div>(Purchased supplies for cash)</div>
+                    <div>$600</div>
+                    <div>Supplies</div>
+                    <div>Cash</div>
+                  </div>
+                </div>
+              </div>
+
+            <div class="key-points">
+                <ul>
+                    <li><strong>Date:</strong> When the transaction occurred</li>
+                    <li><strong>Account Titles:</strong> Which accounts are affected</li>
+                    <li><strong>Debit Amount:</strong> Left side increases</li>
+                    <li><strong>Credit Amount:</strong> Right side increases</li>
+                    <li><strong>Description:</strong> Brief explanation of the transaction</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 5: Debit and Credit Rules -->
+        <div class="slide">
+            <h2>Debit and Credit Rules</h2>
+            <p>Remember: <span class="highlight">Debits must always equal Credits</span> in every journal entry!</p>
+            
+            <div class="debit-credit-table">
+                <div class="table-header">Account Type</div>
+                <div class="table-header">Debit (+)</div>
+                <div class="table-header">Credit (+)</div>
+                
+                <div class="table-cell" style="background: #e8f5e8;"><strong>Assets</strong></div>
+                <div class="table-cell">Increases</div>
+                <div class="table-cell">Decreases</div>
+                
+                <div class="table-cell" style="background: #ffe8e8;"><strong>Liabilities</strong></div>
+                <div class="table-cell">Decreases</div>
+                <div class="table-cell">Increases</div>
+                
+                <div class="table-cell" style="background: #e8e8ff;"><strong>Equity</strong></div>
+                <div class="table-cell">Decreases</div>
+                <div class="table-cell">Increases</div>
+                
+                <div class="table-cell" style="background: #fff8e8;"><strong>Revenue</strong></div>
+                <div class="table-cell">Decreases</div>
+                <div class="table-cell">Increases</div>
+                
+                <div class="table-cell" style="background: #f8e8ff;"><strong>Expenses</strong></div>
+                <div class="table-cell">Increases</div>
+                <div class="table-cell">Decreases</div>
+            </div>
+
+            <div class="key-points">
+                <p><strong>Memory Aid:</strong> <em>DEALER</em> - Dividends, Expenses, Assets = Debits for increases; Liabilities, Equity, Revenue = Credits for increases</p>
+            </div>
+        </div>
+
+        <!-- Slide 6: VVV Example 1 -->
+        <div class="slide">
+            <h2>VVV Example #1: Initial Investment</h2>
+            
+            <div class="example-box">
+                <div class="example-title">Transaction:</div>
+                <p>January 1, 2024: Verde Valley Ventures receives $50,000 cash investment from shareholders in exchange for common stock.</p>
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <h3>Analysis:</h3>
+                    <ul>
+                        <li><strong>What accounts are affected?</strong>
+                            <ul>
+                                <li>Cash (Asset) - increases</li>
+                                <li>Common Stock (Equity) - increases</li>
+                            </ul>
+                        </li>
+                        <li><strong>Debit/Credit Rules:</strong>
+                            <ul>
+                                <li>Cash: Asset increase = Debit</li>
+                                <li>Common Stock: Equity increase = Credit</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Journal Entry:</h3>
+                    <div class="journal-entry">
+                        <div style="display: grid; grid-template-columns: auto auto 1fr 1fr; gap: 15px; font-weight: bold; margin-bottom: 10px;">
+                            <div>Date</div>
+                            <div>Description</div>
+                            <div>Amount</div>
+                            <div>Debit</div>
+                            <div>Credit</div>
+                        </div>
+                        <div style="border-top: 2px solid #e8e8e8; padding-top: 12px; background: #fcfcfd; border-radius: 10px;">
+                          <!-- Example row (debit Cash, credit Common Stock) -->
+                          <div style="display: grid; grid-template-columns: auto auto 1fr 1fr; gap: 15px;">
+                            <div>Jan 1</div>
+                            <div>(Initial shareholder investment)</div>
+                            <div>$50,000</div>
+                            <div>Cash</div>
+                            <div>Common Stock</div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: VVV Example 2 -->
+        <div class="slide">
+            <h2>VVV Example #2: Equipment Purchase</h2>
+            
+            <div class="example-box">
+                <div class="example-title">Transaction:</div>
+                <p>January 5, 2024: VVV purchases outdoor equipment for $15,000 cash to use in guided tours.</p>
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <h3>Analysis:</h3>
+                    <ul>
+                        <li><strong>What accounts are affected?</strong>
+                            <ul>
+                                <li>Equipment (Asset) - increases</li>
+                                <li>Cash (Asset) - decreases</li>
+                            </ul>
+                        </li>
+                        <li><strong>Debit/Credit Rules:</strong>
+                            <ul>
+                                <li>Equipment: Asset increase = Debit</li>
+                                <li>Cash: Asset decrease = Credit</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Journal Entry:</h3>
+                    <div class="journal-entry">
+                        <div style="display: grid; grid-template-columns: auto auto 1fr 1fr; gap: 15px; font-weight: bold; margin-bottom: 10px;">
+                            <div>Date</div>
+                            <div>Description</div>
+                            <div>Amount</div>
+                            <div>Debit</div>
+                            <div>Credit</div>
+                        </div>
+                        <div style="border-top: 2px solid #e8e8e8; padding-top: 12px; background: #fcfcfd; border-radius: 10px;">
+                          <!-- Example row (debit Cash, credit Common Stock) -->
+                          <div style="display: grid; grid-template-columns: auto auto 1fr 1fr; gap: 15px;">
+                            <div>Jan 5</div>
+                            <div>(Purchase of outdoor equipment)</div>
+                            <div>$15,000</div>
+                            <div>Equipment</div>
+                            <div>Cash</div>
+                          </div>
+                        </div>                  
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: VVV Example 3 -->
+        <div class="slide">
+            <h2>VVV Example #3: Service Revenue</h2>
+            
+            <div class="example-box">
+                <div class="example-title">Transaction:</div>
+                <p>January 10, 2024: VVV provides guided hiking tours and receives $2,500 cash from customers.</p>
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <h3>Analysis:</h3>
+                    <ul>
+                        <li><strong>What accounts are affected?</strong>
+                            <ul>
+                                <li>Cash (Asset) - increases</li>
+                                <li>Service Revenue (Revenue) - increases</li>
+                            </ul>
+                        </li>
+                        <li><strong>Debit/Credit Rules:</strong>
+                            <ul>
+                                <li>Cash: Asset increase = Debit</li>
+                                <li>Service Revenue: Revenue increase = Credit</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Journal Entry:</h3>
+                        <div class="journal-entry">
+                            <div style="display: grid; grid-template-columns: auto auto 1fr 1fr; gap: 15px; font-weight: bold; margin-bottom: 10px;">
+                                <div>Date</div>
+                                <div>Description</div>
+                                <div>Amount</div>
+                                <div>Debit</div>
+                                <div>Credit</div>
+                            </div>
+                            <div style="border-top: 2px solid #e8e8e8; padding-top: 12px; background: #fcfcfd; border-radius: 10px;">
+                            <!-- Example row (debit Cash, credit Common Stock) -->
+                                <div style="display: grid; grid-template-columns: auto auto 1fr 1fr; gap: 15px;">
+                                    <div>Jan 10</div>
+                                    <div>(Cash received for guided tours)</div>
+                                    <div>$2,500</div>
+                                    <div>Cash</div>
+                                    <div>Service Revenue</div>
+                                </div>
+                            </div>                       
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Journal Organization & Best Practices -->
+        <div class="slide">
+            <h2>Journal Organization & Best Practices</h2>
+            
+            <div class="two-column">
+                <div>
+                    <h3>Organization Requirements:</h3>
+                    <ul>
+                        <li><strong>Chronological Order:</strong> Record transactions by date</li>
+                        <li><strong>Sequential Numbering:</strong> Number each journal entry</li>
+                        <li><strong>Consistent Format:</strong> Same structure for all entries</li>
+                        <li><strong>Complete Documentation:</strong> Include all required components</li>
+                    </ul>
+
+                    <div class="key-points">
+                        <p><strong>For Your VVV Project:</strong></p>
+                        <ul>
+                            <li>Use Excel/Google Sheets for organization</li>
+                            <li>Include columns for: Date, Entry #, Account, Debit, Credit, Description</li>
+                            <li>Ensure total debits = total credits</li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <h3>Quality Control Checklist:</h3>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 5px solid #007bff;">
+                        <p><strong>✓ Before Posting to Ledger:</strong></p>
+                        <ul style="margin-left: 20px;">
+                            <li>All entries are in chronological order</li>
+                            <li>Each entry balances (Debits = Credits)</li>
+                            <li>Account names are consistent</li>
+                            <li>Descriptions are clear and complete</li>
+                            <li>All amounts are accurate</li>
+                            <li>No duplicate transactions</li>
+                        </ul>
+                    </div>
+
+                    <div class="vvv-branding" style="margin-top: 20px; background: #17a2b8;">
+                        <strong>Team Collaboration Tip:</strong><br>
+                        CFO should review all journal entries before posting!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Summary & Next Steps -->
+        <div class="slide">
+            <h2>Summary & Next Steps</h2>
+            
+            <div class="key-points">
+                <h3>Key Takeaways:</h3>
+                <ul>
+                    <li>Journalizing is the <span class="highlight">systematic recording</span> of all business transactions</li>
+                    <li>Every journal entry must <span class="highlight">balance</span> (Debits = Credits)</li>
+                    <li>Follow the <span class="highlight">DEALER rule</span> for debit/credit application</li>
+                    <li>Organize entries <span class="highlight">chronologically</span> with complete documentation</li>
+                    <li>Quality control is essential before posting to the general ledger</li>
+                </ul>
+            </div>
+
+            <div class="process-flow">
+                <div class="process-step" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">✓ Data Cleaned</div>
+                <div class="arrow">→</div>
+                <div class="process-step" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">Current: Journal</div>
+                <div class="arrow">→</div>
+                <div class="process-step">Next: General Ledger</div>
+                <div class="arrow">→</div>
+                <div class="process-step">Trial Balance</div>
+            </div>
+
+            <div class="vvv-branding">
+                <h3>Your VVV Mission:</h3>
+                <p>Create a comprehensive journal for Verde Valley Ventures' first-year transactions. Work with your team to ensure accuracy and completeness before moving to the general ledger step!</p>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; font-size: 1.2rem; color: #7f8c8d;">
+                <strong>Ready to start journalizing? Let's build VVV's financial foundation!</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[n].classList.add('active');
+            
+            document.getElementById('current-slide').textContent = n + 1;
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = n === 0;
+            document.getElementById('nextBtn').disabled = n === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            const newSlide = currentSlide + direction;
+            if (newSlide >= 0 && newSlide < totalSlides) {
+                currentSlide = newSlide;
+                showSlide(currentSlide);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>
