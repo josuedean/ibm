@@ -45,174 +45,184 @@
             text-align: center;
             z-index: 10;
             position: relative;
-            padding: 40px;
+            padding: 2vw;
+            max-width: 95vw;
         }
 
         h1 {
-            font-size: 4rem;
+            font-size: clamp(2rem, 5vw, 4rem);
             text-transform: uppercase;
-            letter-spacing: 10px;
-            margin-bottom: 30px;
+            letter-spacing: clamp(5px, 1vw, 10px);
+            margin-bottom: clamp(20px, 3vh, 40px);
             text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
             opacity: 0;
         }
 
         .subtitle {
-            font-size: 1.5rem;
-            margin-bottom: 50px;
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            margin-bottom: clamp(30px, 4vh, 60px);
             opacity: 0;
             color: #ff6666;
         }
 
         .countdown {
             display: flex;
-            gap: 30px;
+            gap: clamp(20px, 4vw, 60px);
             justify-content: center;
             flex-wrap: wrap;
+            align-items: center;
         }
 
-        .time-unit {
-            background: #1a1a1a;
-            border: 3px solid #333;
-            border-radius: 10px;
-            padding: 20px 30px;
-            min-width: 150px;
-            box-shadow:
-                inset 0 0 20px rgba(0, 0, 0, 0.5),
-                0 5px 15px rgba(0, 0, 0, 0.8);
-            opacity: 0;
-            transform: scale(0.8);
+        .time-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(10px, 2vh, 20px);
+        }
+
+        .digits-group {
+            display: flex;
+            gap: clamp(8px, 1vw, 15px);
+        }
+
+        .flip-card {
+            perspective: 2000px;
+            width: clamp(60px, 10vw, 140px);
+            height: clamp(80px, 13vw, 180px);
             position: relative;
         }
 
-        .flip-container {
-            perspective: 1000px;
-            display: inline-block;
+        .flip-card-inner {
             position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
         }
 
-        .time-value {
-            font-size: 4rem;
-            font-weight: bold;
-            display: inline-block;
-            min-width: 60px;
-            text-align: center;
-            background: linear-gradient(180deg, #ff0000 0%, #cc0000 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            position: relative;
-            font-family: 'Courier New', monospace;
-            text-shadow: none;
-        }
-
-        .flip-digit {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 80px;
-            line-height: 80px;
-            background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 50%, #000000 100%);
-            border: 2px solid #444;
-            border-radius: 8px;
-            margin: 0 2px;
-            overflow: hidden;
-            box-shadow:
-                inset 0 2px 5px rgba(0, 0, 0, 0.5),
-                0 3px 8px rgba(0, 0, 0, 0.8);
-        }
-
-        .flip-digit::before {
-            content: '';
+        .digit-container {
             position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: #000;
-            z-index: 10;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        .flip-digit-inner {
-            font-size: 4rem;
-            font-weight: bold;
-            color: #ff0000;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        .digit-half {
             position: relative;
-            z-index: 5;
-        }
-
-        .flip-top, .flip-bottom {
-            position: absolute;
-            left: 0;
-            right: 0;
+            height: 50%;
             overflow: hidden;
             background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+            border: 2px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .flip-top {
-            top: 0;
-            height: 50%;
-            line-height: 160px;
+        .digit-half.top {
+            border-radius: clamp(8px, 1vw, 12px) clamp(8px, 1vw, 12px) 0 0;
             border-bottom: 1px solid #000;
+            background: linear-gradient(180deg, #333 0%, #1a1a1a 100%);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .digit-half.bottom {
+            border-radius: 0 0 clamp(8px, 1vw, 12px) clamp(8px, 1vw, 12px);
+            border-top: 1px solid #000;
+            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+            box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .digit-value {
+            font-size: clamp(3rem, 8vw, 7rem);
+            font-weight: bold;
+            color: #ff0000;
+            text-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+            line-height: 1;
+            user-select: none;
+        }
+
+        .digit-half.top .digit-value {
+            transform: translateY(50%);
+        }
+
+        .digit-half.bottom .digit-value {
+            transform: translateY(-50%);
+        }
+
+        /* Flipping animation elements */
+        .flip-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            overflow: hidden;
+            transform-origin: bottom;
+            z-index: 10;
+            backface-visibility: hidden;
+        }
+
+        .flip-top-inner {
+            height: 200%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #333 0%, #1a1a1a 100%);
+            border: 2px solid #444;
+            border-radius: clamp(8px, 1vw, 12px) clamp(8px, 1vw, 12px) 0 0;
+            border-bottom: 1px solid #000;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
         }
 
         .flip-bottom {
+            position: absolute;
             bottom: 0;
+            left: 0;
+            right: 0;
             height: 50%;
-            line-height: 0;
+            overflow: hidden;
+            transform-origin: top;
+            z-index: 9;
+            backface-visibility: hidden;
+        }
+
+        .flip-bottom-inner {
+            height: 200%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+            border: 2px solid #444;
+            border-radius: 0 0 clamp(8px, 1vw, 12px) clamp(8px, 1vw, 12px);
             border-top: 1px solid #000;
+            box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.5);
+            transform: translateY(-100%);
         }
 
         .time-label {
-            font-size: 1rem;
+            font-size: clamp(0.8rem, 1.5vw, 1.2rem);
             text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-top: 15px;
+            letter-spacing: clamp(2px, 0.5vw, 4px);
             color: #ff6666;
-            display: block;
+            opacity: 0;
         }
 
         .end-date {
-            margin-top: 50px;
-            font-size: 1.2rem;
+            margin-top: clamp(30px, 4vh, 60px);
+            font-size: clamp(1rem, 1.8vw, 1.3rem);
             opacity: 0;
             color: #ff3333;
             text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
         }
 
-        @keyframes flip-down {
-            0% {
-                transform: rotateX(0deg);
-            }
-            100% {
-                transform: rotateX(-180deg);
-            }
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2.5rem;
-                letter-spacing: 5px;
+        @media (max-width: 600px) {
+            .countdown {
+                gap: clamp(15px, 3vw, 30px);
             }
 
-            .time-unit {
-                padding: 15px 20px;
-                min-width: 120px;
-            }
-
-            .flip-digit {
-                width: 45px;
-                height: 60px;
-                line-height: 60px;
-            }
-
-            .flip-digit-inner {
-                font-size: 3rem;
-            }
-
-            .flip-top {
-                line-height: 120px;
+            .digits-group {
+                gap: clamp(5px, 1vw, 10px);
             }
         }
     </style>
@@ -225,61 +235,204 @@
         <div class="subtitle" id="subtitle">Time Remaining Until The End</div>
 
         <div class="countdown">
-            <div class="time-unit" id="days-box">
-                <div class="flip-container">
-                    <div class="flip-digit">
-                        <div class="flip-top">
-                            <span class="flip-digit-inner" id="days-top">00</span>
+            <div class="time-section">
+                <div class="digits-group">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="digit-container">
+                                <div class="digit-half top">
+                                    <div class="digit-value" id="days-tens">0</div>
+                                </div>
+                                <div class="digit-half bottom">
+                                    <div class="digit-value" id="days-tens-bottom">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-top" id="days-tens-flip-top" style="display: none;">
+                                <div class="flip-top-inner">
+                                    <div class="digit-value" id="days-tens-flip-top-val">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-bottom" id="days-tens-flip-bottom" style="display: none;">
+                                <div class="flip-bottom-inner">
+                                    <div class="digit-value" id="days-tens-flip-bottom-val">0</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flip-bottom">
-                            <span class="flip-digit-inner" id="days-bottom">00</span>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="digit-container">
+                                <div class="digit-half top">
+                                    <div class="digit-value" id="days-ones">0</div>
+                                </div>
+                                <div class="digit-half bottom">
+                                    <div class="digit-value" id="days-ones-bottom">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-top" id="days-ones-flip-top" style="display: none;">
+                                <div class="flip-top-inner">
+                                    <div class="digit-value" id="days-ones-flip-top-val">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-bottom" id="days-ones-flip-bottom" style="display: none;">
+                                <div class="flip-bottom-inner">
+                                    <div class="digit-value" id="days-ones-flip-bottom-val">0</div>
+                                </div>
+                            </div>
                         </div>
-                        <span class="flip-digit-inner" id="days">00</span>
                     </div>
                 </div>
-                <span class="time-label">Days</span>
+                <div class="time-label">Days</div>
             </div>
-            <div class="time-unit" id="hours-box">
-                <div class="flip-container">
-                    <div class="flip-digit">
-                        <div class="flip-top">
-                            <span class="flip-digit-inner" id="hours-top">00</span>
+
+            <div class="time-section">
+                <div class="digits-group">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="digit-container">
+                                <div class="digit-half top">
+                                    <div class="digit-value" id="hours-tens">0</div>
+                                </div>
+                                <div class="digit-half bottom">
+                                    <div class="digit-value" id="hours-tens-bottom">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-top" id="hours-tens-flip-top" style="display: none;">
+                                <div class="flip-top-inner">
+                                    <div class="digit-value" id="hours-tens-flip-top-val">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-bottom" id="hours-tens-flip-bottom" style="display: none;">
+                                <div class="flip-bottom-inner">
+                                    <div class="digit-value" id="hours-tens-flip-bottom-val">0</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flip-bottom">
-                            <span class="flip-digit-inner" id="hours-bottom">00</span>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="digit-container">
+                                <div class="digit-half top">
+                                    <div class="digit-value" id="hours-ones">0</div>
+                                </div>
+                                <div class="digit-half bottom">
+                                    <div class="digit-value" id="hours-ones-bottom">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-top" id="hours-ones-flip-top" style="display: none;">
+                                <div class="flip-top-inner">
+                                    <div class="digit-value" id="hours-ones-flip-top-val">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-bottom" id="hours-ones-flip-bottom" style="display: none;">
+                                <div class="flip-bottom-inner">
+                                    <div class="digit-value" id="hours-ones-flip-bottom-val">0</div>
+                                </div>
+                            </div>
                         </div>
-                        <span class="flip-digit-inner" id="hours">00</span>
                     </div>
                 </div>
-                <span class="time-label">Hours</span>
+                <div class="time-label">Hours</div>
             </div>
-            <div class="time-unit" id="minutes-box">
-                <div class="flip-container">
-                    <div class="flip-digit">
-                        <div class="flip-top">
-                            <span class="flip-digit-inner" id="minutes-top">00</span>
+
+            <div class="time-section">
+                <div class="digits-group">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="digit-container">
+                                <div class="digit-half top">
+                                    <div class="digit-value" id="minutes-tens">0</div>
+                                </div>
+                                <div class="digit-half bottom">
+                                    <div class="digit-value" id="minutes-tens-bottom">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-top" id="minutes-tens-flip-top" style="display: none;">
+                                <div class="flip-top-inner">
+                                    <div class="digit-value" id="minutes-tens-flip-top-val">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-bottom" id="minutes-tens-flip-bottom" style="display: none;">
+                                <div class="flip-bottom-inner">
+                                    <div class="digit-value" id="minutes-tens-flip-bottom-val">0</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flip-bottom">
-                            <span class="flip-digit-inner" id="minutes-bottom">00</span>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="digit-container">
+                                <div class="digit-half top">
+                                    <div class="digit-value" id="minutes-ones">0</div>
+                                </div>
+                                <div class="digit-half bottom">
+                                    <div class="digit-value" id="minutes-ones-bottom">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-top" id="minutes-ones-flip-top" style="display: none;">
+                                <div class="flip-top-inner">
+                                    <div class="digit-value" id="minutes-ones-flip-top-val">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-bottom" id="minutes-ones-flip-bottom" style="display: none;">
+                                <div class="flip-bottom-inner">
+                                    <div class="digit-value" id="minutes-ones-flip-bottom-val">0</div>
+                                </div>
+                            </div>
                         </div>
-                        <span class="flip-digit-inner" id="minutes">00</span>
                     </div>
                 </div>
-                <span class="time-label">Minutes</span>
+                <div class="time-label">Minutes</div>
             </div>
-            <div class="time-unit" id="seconds-box">
-                <div class="flip-container">
-                    <div class="flip-digit">
-                        <div class="flip-top">
-                            <span class="flip-digit-inner" id="seconds-top">00</span>
+
+            <div class="time-section">
+                <div class="digits-group">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="digit-container">
+                                <div class="digit-half top">
+                                    <div class="digit-value" id="seconds-tens">0</div>
+                                </div>
+                                <div class="digit-half bottom">
+                                    <div class="digit-value" id="seconds-tens-bottom">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-top" id="seconds-tens-flip-top" style="display: none;">
+                                <div class="flip-top-inner">
+                                    <div class="digit-value" id="seconds-tens-flip-top-val">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-bottom" id="seconds-tens-flip-bottom" style="display: none;">
+                                <div class="flip-bottom-inner">
+                                    <div class="digit-value" id="seconds-tens-flip-bottom-val">0</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flip-bottom">
-                            <span class="flip-digit-inner" id="seconds-bottom">00</span>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="digit-container">
+                                <div class="digit-half top">
+                                    <div class="digit-value" id="seconds-ones">0</div>
+                                </div>
+                                <div class="digit-half bottom">
+                                    <div class="digit-value" id="seconds-ones-bottom">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-top" id="seconds-ones-flip-top" style="display: none;">
+                                <div class="flip-top-inner">
+                                    <div class="digit-value" id="seconds-ones-flip-top-val">0</div>
+                                </div>
+                            </div>
+                            <div class="flip-bottom" id="seconds-ones-flip-bottom" style="display: none;">
+                                <div class="flip-bottom-inner">
+                                    <div class="digit-value" id="seconds-ones-flip-bottom-val">0</div>
+                                </div>
+                            </div>
                         </div>
-                        <span class="flip-digit-inner" id="seconds">00</span>
                     </div>
                 </div>
-                <span class="time-label">Seconds</span>
+                <div class="time-label">Seconds</div>
             </div>
         </div>
 
@@ -289,6 +442,14 @@
     <script>
         // Final date: October 24th at 24:00 (which is midnight of October 25th)
         const finalDate = new Date('2025-10-25T00:00:00').getTime();
+
+        // Previous values to track changes
+        let prevValues = {
+            daysTens: '0', daysOnes: '0',
+            hoursTens: '0', hoursOnes: '0',
+            minutesTens: '0', minutesOnes: '0',
+            secondsTens: '0', secondsOnes: '0'
+        };
 
         // Create floating circles
         const bgAnimation = document.getElementById('bgAnimation');
@@ -338,7 +499,7 @@
                 easing: 'easeOutExpo'
             }, '-=500')
             .add({
-                targets: '.time-unit',
+                targets: '.time-section',
                 opacity: [0, 1],
                 scale: [0.8, 1],
                 duration: 800,
@@ -346,21 +507,60 @@
                 easing: 'easeOutElastic(1, .8)'
             }, '-=400')
             .add({
+                targets: '.time-label',
+                opacity: [0, 1],
+                duration: 600,
+                delay: anime.stagger(80),
+                easing: 'easeOutExpo'
+            }, '-=600')
+            .add({
                 targets: '#endDate',
                 opacity: [0, 1],
                 duration: 800,
                 easing: 'easeOutExpo'
             }, '-=400');
 
-        function animateFlip(elementId) {
-            const topElement = document.getElementById(elementId + '-top');
-            const bottomElement = document.getElementById(elementId + '-bottom');
+        function flipDigit(digitId, newValue) {
+            const topElement = document.getElementById(digitId);
+            const bottomElement = document.getElementById(digitId + '-bottom');
+            const flipTop = document.getElementById(digitId + '-flip-top');
+            const flipTopVal = document.getElementById(digitId + '-flip-top-val');
+            const flipBottom = document.getElementById(digitId + '-flip-bottom');
+            const flipBottomVal = document.getElementById(digitId + '-flip-bottom-val');
 
+            // Set up the flip elements with old value
+            flipTopVal.textContent = topElement.textContent;
+            flipBottomVal.textContent = newValue;
+
+            // Show flip elements
+            flipTop.style.display = 'block';
+            flipBottom.style.display = 'block';
+
+            // Animate the top half flipping down
             anime({
-                targets: topElement.parentElement,
-                rotateX: [-180, 0],
-                duration: 600,
-                easing: 'easeInOutQuad'
+                targets: flipTop,
+                rotateX: [0, -90],
+                duration: 300,
+                easing: 'easeInQuad',
+                complete: function() {
+                    flipTop.style.display = 'none';
+                    // Update the top half to new value
+                    topElement.textContent = newValue;
+                }
+            });
+
+            // Animate the bottom half appearing
+            anime({
+                targets: flipBottom,
+                rotateX: [90, 0],
+                duration: 300,
+                delay: 300,
+                easing: 'easeOutQuad',
+                complete: function() {
+                    flipBottom.style.display = 'none';
+                    // Update the bottom half to new value
+                    bottomElement.textContent = newValue;
+                }
             });
         }
 
@@ -369,10 +569,13 @@
             const distance = finalDate - now;
 
             if (distance < 0) {
-                document.getElementById('days').textContent = '00';
-                document.getElementById('hours').textContent = '00';
-                document.getElementById('minutes').textContent = '00';
-                document.getElementById('seconds').textContent = '00';
+                // Set all to zero without animation
+                ['days-tens', 'days-ones', 'hours-tens', 'hours-ones',
+                 'minutes-tens', 'minutes-ones', 'seconds-tens', 'seconds-ones'].forEach(id => {
+                    document.getElementById(id).textContent = '0';
+                    document.getElementById(id + '-bottom').textContent = '0';
+                });
+
                 document.getElementById('subtitle').textContent = 'THE TIME HAS COME';
 
                 // Dramatic animation when time is up
@@ -392,45 +595,31 @@
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            const prevDays = document.getElementById('days').textContent;
-            const prevHours = document.getElementById('hours').textContent;
-            const prevMinutes = document.getElementById('minutes').textContent;
-            const prevSeconds = document.getElementById('seconds').textContent;
+            // Split into digits
+            const daysStr = String(days).padStart(2, '0');
+            const hoursStr = String(hours).padStart(2, '0');
+            const minutesStr = String(minutes).padStart(2, '0');
+            const secondsStr = String(seconds).padStart(2, '0');
 
-            const newDays = String(days).padStart(2, '0');
-            const newHours = String(hours).padStart(2, '0');
-            const newMinutes = String(minutes).padStart(2, '0');
-            const newSeconds = String(seconds).padStart(2, '0');
+            const currentValues = {
+                daysTens: daysStr[0],
+                daysOnes: daysStr[1],
+                hoursTens: hoursStr[0],
+                hoursOnes: hoursStr[1],
+                minutesTens: minutesStr[0],
+                minutesOnes: minutesStr[1],
+                secondsTens: secondsStr[0],
+                secondsOnes: secondsStr[1]
+            };
 
-            // Update and animate if changed
-            if (prevDays !== newDays) {
-                document.getElementById('days').textContent = newDays;
-                animateFlip('days');
-            }
-            if (prevHours !== newHours) {
-                document.getElementById('hours').textContent = newHours;
-                animateFlip('hours');
-            }
-            if (prevMinutes !== newMinutes) {
-                document.getElementById('minutes').textContent = newMinutes;
-                animateFlip('minutes');
-            }
-            if (prevSeconds !== newSeconds) {
-                document.getElementById('seconds').textContent = newSeconds;
-                animateFlip('seconds');
-
-                // Subtle glow effect on seconds change
-                anime({
-                    targets: '#seconds-box',
-                    boxShadow: [
-                        'inset 0 0 20px rgba(0, 0, 0, 0.5), 0 5px 15px rgba(0, 0, 0, 0.8)',
-                        'inset 0 0 20px rgba(0, 0, 0, 0.5), 0 5px 25px rgba(255, 0, 0, 0.4)',
-                        'inset 0 0 20px rgba(0, 0, 0, 0.5), 0 5px 15px rgba(0, 0, 0, 0.8)'
-                    ],
-                    duration: 300,
-                    easing: 'easeInOutQuad'
-                });
-            }
+            // Check and animate each digit if changed
+            Object.keys(currentValues).forEach(key => {
+                if (prevValues[key] !== currentValues[key]) {
+                    const elementId = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                    flipDigit(elementId, currentValues[key]);
+                    prevValues[key] = currentValues[key];
+                }
+            });
         }
 
         // Update countdown every second
