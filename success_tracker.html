@@ -835,6 +835,7 @@
                 // Apps Script requires the request body to be a string
                 const response = await fetch(SCRIPT_URL, {
                   method: 'POST',
+                  headers: {"Content-Type": "text/plain;charset=utf-8",},
                   body:payload
                 });
                 
@@ -873,6 +874,7 @@
 </body>
 
 </html>
+
 
 
 
