@@ -1,0 +1,877 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success Tracker - Jupiter Universe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e27; /* Dark space background */
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated starfield background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: blink 3s ease-in-out infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+        
+        /* Shooting stars */
+        .shooting-star {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+            animation: shoot 3s linear infinite;
+            opacity: 0;
+        }
+        
+        @keyframes shoot {
+            0% {
+                opacity: 1;
+                transform: translateX(0) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-500px) translateY(500px);
+            }
+        }
+        
+        .container {
+            background: rgba(10, 14, 39, 0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 
+                0 30px 90px rgba(102, 126, 234, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 0 100px rgba(138, 43, 226, 0.1);
+            max-width: 700px;
+            width: 100%;
+            padding: 50px;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(138, 43, 226, 0.4);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .logo {
+            font-size: 4em;
+            margin-bottom: 15px;
+            animation: rotate-planet 15s linear infinite;
+            display: inline-block;
+            filter: drop-shadow(0 0 20px rgba(138, 43, 226, 0.6));
+        }
+        
+        @keyframes rotate-planet {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .header h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+        }
+        
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.05em;
+            font-weight: 500;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s;
+            font-family: inherit;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2), 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+            padding-right: 40px;
+        }
+        
+        select option {
+            background: #1a1f3a;
+            color: white;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .period-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .rating-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .rating-btn {
+            flex: 1;
+            min-width: 50px;
+            padding: 12px 10px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+        }
+        
+        .rating-btn:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .rating-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            transform: scale(1.08);
+            box-shadow: 0 5px 25px rgba(102, 126, 234, 0.6);
+        }
+        
+        .rating-btn small {
+            display: block;
+            font-size: 0.75em;
+            margin-top: 2px;
+            opacity: 0.8;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        .checkbox-group:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.15);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+        
+        .checkbox-group span {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .cg-link {
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(255, 193, 7, 0.15);
+            border: 2px solid rgba(255, 193, 7, 0.4);
+            border-radius: 10px;
+            display: none;
+            text-align: center;
+        }
+        
+        .cg-link.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .cg-link a {
+            color: #ffd54f;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.05em;
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(255, 193, 7, 0.2);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .cg-link a:hover {
+            background: rgba(255, 193, 7, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .cg-link p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.7);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(-2px);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .message {
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: none;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+        
+        .message.success {
+            background: rgba(40, 167, 69, 0.2);
+            color: #a8e6a8;
+            border: 2px solid rgba(40, 167, 69, 0.5);
+        }
+        
+        .message.error {
+            background: rgba(220, 53, 69, 0.2);
+            color: #ff9999;
+            border: 2px solid rgba(220, 53, 69, 0.5);
+        }
+        
+        .message.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .required {
+            color: #ff6b6b;
+        }
+        
+        .help-text {
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 6px;
+            font-style: italic;
+        }
+        
+        .info-box {
+            background: rgba(33, 150, 243, 0.15);
+            border-left: 4px solid #2196f3;
+            padding: 16px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            font-size: 0.95em;
+            color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+        }
+        
+        .info-box strong {
+            color: #64b5f6;
+        }
+        
+        .copyright {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(102, 126, 234, 0.3);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85em;
+        }
+        
+        .copyright-symbol {
+            font-size: 1.1em;
+            margin-right: 3px;
+        }
+        
+        .jupiter-text {
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 35px 25px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .logo {
+                font-size: 3em;
+            }
+            
+            .period-selector {
+                grid-template-columns: 1fr;
+            }
+            
+            .rating-btn {
+                min-width: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="logo">🪐</div>
+            <h1>Success Tracker</h1>
+            <p>Weekly Performance & Attendance Check-In</p>
+        </div>
+        
+        <div class="info-box">
+            💡 <strong>Tip:</strong> Fill this out once per week during your team's session. Be honest—this helps YOU track your progress!
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <form id="trackerForm">
+            <div class="form-group">
+                <label for="teamName">Team/Company Name <span class="required">*</span></label>
+                <select id="teamName" required>
+                    <option value="">Select your team...</option>
+                    <option value="Ladies $ Gentlemen">Ladies $ Gentlemen</option>
+                    <option value="#101">#101</option>
+                    <option value="Jupiter">Jupiter</option>
+                    <option value="Team AuditX">Team AuditX</option>
+                    <option value="Fahrenheit 451">Fahrenheit 451</option>
+                    <option value="Girlies">Girlies</option>
+                    <option value="Cookies">Cookies</option>
+                    <option value="CG">CG</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="memberName">Your Full Name <span class="required">*</span></label>
+                <select id="memberName" required>
+                    <option value="">First select your team...</option>
+                </select>
+                <p class="help-text">Select your name from the list</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="roleSelect">Your Role <span class="required">*</span></label>
+                <select id="roleSelect" required disabled>
+                    <option value="">Select your name first...</option>
+                </select>
+                <p class="help-text">Your role will auto-fill after selecting your name</p>
+            </div>
+            
+            <div class="form-group">
+                <label>Time Period <span class="required">*</span></label>
+                <p class="help-text">Select the Quarter, Session, and Week you're reporting for</p>
+                <div class="period-selector">
+                    <select id="quarter" required>
+                        <option value="">Quarter</option>
+                        <option value="Pre-Q1">Pre-Q1</option>
+                        <option value="Q1">Q1</option>
+                        <option value="Q2">Q2</option>
+                        <option value="Q3">Q3</option>
+                        <option value="Q4">Q4</option>
+                    </select>
+                    <select id="session" required>
+                        <option value="">Session</option>
+                        <option value="S1">S1</option>
+                        <option value="S2">S2</option>
+                        <option value="S3">S3</option>
+                    </select>
+                    <select id="week" required>
+                        <option value="">Week</option>
+                        <option value="1">Week 1</option>
+                        <option value="2">Week 2</option>
+                        <option value="3">Week 3</option>
+                        <option value="4">Week 4</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="attendance">Your Attendance This Week <span class="required">*</span></label>
+                <select id="attendance" required>
+                    <option value="">Select your status...</option>
+                    <option value="Present">✅ Present - Attended all classes this week</option>
+                    <option value="Partial">⚠️ Partial - Missed 1 class</option>
+                    <option value="Absent">❌ Absent - Missed 2+ classes</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Team Task Completion <span class="required">*</span></label>
+                <p class="help-text">How much of this week's team tasks did you personally complete?</p>
+                <div class="rating-group">
+                    <button type="button" class="rating-btn" data-rating="1">1<br><small>0-20%</small></button>
+                    <button type="button" class="rating-btn" data-rating="2">2<br><small>20-40%</small></button>
+                    <button type="button" class="rating-btn" data-rating="3">3<br><small>40-60%</small></button>
+                    <button type="button" class="rating-btn" data-rating="4">4<br><small>60-80%</small></button>
+                    <button type="button" class="rating-btn" data-rating="5">5<br><small>80-100%</small></button>
+                </div>
+                <input type="hidden" id="completionRating" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Understanding of Accounting Concepts <span class="required">*</span></label>
+                <p class="help-text">How well do you understand this week's accounting material?</p>
+                <div class="rating-group">
+                    <button type="button" class="rating-btn" data-rating="1">1<br><small>Confused</small></button>
+                    <button type="button" class="rating-btn" data-rating="2">2<br><small>Struggling</small></button>
+                    <button type="button" class="rating-btn" data-rating="3">3<br><small>Getting it</small></button>
+                    <button type="button" class="rating-btn" data-rating="4">4<br><small>Good grasp</small></button>
+                    <button type="button" class="rating-btn" data-rating="5">5<br><small>Confident</small></button>
+                </div>
+                <input type="hidden" id="understandingRating" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Team Collaboration Rating <span class="required">*</span></label>
+                <p class="help-text">How well did your team work together this week?</p>
+                <div class="rating-group">
+                    <button type="button" class="rating-btn" data-rating="1">1<br><small>Poor</small></button>
+                    <button type="button" class="rating-btn" data-rating="2">2<br><small>Fair</small></button>
+                    <button type="button" class="rating-btn" data-rating="3">3<br><small>Good</small></button>
+                    <button type="button" class="rating-btn" data-rating="4">4<br><small>Great</small></button>
+                    <button type="button" class="rating-btn" data-rating="5">5<br><small>Excellent</small></button>
+                </div>
+                <input type="hidden" id="collaborationRating" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="challenges">Challenges This Week</label>
+                <p class="help-text">What obstacles did you face? (Optional but recommended)</p>
+                <textarea id="challenges" placeholder="e.g., Confused about debits/credits, team member absent, didn't understand the roll mechanics..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="wins">Wins & Progress</label>
+                <p class="help-text">What went well? What are you proud of? (Optional)</p>
+                <textarea id="wins" placeholder="e.g., Successfully completed the financial statement, helped team member understand journal entries..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="goals">Goals for Next Week</label>
+                <p class="help-text">What do you want to focus on or improve? (Optional)</p>
+                <textarea id="goals" placeholder="e.g., Study balance sheet structure, be more active in team discussions, complete tasks earlier..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="checkbox-group">
+                    <input type="checkbox" id="helpNeeded">
+                    <span>⚠️ I need help from CG (Instructor)</span>
+                </label>
+                <div class="cg-link" id="cgLink">
+                    <p>📧 Email the Controller General directly:</p>
+                    <!-- UPDATED LINK HERE -->
+                    <a href="mailto:174070@donga.ac.kr" target="_blank">174070@donga.ac.kr</a>
+                </div>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submitBtn">🚀 Submit Weekly Check-In</button>
+        </form>
+        
+        <div class="copyright">
+            <span class="copyright-symbol">©</span> <span class="jupiter-text">JUPITER</span>
+        </div>
+    </div>
+    
+    <script>
+        // CRITICAL UPDATE: The SCRIPT_URL must be the full Web App URL you get after deployment.
+        // The structure is fixed now, but you MUST still deploy the Apps Script and replace this string!
+        // The full URL will look something like: https://script.google.com/macros/s/AKfyc.../exec
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz_2WZ22IZhIESZsWIPIpHkcatTVx9y8gWQIPf6J9LgpJx_CSxYLPb82mm5YJcS-F-q/exec'; 
+        
+        // Team member data - UPDATED with Full Names
+        const teamData = {
+            "Ladies $ Gentlemen": [
+                {name: "Jony", role: "CEO"},
+                {name: "Alina", role: "CMO"},
+                {name: "Shoyadbek", role: "CFO"},
+                {name: "Ksenia", role: "CHRO"},
+                {name: "Akib", role: "CTO"}
+            ],
+            "#101": [
+                {name: "Norman", role: "CFO"},
+                {name: "Abu", role: "CEO"},
+                {name: "Khan", role: "CMO"},
+                {name: "Samandar", role: "COO"},
+                {name: "Behruz", role: "CIO"}
+            ],
+            "Jupiter": [
+                {name: "Zhaniya", role: "CFO"},
+                {name: "Sarju", role: "COO"},
+                {name: "Sanjina Shrestha", role: "CEO"},
+                {name: "Warda", role: "CHRO"},
+                {name: "Khadicha", role: "CMO"}
+            ],
+            "Team AuditX": [
+                {name: "Alam Kahaf", role: "CHRO"},
+                {name: "Joy Ahmed", role: "CEO"},
+                {name: "Hasibul", role: "CMO"},
+                {name: "Mahedi Hasan", role: "CFO"},
+                {name: "Rohan Mollik", role: "CMO"},
+                {name: "Hasan Osiul", role: "CEO"}
+            ],
+            "Fahrenheit 451": [
+                {name: "Shakhzod", role: "CTO"},
+                {name: "Ali", role: "CHRO"},
+                {name: "Islombek", role: "CMO"},
+                {name: "Abbos", role: "CFO"},
+                {name: "Salokhiddin", role: "CEO"}
+            ],
+            "Girlies": [
+                {name: "Kaden", role: "CEO"},
+                {name: "Beatrix", role: "CMO"},
+                {name: "Saurav", role: "CSO"},
+                {name: "Sarthak", role: "CFO"}
+            ],
+            "Cookies": [
+                {name: "Diyora", role: "CEO"},
+                {name: "Diana", role: "CMO"},
+                {name: "Luise", role: "CFO"},
+                {name: "Jasmin", role: "CSO"},
+                {name: "Rohan", role: "COO"}
+            ],
+            "CG": [
+                {name: "Controller General", role: "Instructor"}
+            ]
+        };
+        
+        // Helper function to display messages
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message show ${type}`;
+            setTimeout(() => {
+                messageDiv.classList.remove('show');
+            }, 5000);
+        }
+
+
+        // Create blinking stars
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 200;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // Create shooting stars
+        function createShootingStar() {
+            const shootingStar = document.createElement('div');
+            shootingStar.className = 'shooting-star';
+            shootingStar.style.left = Math.random() * 100 + '%';
+            shootingStar.style.top = Math.random() * 50 + '%';
+            document.body.appendChild(shootingStar);
+            
+            setTimeout(() => {
+                shootingStar.remove();
+            }, 3000);
+        }
+        
+        // Initialize stars
+        createStars();
+        
+        // Random shooting stars
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                createShootingStar();
+            }
+        }, 3000);
+        
+        // Team selection handler
+        document.getElementById('teamName').addEventListener('change', function() {
+            const team = this.value;
+            const memberSelect = document.getElementById('memberName');
+            const roleSelect = document.getElementById('roleSelect');
+            
+            memberSelect.innerHTML = '<option value="">Select your name...</option>';
+            roleSelect.innerHTML = '<option value="">Select your name first...</option>';
+            roleSelect.disabled = true;
+            
+            if (team && teamData[team]) {
+                teamData[team].forEach(member => {
+                    const option = document.createElement('option');
+                    // Changed value to FULL name as requested
+                    option.value = member.name;
+                    option.textContent = member.name;
+                    option.dataset.role = member.role;
+                    memberSelect.appendChild(option);
+                });
+            }
+        });
+        
+        // Member selection handler
+        document.getElementById('memberName').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const roleSelect = document.getElementById('roleSelect');
+            
+            // Clear previous role options
+            roleSelect.innerHTML = '<option value="">Select your name first...</option>';
+
+
+            if (selectedOption && selectedOption.dataset.role) {
+                const role = selectedOption.dataset.role;
+                roleSelect.innerHTML = `<option value="${role}">${role}</option>`;
+                roleSelect.disabled = false;
+            } else {
+                roleSelect.disabled = true;
+            }
+        });
+        
+        // Help checkbox handler
+        document.getElementById('helpNeeded').addEventListener('change', function() {
+            const cgLink = document.getElementById('cgLink');
+            if (this.checked) {
+                cgLink.classList.add('show');
+            } else {
+                cgLink.classList.remove('show');
+            }
+        });
+        
+        // Rating button functionality
+        document.querySelectorAll('.rating-group').forEach(group => {
+            const buttons = group.querySelectorAll('.rating-btn');
+            const hiddenInput = group.nextElementSibling;
+            
+            buttons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    buttons.forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    hiddenInput.value = btn.dataset.rating;
+                });
+            });
+        });
+        
+        // Form submission
+        document.getElementById('trackerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = document.getElementById('submitBtn');
+            const messageDiv = document.getElementById('message');
+            
+            // --- Validation ---
+            const team = document.getElementById('teamName').value;
+            const member = document.getElementById('memberName').value;
+            const role = document.getElementById('roleSelect').value;
+            const quarter = document.getElementById('quarter').value;
+            const session = document.getElementById('session').value;
+            const week = document.getElementById('week').value;
+            const attendance = document.getElementById('attendance').value;
+            const completion = document.getElementById('completionRating').value;
+            const understanding = document.getElementById('understandingRating').value;
+            const collaboration = document.getElementById('collaborationRating').value;
+            
+            // Simple validation for required fields
+            if (!team || !member || !role || !quarter || !session || !week || !attendance || !completion || !understanding || !collaboration) {
+                showMessage('Please fill out all required fields (*).', 'error');
+                return;
+            }
+
+
+            // Gather all data
+            const formData = {
+                timestamp: new Date().toLocaleString(),
+                team: team,
+                member: member,
+                role: role,
+                quarter: quarter,
+                session: session,
+                week: week,
+                attendance: attendance,
+                completion: completion,
+                understanding: understanding,
+                collaboration: collaboration,
+                challenges: document.getElementById('challenges').value,
+                wins: document.getElementById('wins').value,
+                goals: document.getElementById('goals').value,
+                helpNeeded: document.getElementById('helpNeeded').checked ? 'Yes' : 'No'
+            };
+
+
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            try {
+                // Apps Script requires the request body to be a string
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors', // Essential for cross-origin requests
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json' // Tell the Apps Script it's JSON
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok || response.status === 200) {
+                    const result = await response.json().catch(() => ({ status: 'error', error: 'Invalid JSON response from server.' }));
+
+
+                    if (result.status === 'success') {
+                        showMessage('✅ Success! Your progress has been recorded.', 'success');
+                        form.reset(); // Clear the form
+                        // Reset custom controls
+                        document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+                        document.getElementById('memberName').innerHTML = '<option value="">First select your team...</option>';
+                        document.getElementById('roleSelect').innerHTML = '<option value="">Select your name first...</option>';
+                        document.getElementById('roleSelect').disabled = true;
+                        document.getElementById('cgLink').classList.remove('show');
+                    } else {
+                        // Handle server-side error or bad response (e.g., status 400, 500)
+                        showMessage(`❌ Submission Failed: ${result.error || 'Server returned an error status.'}`, 'error');
+                    }
+                } else {
+                    // Handle non-200 HTTP status codes
+                    showMessage(`❌ Submission Failed: Server Error (${response.status}). Check the Apps Script logs.`, 'error');
+                }
+            } catch (error) {
+                // Handle network errors or issues with the fetch request
+                console.error('Submission Error:', error);
+                showMessage('❌ Network Error: Could not connect to the server. Check your internet connection or the SCRIPT_URL.', 'error');
+            } finally {
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Submit Weekly Check-In';
+            }
+        });
+    </script>
+</body>
+</html>
