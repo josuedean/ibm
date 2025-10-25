@@ -825,7 +825,7 @@
             };
             
             // --- NEW: send as URL-encoded (simple request; no preflight) ---
-            const body = new URLSearchParams(formData).toString();
+            const payload = new URLSearchParams(formData).toString();
 
             // Disable button and show loading state
             submitBtn.disabled = true;
@@ -836,7 +836,7 @@
                 const response = await fetch(SCRIPT_URL, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                  body
+                  body:payload
                 });
                 
                 if (response.ok || response.status === 200) {
@@ -874,5 +874,6 @@
 </body>
 
 </html>
+
 
 
