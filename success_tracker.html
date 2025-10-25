@@ -823,7 +823,9 @@
                 goals: document.getElementById('goals').value,
                 helpNeeded: document.getElementById('helpNeeded').checked ? 'Yes' : 'No'
             };
-
+            
+            // --- NEW: send as URL-encoded (simple request; no preflight) ---
+            const body = new URLSearchParams(formData).toString();
 
             // Disable button and show loading state
             submitBtn.disabled = true;
@@ -832,13 +834,9 @@
             try {
                 // Apps Script requires the request body to be a string
                 const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'cors', // Essential for cross-origin requests
-                    cache: 'no-cache',
-                    headers: {
-                        'Content-Type': 'application/json' // Tell the Apps Script it's JSON
-                    },
-                    body: JSON.stringify(formData)
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                  body
                 });
                 
                 if (response.ok || response.status === 200) {
@@ -876,3 +874,4 @@
 </body>
 
 </html>
+
