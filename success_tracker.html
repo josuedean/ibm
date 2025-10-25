@@ -605,7 +605,7 @@
         // CRITICAL UPDATE: The SCRIPT_URL must be the full Web App URL you get after deployment.
         // The structure is fixed now, but you MUST still deploy the Apps Script and replace this string!
         // The full URL will look something like: https://script.google.com/macros/s/AKfyc.../exec
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzt_dmDMLs7fUmi9Atu0Bd3RHftuM9mOwi_OJFFBjzw1mrMdv8xJPY4k6jfH9i7V9LnmA/exec'; 
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2KZmELz6gu1qS8xD91FvWiIStO4xP4GXHvPrZI4Qk1nMK1Fe2lBSde8vSSDcSUhEuyw/exec'; 
         
         // Team member data - UPDATED with Full Names
         const teamData = {
@@ -825,7 +825,7 @@
             };
             
             // --- NEW: send as URL-encoded (simple request; no preflight) ---
-            const payload = new URLSearchParams(formData).toString();
+            const payload = JSON.stringify(formData)
 
             // Disable button and show loading state
             submitBtn.disabled = true;
@@ -874,6 +874,7 @@
 </body>
 
 </html>
+
 
 
 
