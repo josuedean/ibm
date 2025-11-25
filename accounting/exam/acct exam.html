@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Accounting Exam – Task 1 Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      line-height: 1.5;
+    }
+    h1, h2 {
+      margin-bottom: 0.5rem;
+    }
+    .card {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .transaction {
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px dashed #ddd;
+    }
+    .transaction:last-child {
+      border-bottom: none;
+    }
+    .accounts-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.5rem;
+      margin-top: 0.5rem;
+    }
+    .accounts-grid label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .status {
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+    .status.ok {
+      color: #0a7f3f;
+    }
+    .status.error {
+      color: #b00020;
+    }
+    .hidden {
+      display: none;
+    }
+    .student-id {
+      margin-bottom: 1rem;
+    }
+    button {
+      padding: 0.6rem 1rem;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <h1>Accounting Exam – Task 1 Prototype</h1>
+  <p>
+    This page tests Task 1 only: selecting the correct accounts for each transaction,
+    and sending the result to Google Apps Script.
+  </p>
+
+  <div class="card student-id">
+    <label>
+      Student ID:
+      <input type="text" id="studentId" placeholder="e.g. 2025-001" />
+    </label>
+  </div>
+
+  <div class="card">
+    <h2>Task 1 – Select Accounts Affected by Each Transaction</h2>
+    <p>
+      For each transaction, check <strong>all</strong> accounts that are affected.
+      Do not worry about debit vs credit here; just which accounts are involved.
+    </p>
+
+    <form id="task1Form">
+      <!-- Transaction 1 -->
+      <div class="transaction" data-txn="1">
+        <strong>1) March 1 – Owner Investment</strong><br />
+        Owner invests additional cash into the business.
+        <div class="accounts-grid">
+          <label><input type="checkbox" value="cash" /> Cash</label>
+          <label><input type="checkbox" value="inventory" /> Inventory</label>
+          <label><input type="checkbox" value="supplies" /> Supplies</label>
+          <label><input type="checkbox" value="equipment" /> Equipment</label>
+          <label><input type="checkbox" value="accountsReceivable" /> Accounts Receivable</label>
+          <label><input type="checkbox" value="accountsPayable" /> Accounts Payable</label>
+          <label><input type="checkbox" value="capital" /> Owner's Capital</label>
+          <label><input type="checkbox" value="revenue" /> Revenue</label>
+          <label><input type="checkbox" value="expense" /> Expense</label>
+          <label><input type="checkbox" value="ownersWithdrawal" /> Owner's Withdrawal</label>
+        </div>
+      </div>
+
+      <!-- Transaction 2 -->
+      <div class="transaction" data-txn="2">
+        <strong>2) March 2 – Cash Sale</strong><br />
+        Morning café sales received in cash.
+        <div class="accounts-grid">
+          <label><input type="checkbox" value="cash" /> Cash</label>
+          <label><input type="checkbox" value="inventory" /> Inventory</label>
+          <label><input type="checkbox" value="supplies" /> Supplies</label>
+          <label><input type="checkbox" value="equipment" /> Equipment</label>
+          <label><input type="checkbox" value="accountsReceivable" /> Accounts Receivable</label>
+          <label><input type="checkbox" value="accountsPayable" /> Accounts Payable</label>
+          <label><input type="checkbox" value="capital" /> Owner's Capital</label>
+          <label><input type="checkbox" value="revenue" /> Revenue</label>
+          <label><input type="checkbox" value="expense" /> Expense</label>
+          <label><input type="checkbox" value="ownersWithdrawal" /> Owner's Withdrawal</label>
+        </div>
+      </div>
+
+      <!-- Transaction 3 -->
+      <div class="transaction" data-txn="3">
+        <strong>3) March 3 – Purchased Inventory for Cash</strong><br />
+        Bought ingredients (coffee beans, milk, flour) for cash.
+        <div class="accounts-grid">
+          <label><input type="checkbox" value="cash" /> Cash</label>
+          <label><input type="checkbox" value="inventory" /> Inventory</label>
+          <label><input type="checkbox" value="supplies" /> Supplies</label>
+          <label><input type="checkbox" value="equipment" /> Equipment</label>
+          <label><input type="checkbox" value="accountsReceivable" /> Accounts Receivable</label>
+          <label><input type="checkbox" value="accountsPayable" /> Accounts Payable</label>
+          <label><input type="checkbox" value="capital" /> Owner's Capital</label>
+          <label><input type="checkbox" value="revenue" /> Revenue</label>
+          <label><input type="checkbox" value="expense" /> Expense</label>
+          <label><input type="checkbox" value="ownersWithdrawal" /> Owner's Withdrawal</label>
+        </div>
+      </div>
+
+      <!-- Transaction 4 -->
+      <div class="transaction" data-txn="4">
+        <strong>4) March 4 – Supplies Purchase on Credit</strong><br />
+        Purchased cleaning supplies on account.
+        <div class="accounts-grid">
+          <label><input type="checkbox" value="cash" /> Cash</label>
+          <label><input type="checkbox" value="inventory" /> Inventory</label>
+          <label><input type="checkbox" value="supplies" /> Supplies</label>
+          <label><input type="checkbox" value="equipment" /> Equipment</label>
+          <label><input type="checkbox" value="accountsReceivable" /> Accounts Receivable</label>
+          <label><input type="checkbox" value="accountsPayable" /> Accounts Payable</label>
+          <label><input type="checkbox" value="capital" /> Owner's Capital</label>
+          <label><input type="checkbox" value="revenue" /> Revenue</label>
+          <label><input type="checkbox" value="expense" /> Expense</label>
+          <label><input type="checkbox" value="ownersWithdrawal" /> Owner's Withdrawal</label>
+        </div>
+      </div>
+
+      <!-- Transaction 5 -->
+      <div class="transaction" data-txn="5">
+        <strong>5) March 5 – Paid Utilities (Cash)</strong><br />
+        Monthly utilities paid in cash.
+        <div class="accounts-grid">
+          <label><input type="checkbox" value="cash" /> Cash</label>
+          <label><input type="checkbox" value="inventory" /> Inventory</label>
+          <label><input type="checkbox" value="supplies" /> Supplies</label>
+          <label><input type="checkbox" value="equipment" /> Equipment</label>
+          <label><input type="checkbox" value="accountsReceivable" /> Accounts Receivable</label>
+          <label><input type="checkbox" value="accountsPayable" /> Accounts Payable</label>
+          <label><input type="checkbox" value="capital" /> Owner's Capital</label>
+          <label><input type="checkbox" value="revenue" /> Revenue</label>
+          <label><input type="checkbox" value="expense" /> Expense</label>
+          <label><input type="checkbox" value="ownersWithdrawal" /> Owner's Withdrawal</label>
+        </div>
+      </div>
+
+      <!-- Transaction 6 -->
+      <div class="transaction" data-txn="6">
+        <strong>6) March 6 – Credit Sale to Catering Client</strong><br />
+        Client orders snacks, invoice issued (on credit).
+        <div class="accounts-grid">
+          <label><input type="checkbox" value="cash" /> Cash</label>
+          <label><input type="checkbox" value="inventory" /> Inventory</label>
+          <label><input type="checkbox" value="supplies" /> Supplies</label>
+          <label><input type="checkbox" value="equipment" /> Equipment</label>
+          <label><input type="checkbox" value="accountsReceivable" /> Accounts Receivable</label>
+          <label><input type="checkbox" value="accountsPayable" /> Accounts Payable</label>
+          <label><input type="checkbox" value="capital" /> Owner's Capital</label>
+          <label><input type="checkbox" value="revenue" /> Revenue</label>
+          <label><input type="checkbox" value="expense" /> Expense</label>
+          <label><input type="checkbox" value="ownersWithdrawal" /> Owner's Withdrawal</label>
+        </div>
+      </div>
+
+      <!-- Transaction 7 -->
+      <div class="transaction" data-txn="7">
+        <strong>7) March 7 – Cash Sale</strong><br />
+        Afternoon café sales received in cash.
+        <div class="accounts-grid">
+          <label><input type="checkbox" value="cash" /> Cash</label>
+          <label><input type="checkbox" value="inventory" /> Inventory</label>
+          <label><input type="checkbox" value="supplies" /> Supplies</label>
+          <label><input type="checkbox" value="equipment" /> Equipment</label>
+          <label><input type="checkbox" value="accountsReceivable" /> Accounts Receivable</label>
+          <label><input type="checkbox" value="accountsPayable" /> Accounts Payable</label>
+          <label><input type="checkbox" value="capital" /> Owner's Capital</label>
+          <label><input type="checkbox" value="revenue" /> Revenue</label>
+          <label><input type="checkbox" value="expense" /> Expense</label>
+          <label><input type="checkbox" value="ownersWithdrawal" /> Owner's Withdrawal</label>
+        </div>
+      </div>
+
+      <!-- Transaction 8 -->
+      <div class="transaction" data-txn="8">
+        <strong>8) March 8 – Purchased Inventory on Credit</strong><br />
+        Bought pastry dough and coffee syrup on account.
+        <div class="accounts-grid">
+          <label><input type="checkbox" value="cash" /> Cash</label>
+          <label><input type="checkbox" value="inventory" /> Inventory</label>
+          <label><input type="checkbox" value="supplies" /> Supplies</label>
+          <label><input type="checkbox" value="equipment" /> Equipment</label>
+          <label><input type="checkbox" value="accountsReceivable" /> Accounts Receivable</label>
+          <label><input type="checkbox" value="accountsPayable" /> Accounts Payable</label>
+          <label><input type="checkbox" value="capital" /> Owner's Capital</label>
+          <label><input type="checkbox" value="revenue" /> Revenue</label>
+          <label><input type="checkbox" value="expense" /> Expense</label>
+          <label><input type="checkbox" value="ownersWithdrawal" /> Owner's Withdrawal</label>
+        </div>
+      </div>
+
+      <!-- Transaction 9 -->
+      <div class="transaction" data-txn="9">
+        <strong>9) March 10 – Cash Payment to Vendor</strong><br />
+        Paid ₩500,000 to reduce Accounts Payable.
+        <div class="accounts-grid">
+          <label><input type="checkbox" value="cash" /> Cash</label>
+          <label><input type="checkbox" value="inventory" /> Inventory</label>
+          <label><input type="checkbox" value="supplies" /> Supplies</label>
+          <label><input type="checkbox" value="equipment" /> Equipment</label>
+          <label><input type="checkbox" value="accountsReceivable" /> Accounts Receivable</label>
+          <label><input type="checkbox" value="accountsPayable" /> Accounts Payable</label>
+          <label><input type="checkbox" value="capital" /> Owner's Capital</label>
+          <label><input type="checkbox" value="revenue" /> Revenue</label>
+          <label><input type="checkbox" value="expense" /> Expense</label>
+          <label><input type="checkbox" value="ownersWithdrawal" /> Owner's Withdrawal</label>
+        </div>
+      </div>
+
+      <!-- Transaction 10 -->
+      <div class="transaction" data-txn="10">
+        <strong>10) March 11 – Supplies Purchase (Cash)</strong><br />
+        Bought takeaway cups and napkins for cash.
+        <div class="accounts-grid">
+          <label><input type="checkbox" value="cash" /> Cash</label>
+          <label><input type="checkbox" value="inventory" /> Inventory</label>
+          <label><input type="checkbox" value="supplies" /> Supplies</label>
+          <label><input type="checkbox" value="equipment" /> Equipment</label>
+          <label><input type="checkbox" value="accountsReceivable" /> Accounts Receivable</label>
+          <label><input type="checkbox" value="accountsPayable" /> Accounts Payable</label>
+          <label><input type="checkbox" value="capital" /> Owner's Capital</label>
+          <label><input type="checkbox" value="revenue" /> Revenue</label>
+          <label><input type="checkbox" value="expense" /> Expense</label>
+          <label><input type="checkbox" value="ownersWithdrawal" /> Owner's Withdrawal</label>
+        </div>
+      </div>
+
+      <!-- Transaction 11 -->
+      <div class="transaction" data-txn="11">
+        <strong>11) March 12 – Customer Pays Accounts Receivable</strong><br />
+        Catering client from March 6 pays in cash.
+        <div class="accounts-grid">
+          <label><input type="checkbox" value="cash" /> Cash</label>
+          <label><input type="checkbox" value="inventory" /> Inventory</label>
+          <label><input type="checkbox" value="supplies" /> Supplies</label>
+          <label><input type="checkbox" value="equipment" /> Equipment</label>
+          <label><input type="checkbox" value="accountsReceivable" /> Accounts Receivable</label>
+          <label><input type="checkbox" value="accountsPayable" /> Accounts Payable</label>
+          <label><input type="checkbox" value="capital" /> Owner's Capital</label>
+          <label><input type="checkbox" value="revenue" /> Revenue</label>
+          <label><input type="checkbox" value="expense" /> Expense</label>
+          <label><input type="checkbox" value="ownersWithdrawal" /> Owner's Withdrawal</label>
+        </div>
+      </div>
+
+      <!-- Transaction 12 -->
+      <div class="transaction" data-txn="12">
+        <strong>12) March 13 – Cash Sale</strong><br />
+        Lunch rush sales received in cash.
+        <div class="accounts-grid">
+          <label><input type="checkbox" value="cash" /> Cash</label>
+          <label><input type="checkbox" value="inventory" /> Inventory</label>
+          <label><input type="checkbox" value="supplies" /> Supplies</label>
+          <label><input type="checkbox" value="equipment" /> Equipment</label>
+          <label><input type="checkbox" value="accountsReceivable" /> Accounts Receivable</label>
+          <label><input type="checkbox" value="accountsPayable" /> Accounts Payable</label>
+          <label><input type="checkbox" value="capital" /> Owner's Capital</label>
+          <label><input type="checkbox" value="revenue" /> Revenue</label>
+          <label><input type="checkbox" value="expense" /> Expense</label>
+          <label><input type="checkbox" value="ownersWithdrawal" /> Owner's Withdrawal</label>
+        </div>
+      </div>
+
+      <button type="submit" id="submitTask1">Submit Task 1</button>
+    </form>
+
+    <div id="status" class="status hidden"></div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
