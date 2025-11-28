@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TGF Data Analysis Terminal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0; padding: 0;
+            background-color: #000;
+            color: #FFA500;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(white, rgba(255, 165, 0, 0.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255, 165, 0, 0.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255, 165, 0, 0.1) 2px, transparent 40px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            animation: stars 120s linear infinite;
+        }
+
+        @keyframes stars {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: 550px 550px, 350px 350px, 250px 250px; }
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 1rem; }
+
+        .terminal {
+            background: rgba(30, 20, 0, 0.95);
+            border: 2px solid #FFA500;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #FFA500;
+            padding-bottom: 1rem;
+        }
+
+        .logo { font-size: 1.5rem; text-shadow: 0 0 10px #FFA500; }
+        .subtitle { font-size: 0.9rem; color: #CC8400; margin-top: 0.5rem; }
+        .blinking { animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .grid { display: grid; grid-template-columns: 250px 1fr; gap: 1rem; }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+        .sidebar {
+            background: rgba(20, 15, 0, 0.8);
+            border: 1px solid #FFA500;
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 { margin: 0 0 1rem 0; font-size: 1rem; border-bottom: 1px solid #663300; padding-bottom: 0.5rem; }
+        .nav-section { margin-bottom: 0.5rem; }
+        .nav-section-title { font-size: 0.7rem; color: #996600; margin: 0.8rem 0 0.3rem 0; text-transform: uppercase; }
+
+        .nav-item {
+            display: block; width: 100%;
+            background: transparent;
+            border: 1px solid #663300;
+            color: #FFA500;
+            padding: 0.5rem 0.8rem;
+            margin-bottom: 0.4rem;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            text-align: left;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .nav-item:hover { background: #331a00; border-color: #FFA500; }
+        .nav-item.active { background: #663300; border-color: #FFA500; box-shadow: 0 0 5px rgba(255, 165, 0, 0.3); }
+        .nav-item.highlight { border-color: #ff6600; background: rgba(255, 102, 0, 0.1); }
+
+        .main-content {
+            background: rgba(20, 15, 0, 0.8);
+            border: 1px solid #FFA500;
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 500px;
+        }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+        .panel h2 { margin: 0 0 1rem 0; font-size: 1.1rem; color: #FFB732; border-bottom: 1px solid #663300; padding-bottom: 0.5rem; }
+
+        .upload-zone {
+            border: 2px dashed #663300;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        .upload-zone:hover, .upload-zone.dragover { border-color: #FFA500; background: rgba(255, 165, 0, 0.05); }
+        .upload-zone input { display: none; }
+        .upload-zone.secondary { padding: 1rem; font-size: 0.85rem; }
+        .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+        input, select, textarea {
+            background: #1a1100;
+            border: 1px solid #663300;
+            color: #FFA500;
+            padding: 0.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            border-radius: 4px;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #FFA500; box-shadow: 0 0 5px rgba(255, 165, 0, 0.3); }
+
+        button {
+            background: #663300;
+            border: 1px solid #FFA500;
+            color: #FFA500;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        button:hover { background: #FFB732; color: #1a1100; box-shadow: 0 0 10px rgba(255, 165, 0, 0.5); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.danger { border-color: #ff4444; }
+        button.danger:hover { background: #ff4444; }
+        button.success { border-color: #44ff44; }
+        button.success:hover { background: #44ff44; color: #000; }
+
+        .table-container { overflow-x: auto; margin: 1rem 0; max-height: 400px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th, td { border: 1px solid #663300; padding: 0.4rem 0.6rem; text-align: left; }
+        th { background: #331a00; color: #FFB732; position: sticky; top: 0; z-index: 1; }
+        tr:nth-child(even) { background: rgba(102, 51, 0, 0.2); }
+        tr:hover { background: rgba(255, 165, 0, 0.1); }
+        tr.anomaly { background: rgba(255, 0, 0, 0.15) !important; border-left: 3px solid #ff4444; }
+        tr.diff { background: rgba(255, 165, 0, 0.2) !important; }
+        tr.added { background: rgba(0, 255, 0, 0.15) !important; }
+        tr.removed { background: rgba(255, 0, 0, 0.15) !important; }
+        td.changed { background: rgba(255, 165, 0, 0.3); font-weight: bold; }
+
+        .output-box {
+            background: #0d0800;
+            border: 1px solid #663300;
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .output-box.success { border-color: #FFA500; }
+        .output-box.error { border-color: #f00; color: #f00; }
+        .output-box.warning { border-color: #ffaa00; color: #ffaa00; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.8rem; margin: 1rem 0; }
+        .stat-card {
+            background: #1a1100;
+            border: 1px solid #663300;
+            border-radius: 6px;
+            padding: 0.8rem;
+            text-align: center;
+        }
+        .stat-card.anomaly { border-color: #ff4444; background: rgba(255, 68, 68, 0.1); }
+        .stat-card.match { border-color: #44ff44; background: rgba(68, 255, 68, 0.1); }
+        .stat-card.diff { border-color: #ffaa00; background: rgba(255, 170, 0, 0.1); }
+        .stat-value { font-size: 1.3rem; color: #FFB732; text-shadow: 0 0 5px rgba(255, 165, 0, 0.3); }
+        .stat-value.danger { color: #ff4444; }
+        .stat-value.success { color: #44ff44; }
+        .stat-value.warning { color: #ffaa00; }
+        .stat-label { font-size: 0.7rem; color: #CC8400; margin-top: 0.2rem; }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.3rem; font-size: 0.85rem; color: #CC8400; }
+        .form-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; }
+        .form-row .form-group { flex: 1; min-width: 120px; }
+        .help-text { font-size: 0.7rem; color: #996600; margin-top: 0.2rem; }
+
+        .chart-container {
+            background: rgba(13, 8, 0, 0.8);
+            border: 1px solid #663300;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+            height: 300px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: #1a1100;
+            border: 1px solid #663300;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .status-indicator { display: flex; align-items: center; gap: 0.5rem; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #663300; }
+        .status-dot.active { background: #00ff00; box-shadow: 0 0 5px #00ff00; }
+
+        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        @media (max-width: 700px) { .comparison-grid { grid-template-columns: 1fr; } }
+        .comparison-panel { background: #0d0800; border: 1px solid #663300; border-radius: 6px; padding: 1rem; }
+        .comparison-panel h4 { margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #FFB732; }
+        .comparison-panel.primary { border-color: #FFA500; }
+        .comparison-panel.secondary { border-color: #ff6600; }
+
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .tab-btn { background: transparent; border: 1px solid #663300; padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+        .tab-btn.active { background: #663300; border-color: #FFA500; }
+
+        .dist-bar-container { margin: 0.3rem 0; }
+        .dist-bar-label { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.2rem; }
+        .dist-bar { height: 16px; background: #1a1100; border: 1px solid #663300; border-radius: 2px; overflow: hidden; }
+        .dist-bar-fill { height: 100%; background: linear-gradient(90deg, #663300, #FFA500); transition: width 0.3s ease; }
+        .dist-bar-fill.anomaly { background: linear-gradient(90deg, #662222, #ff4444); }
+
+        .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 3px; font-size: 0.7rem; margin-left: 0.5rem; }
+        .badge.anomaly { background: #ff4444; color: #fff; }
+        .badge.normal { background: #44ff44; color: #000; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1100; }
+        ::-webkit-scrollbar-thumb { background: #663300; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FFA500; }
+
+        #secondaryStatus { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="terminal">
+            <div class="header">
+                <div class="logo">
+                    [TGF Data Analysis Terminal]<br>
+                    === Resource Analytics Suite v2.0 ===
+                </div>
+                <div class="subtitle">Authorized Personnel Only <span class="blinking">▊</span></div>
+            </div>
+
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">No data loaded</span>
+                </div>
+                <div id="dataInfo">--</div>
+                <div class="status-indicator" id="secondaryStatus">
+                    <span class="status-dot active" style="background:#ff6600;box-shadow:0 0 5px #ff6600;"></span>
+                    <span id="statusText2">Dataset B loaded</span>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="sidebar">
+                    <h3>// OPERATIONS</h3>
+                    <div class="nav-section">
+                        <div class="nav-section-title">Data Input</div>
+                        <button class="nav-item active" data-panel="upload">▸ DATA INPUT</button>
+                    </div>
+                    <div class="nav-section">
+                        <div class="nav-section-title">Exploration</div>
+                        <button class="nav-item" data-panel="preview">▸ PREVIEW</button>
+                        <button class="nav-item" data-panel="info">▸ DATA INFO</button>
+                        <button class="nav-item" data-panel="statistics">▸ STATISTICS</button>
+                        <button class="nav-item" data-panel="missing">▸ MISSING VALUES</button>
+                        <button class="nav-item" data-panel="unique">▸ UNIQUE VALUES</button>
+                    </div>
+                    <div class="nav-section">
+                        <div class="nav-section-title">Analysis</div>
+                        <button class="nav-item" data-panel="groupby">▸ GROUP BY</button>
+                        <button class="nav-item" data-panel="pivot">▸ PIVOT TABLE</button>
+                        <button class="nav-item" data-panel="filter">▸ FILTER DATA</button>
+                        <button class="nav-item" data-panel="distribution">▸ DISTRIBUTION</button>
+                    </div>
+                    <div class="nav-section">
+                        <div class="nav-section-title">Advanced</div>
+                        <button class="nav-item highlight" data-panel="anomaly">▸ ANOMALY DETECTION</button>
+                        <button class="nav-item highlight" data-panel="compare">▸ COMPARE DATASETS</button>
+                    </div>
+                    <div class="nav-section">
+                        <div class="nav-section-title">Output</div>
+                        <button class="nav-item" data-panel="visualize">▸ VISUALIZE</button>
+                        <button class="nav-item" data-panel="export">▸ EXPORT</button>
+                    </div>
+                </div>
+
+                <div class="main-content">
+                    <!-- Upload Panel -->
+                    <div class="panel active" id="panel-upload">
+                        <h2>// DATA INPUT MODULE</h2>
+                        <div class="upload-zone" id="uploadZone">
+                            <div class="upload-icon">⬆</div>
+                            <div>DROP CSV FILE HERE (Primary Dataset)</div>
+                            <div style="font-size: 0.8rem; color: #996600; margin-top: 0.5rem;">or click to browse</div>
+                            <input type="file" id="fileInput" accept=".csv,.tsv,.txt">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Delimiter</label>
+                                <select id="delimiter">
+                                    <option value=",">Comma (,)</option>
+                                    <option value="&#9;">Tab</option>
+                                    <option value=";">Semicolon (;)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Header Row</label>
+                                <select id="hasHeader">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="uploadResult" class="output-box" style="display:none;"></div>
+                    </div>
+
+                    <!-- Preview Panel -->
+                    <div class="panel" id="panel-preview">
+                        <h2>// DATA PREVIEW</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Rows</label>
+                                <input type="number" id="previewRows" value="10" min="1" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Position</label>
+                                <select id="previewPosition">
+                                    <option value="head">First</option>
+                                    <option value="tail">Last</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><button onclick="showPreview()">DISPLAY</button></div>
+                        </div>
+                        <div class="table-container" id="previewTable"></div>
+                    </div>
+
+                    <!-- Info Panel -->
+                    <div class="panel" id="panel-info">
+                        <h2>// DATA INFO</h2>
+                        <div class="stats-grid" id="infoStats"></div>
+                        <div class="table-container" id="infoTable"></div>
+                    </div>
+
+                    <!-- Statistics Panel -->
+                    <div class="panel" id="panel-statistics">
+                        <h2>// SUMMARY STATISTICS</h2>
+                        <div class="tabs">
+                            <button class="tab-btn active" onclick="showStats('numeric')">NUMERIC</button>
+                            <button class="tab-btn" onclick="showStats('categorical')">CATEGORICAL</button>
+                        </div>
+                        <div id="statsOutput"></div>
+                    </div>
+
+                    <!-- Missing Values Panel -->
+                    <div class="panel" id="panel-missing">
+                        <h2>// MISSING VALUE ANALYSIS</h2>
+                        <div id="missingOutput"></div>
+                    </div>
+
+                    <!-- Unique Values Panel -->
+                    <div class="panel" id="panel-unique">
+                        <h2>// UNIQUE VALUE COUNTS</h2>
+                        <div class="form-row">
+                            <div class="form-group"><label>Column</label><select id="uniqueColumn"></select></div>
+                            <div class="form-group"><button onclick="showUniqueValues()">ANALYZE</button></div>
+                        </div>
+                        <div id="uniqueOutput"></div>
+                    </div>
+
+                    <!-- Group By Panel -->
+                    <div class="panel" id="panel-groupby">
+                        <h2>// GROUP BY AGGREGATION</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Group By</label>
+                                <select id="groupByColumns" multiple style="height:70px;"></select>
+                                <div class="help-text">Ctrl+Click multiple</div>
+                            </div>
+                            <div class="form-group"><label>Aggregate</label><select id="aggColumn"></select></div>
+                            <div class="form-group">
+                                <label>Function</label>
+                                <select id="aggFunction">
+                                    <option value="sum">Sum</option>
+                                    <option value="mean">Mean</option>
+                                    <option value="count">Count</option>
+                                    <option value="min">Min</option>
+                                    <option value="max">Max</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="performGroupBy()">EXECUTE</button>
+                        <div class="table-container" id="groupByOutput"></div>
+                    </div>
+
+                    <!-- Pivot Table Panel -->
+                    <div class="panel" id="panel-pivot">
+                        <h2>// PIVOT TABLE</h2>
+                        <div class="form-row">
+                            <div class="form-group"><label>Rows</label><select id="pivotRows"></select></div>
+                            <div class="form-group"><label>Columns</label><select id="pivotCols"></select></div>
+                            <div class="form-group"><label>Values</label><select id="pivotValues"></select></div>
+                            <div class="form-group">
+                                <label>Aggregation</label>
+                                <select id="pivotAgg">
+                                    <option value="sum">Sum</option>
+                                    <option value="mean">Mean</option>
+                                    <option value="count">Count</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="createPivotTable()">GENERATE</button>
+                        <div class="table-container" id="pivotOutput"></div>
+                    </div>
+
+                    <!-- Filter Panel -->
+                    <div class="panel" id="panel-filter">
+                        <h2>// DATA FILTER</h2>
+                        <div class="form-row">
+                            <div class="form-group"><label>Column</label><select id="filterColumn"></select></div>
+                            <div class="form-group">
+                                <label>Operator</label>
+                                <select id="filterOperator">
+                                    <option value="==">Equals</option>
+                                    <option value="!=">Not Equals</option>
+                                    <option value=">">Greater</option>
+                                    <option value=">=">Greater/Equal</option>
+                                    <option value="<">Less</option>
+                                    <option value="<=">Less/Equal</option>
+                                    <option value="contains">Contains</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Value</label><input type="text" id="filterValue" placeholder="..."></div>
+                        </div>
+                        <button onclick="applyFilter()">APPLY</button>
+                        <button onclick="resetFilter()">RESET</button>
+                        <div id="filterStatus" class="output-box" style="display:none;"></div>
+                        <div class="table-container" id="filterOutput"></div>
+                    </div>
+
+                    <!-- Distribution Panel -->
+                    <div class="panel" id="panel-distribution">
+                        <h2>// VALUE DISTRIBUTION</h2>
+                        <div class="form-row">
+                            <div class="form-group"><label>Column</label><select id="distColumn"></select></div>
+                            <div class="form-group"><label>Bins</label><input type="number" id="distBins" value="10" min="2" max="50"></div>
+                            <div class="form-group"><button onclick="showDistribution()">ANALYZE</button></div>
+                        </div>
+                        <div id="distOutput"></div>
+                    </div>
+
+                    <!-- ANOMALY DETECTION PANEL -->
+                    <div class="panel" id="panel-anomaly">
+                        <h2>// ANOMALY DETECTION MODULE</h2>
+                        <div class="form-row">
+                            <div class="form-group"><label>Column</label><select id="anomalyColumn"></select></div>
+                            <div class="form-group">
+                                <label>Method</label>
+                                <select id="anomalyMethod">
+                                    <option value="iqr">IQR (Interquartile Range)</option>
+                                    <option value="zscore">Z-Score (Std Deviation)</option>
+                                    <option value="isolation">Rare Values (Frequency)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Sensitivity</label>
+                                <select id="anomalySensitivity">
+                                    <option value="low">Low (Strict)</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High (Sensitive)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="detectAnomalies()">SCAN COLUMN</button>
+                        <button onclick="detectAllAnomalies()">SCAN ALL COLUMNS</button>
+                        <button onclick="filterToAnomalies()" class="success">FILTER TO ANOMALIES</button>
+                        <button onclick="clearAnomalies()" class="danger">CLEAR</button>
+                        
+                        <div class="stats-grid" id="anomalyStats"></div>
+                        <div id="anomalyOutput"></div>
+                        
+                        <div class="chart-container" id="anomalyChartContainer" style="display:none;">
+                            <canvas id="anomalyChart"></canvas>
+                        </div>
+                        
+                        <div class="table-container" id="anomalyTable"></div>
+                    </div>
+
+                    <!-- DATASET COMPARISON PANEL -->
+                    <div class="panel" id="panel-compare">
+                        <h2>// DATASET COMPARISON MODULE</h2>
+                        <div class="comparison-grid">
+                            <div class="comparison-panel primary">
+                                <h4>Dataset A (Primary)</h4>
+                                <div id="compareDatasetA">Load data in DATA INPUT tab</div>
+                            </div>
+                            <div class="comparison-panel secondary">
+                                <h4>Dataset B (Comparison)</h4>
+                                <div class="upload-zone secondary" id="uploadZone2">
+                                    <div>Drop or click to load Dataset B</div>
+                                    <input type="file" id="fileInput2" accept=".csv,.tsv,.txt">
+                                </div>
+                                <div id="compareDatasetB"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Comparison Type</label>
+                                <select id="compareType" onchange="updateCompareOptions()">
+                                    <option value="schema">Schema (Columns & Types)</option>
+                                    <option value="statistics">Statistics (Numeric)</option>
+                                    <option value="values">Value Distributions</option>
+                                    <option value="rows">Row-by-Row (Key Match)</option>
+                                    <option value="diff">Detailed Diff View</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="compareKeyGroup" style="display:none;">
+                                <label>Key Column</label>
+                                <select id="compareKey"></select>
+                            </div>
+                            <div class="form-group">
+                                <button onclick="compareDatasets()">COMPARE</button>
+                                <button onclick="clearDatasetB()" class="danger">CLEAR B</button>
+                                <button onclick="exportComparison()" class="success">EXPORT</button>
+                            </div>
+                        </div>
+                        
+                        <div class="stats-grid" id="compareStats"></div>
+                        <div id="compareOutput"></div>
+                        
+                        <div class="chart-container" id="compareChartContainer" style="display:none;">
+                            <canvas id="compareChart"></canvas>
+                        </div>
+                        
+                        <div class="table-container" id="compareTable"></div>
+                    </div>
+
+                    <!-- Visualize Panel -->
+                    <div class="panel" id="panel-visualize">
+                        <h2>// DATA VISUALIZATION</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Chart</label>
+                                <select id="chartType">
+                                    <option value="bar">Bar</option>
+                                    <option value="line">Line</option>
+                                    <option value="pie">Pie</option>
+                                    <option value="doughnut">Doughnut</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>X-Axis</label><select id="chartX"></select></div>
+                            <div class="form-group"><label>Y-Axis</label><select id="chartY"></select></div>
+                            <div class="form-group">
+                                <label>Agg</label>
+                                <select id="chartAgg">
+                                    <option value="sum">Sum</option>
+                                    <option value="mean">Mean</option>
+                                    <option value="count">Count</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="createChart()">GENERATE</button>
+                        <div class="chart-container"><canvas id="mainChart"></canvas></div>
+                    </div>
+
+                    <!-- Export Panel -->
+                    <div class="panel" id="panel-export">
+                        <h2>// EXPORT DATA</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card"><button onclick="exportCSV()" style="width:100%">EXPORT CSV</button><div class="stat-label">Current data</div></div>
+                            <div class="stat-card"><button onclick="generateReport()" style="width:100%">REPORT</button><div class="stat-label">Text summary</div></div>
+                            <div class="stat-card"><button onclick="exportJSON()" style="width:100%">EXPORT JSON</button><div class="stat-label">JSON format</div></div>
+                            <div class="stat-card"><button onclick="exportAnomalies()" style="width:100%">ANOMALIES</button><div class="stat-label">Flagged rows</div></div>
+                        </div>
+                        <div id="reportOutput" class="output-box" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // GLOBAL STATE
+        // =========================================================================
+        let originalData = [], currentData = [], columns = [], columnTypes = {}, mainChart = null;
+        let datasetB = [], columnsB = [], columnTypesB = {};
+        let detectedAnomalies = [], anomalyChart = null, compareChart = null;
+        let comparisonResults = null;
+
+        // =========================================================================
+        // NAVIGATION
+        // =========================================================================
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                document.getElementById('panel-' + btn.dataset.panel).classList.add('active');
+            });
+        });
+
+        // =========================================================================
+        // FILE UPLOAD - PRIMARY
+        // =========================================================================
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+        uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0], 'primary'); });
+        fileInput.addEventListener('change', e => { if(e.target.files.length) handleFile(e.target.files[0], 'primary'); });
+
+        // FILE UPLOAD - SECONDARY
+        const uploadZone2 = document.getElementById('uploadZone2');
+        const fileInput2 = document.getElementById('fileInput2');
+        uploadZone2.addEventListener('click', () => fileInput2.click());
+        uploadZone2.addEventListener('dragover', e => { e.preventDefault(); uploadZone2.classList.add('dragover'); });
+        uploadZone2.addEventListener('dragleave', () => uploadZone2.classList.remove('dragover'));
+        uploadZone2.addEventListener('drop', e => { e.preventDefault(); uploadZone2.classList.remove('dragover'); if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0], 'secondary'); });
+        fileInput2.addEventListener('change', e => { if(e.target.files.length) handleFile(e.target.files[0], 'secondary'); });
+
+        function handleFile(file, target) {
+            const delimiter = document.getElementById('delimiter').value;
+            const hasHeader = document.getElementById('hasHeader').value === 'true';
+
+            Papa.parse(file, {
+                delimiter: delimiter,
+                header: hasHeader,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (target === 'primary') {
+                        originalData = results.data;
+                        currentData = [...originalData];
+                        columns = hasHeader ? results.meta.fields : Object.keys(results.data[0] || {});
+                        detectColumnTypes(currentData, columns, 'primary');
+                        updateStatus(true, 'Loaded: ' + file.name);
+                        document.getElementById('dataInfo').textContent = currentData.length.toLocaleString() + ' rows × ' + columns.length + ' cols';
+                        document.getElementById('uploadResult').style.display = 'block';
+                        document.getElementById('uploadResult').className = 'output-box success';
+                        document.getElementById('uploadResult').textContent = '✓ Loaded "' + file.name + '"\n  Rows: ' + currentData.length + '\n  Columns: ' + columns.join(', ');
+                        populateSelects();
+                        clearAnomalies();
+                    } else {
+                        datasetB = results.data;
+                        columnsB = hasHeader ? results.meta.fields : Object.keys(results.data[0] || {});
+                        detectColumnTypes(datasetB, columnsB, 'secondary');
+                        document.getElementById('secondaryStatus').style.display = 'flex';
+                        document.getElementById('compareDatasetB').innerHTML = '<div class="output-box success">✓ ' + file.name + '<br>' + datasetB.length + ' rows × ' + columnsB.length + ' cols</div>';
+                        updateCompareKeyOptions();
+                    }
+                    updateCompareInfo();
+                }
+            });
+        }
+
+        function detectColumnTypes(data, cols, target) {
+            const types = {};
+            cols.forEach(col => {
+                let isNumeric = true;
+                for (let i = 0; i < Math.min(100, data.length); i++) {
+                    const val = data[i][col];
+                    if (val !== null && val !== undefined && val !== '' && isNaN(parseFloat(val))) {
+                        isNumeric = false;
+                        break;
+                    }
+                }
+                types[col] = isNumeric ? 'numeric' : 'categorical';
+            });
+            if (target === 'primary') columnTypes = types;
+            else columnTypesB = types;
+        }
+
+        function updateStatus(active, text) {
+            document.getElementById('statusDot').className = active ? 'status-dot active' : 'status-dot';
+            document.getElementById('statusText').textContent = text;
+        }
+
+        function populateSelects() {
+            const selects = ['uniqueColumn','groupByColumns','aggColumn','pivotRows','pivotCols','pivotValues','filterColumn','distColumn','chartX','chartY','anomalyColumn'];
+            selects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) select.innerHTML = columns.map(c => '<option value="'+c+'">'+c+'</option>').join('');
+            });
+            updateCompareKeyOptions();
+        }
+
+        function updateCompareKeyOptions() {
+            const common = columns.filter(c => columnsB.includes(c));
+            document.getElementById('compareKey').innerHTML = common.map(c => '<option value="'+c+'">'+c+'</option>').join('');
+        }
+
+        function updateCompareInfo() {
+            if (currentData.length) document.getElementById('compareDatasetA').innerHTML = '<div class="output-box">' + currentData.length + ' rows × ' + columns.length + ' cols</div>';
+        }
+
+        function updateCompareOptions() {
+            const type = document.getElementById('compareType').value;
+            document.getElementById('compareKeyGroup').style.display = (type === 'rows' || type === 'diff') ? 'block' : 'none';
+        }
+
+        // =========================================================================
+        // TABLE HELPER
+        // =========================================================================
+        function createTable(data, cols, options = {}) {
+            if (!data.length) return '<div class="output-box">No data</div>';
+            let html = '<table><thead><tr>';
+            if (options.showIndex) html += '<th>#</th>';
+            cols.forEach(col => html += '<th>' + escapeHtml(col) + '</th>');
+            html += '</tr></thead><tbody>';
+            data.forEach((row, idx) => {
+                const rowClass = row._anomaly ? ' class="anomaly"' : (row._diff ? ' class="diff"' : (row._added ? ' class="added"' : (row._removed ? ' class="removed"' : '')));
+                html += '<tr' + rowClass + '>';
+                if (options.showIndex) html += '<td>' + (idx + 1) + '</td>';
+                cols.forEach(col => {
+                    const val = row[col];
+                    const cellClass = row._changedCols && row._changedCols.includes(col) ? ' class="changed"' : '';
+                    html += '<td' + cellClass + '>' + (val !== null && val !== undefined ? escapeHtml(String(val)) : '') + '</td>';
+                });
+                html += '</tr>';
+            });
+            return html + '</tbody></table>';
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // =========================================================================
+        // PREVIEW
+        // =========================================================================
+        function showPreview() {
+            if (!currentData.length) return alert('No data');
+            const n = parseInt(document.getElementById('previewRows').value) || 10;
+            const pos = document.getElementById('previewPosition').value;
+            const data = pos === 'head' ? currentData.slice(0, n) : currentData.slice(-n);
+            document.getElementById('previewTable').innerHTML = createTable(data, columns, {showIndex: true});
+        }
+
+        // =========================================================================
+        // DATA INFO
+        // =========================================================================
+        document.querySelector('[data-panel="info"]').addEventListener('click', showDataInfo);
+        function showDataInfo() {
+            if (!currentData.length) return;
+            document.getElementById('infoStats').innerHTML = `
+                <div class="stat-card"><div class="stat-value">${currentData.length.toLocaleString()}</div><div class="stat-label">Rows</div></div>
+                <div class="stat-card"><div class="stat-value">${columns.length}</div><div class="stat-label">Columns</div></div>
+                <div class="stat-card"><div class="stat-value">${Object.values(columnTypes).filter(t=>t==='numeric').length}</div><div class="stat-label">Numeric</div></div>
+                <div class="stat-card"><div class="stat-value">${Object.values(columnTypes).filter(t=>t==='categorical').length}</div><div class="stat-label">Categorical</div></div>
+            `;
+            const tableData = columns.map(col => {
+                const vals = currentData.map(r => r[col]);
+                const nonNull = vals.filter(v => v !== null && v !== undefined && v !== '').length;
+                return {Column: col, Type: columnTypes[col], 'Non-Null': nonNull, 'Null': currentData.length - nonNull, Unique: new Set(vals).size};
+            });
+            document.getElementById('infoTable').innerHTML = createTable(tableData, ['Column','Type','Non-Null','Null','Unique']);
+        }
+
+        // =========================================================================
+        // STATISTICS
+        // =========================================================================
+        document.querySelector('[data-panel="statistics"]').addEventListener('click', () => showStats('numeric'));
+        function showStats(type) {
+            document.querySelectorAll('#panel-statistics .tab-btn').forEach(btn => btn.classList.toggle('active', btn.textContent.toLowerCase().includes(type)));
+            if (!currentData.length) { document.getElementById('statsOutput').innerHTML = '<div class="output-box">No data</div>'; return; }
+            if (type === 'numeric') {
+                const numCols = columns.filter(c => columnTypes[c] === 'numeric');
+                if (!numCols.length) { document.getElementById('statsOutput').innerHTML = '<div class="output-box">No numeric columns</div>'; return; }
+                const stats = numCols.map(col => {
+                    const vals = currentData.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+                    const sorted = [...vals].sort((a,b) => a-b);
+                    const mean = vals.reduce((a,b) => a+b, 0) / vals.length;
+                    const std = Math.sqrt(vals.map(v => Math.pow(v-mean,2)).reduce((a,b) => a+b, 0) / vals.length);
+                    return {Column: col, Count: vals.length, Mean: mean.toFixed(2), Std: std.toFixed(2), Min: Math.min(...vals).toFixed(2), Max: Math.max(...vals).toFixed(2)};
+                });
+                document.getElementById('statsOutput').innerHTML = createTable(stats, ['Column','Count','Mean','Std','Min','Max']);
+            } else {
+                const catCols = columns.filter(c => columnTypes[c] === 'categorical');
+                if (!catCols.length) { document.getElementById('statsOutput').innerHTML = '<div class="output-box">No categorical columns</div>'; return; }
+                let html = '';
+                catCols.forEach(col => {
+                    const counts = {};
+                    currentData.forEach(r => { const v = r[col] || '(empty)'; counts[v] = (counts[v]||0) + 1; });
+                    const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+                    html += '<div class="output-box" style="margin-bottom:0.5rem;"><strong>' + col + '</strong> (' + sorted.length + ' unique)\n';
+                    sorted.slice(0,5).forEach(([v,c]) => html += '  ' + v + ': ' + c + ' (' + (c/currentData.length*100).toFixed(1) + '%)\n');
+                    html += '</div>';
+                });
+                document.getElementById('statsOutput').innerHTML = html;
+            }
+        }
+
+        // =========================================================================
+        // MISSING VALUES
+        // =========================================================================
+        document.querySelector('[data-panel="missing"]').addEventListener('click', showMissingValues);
+        function showMissingValues() {
+            if (!currentData.length) return;
+            const missing = columns.map(col => {
+                const m = currentData.filter(r => r[col] === null || r[col] === undefined || r[col] === '').length;
+                return m > 0 ? {Column: col, Missing: m, Percent: (m/currentData.length*100).toFixed(1)+'%'} : null;
+            }).filter(x => x);
+            if (!missing.length) document.getElementById('missingOutput').innerHTML = '<div class="output-box success">✓ No missing values!</div>';
+            else document.getElementById('missingOutput').innerHTML = createTable(missing, ['Column','Missing','Percent']);
+        }
+
+        // =========================================================================
+        // UNIQUE VALUES
+        // =========================================================================
+        function showUniqueValues() {
+            if (!currentData.length) return;
+            const col = document.getElementById('uniqueColumn').value;
+            const counts = {};
+            currentData.forEach(r => { const v = r[col] !== undefined && r[col] !== '' ? r[col] : '(empty)'; counts[v] = (counts[v]||0) + 1; });
+            const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+            const max = sorted[0][1];
+            let html = '<div class="output-box">' + col + ': ' + sorted.length + ' unique values</div><div style="margin-top:1rem;">';
+            sorted.forEach(([v,c]) => {
+                html += '<div class="dist-bar-container"><div class="dist-bar-label"><span>' + escapeHtml(String(v)) + '</span><span>' + c + ' (' + (c/currentData.length*100).toFixed(1) + '%)</span></div><div class="dist-bar"><div class="dist-bar-fill" style="width:' + (c/max*100) + '%"></div></div></div>';
+            });
+            document.getElementById('uniqueOutput').innerHTML = html + '</div>';
+        }
+
+        // =========================================================================
+        // GROUP BY
+        // =========================================================================
+        function performGroupBy() {
+            if (!currentData.length) return;
+            const groupCols = Array.from(document.getElementById('groupByColumns').selectedOptions).map(o => o.value);
+            if (!groupCols.length) return alert('Select group columns');
+            const aggCol = document.getElementById('aggColumn').value;
+            const aggFunc = document.getElementById('aggFunction').value;
+            const groups = {};
+            currentData.forEach(r => {
+                const key = groupCols.map(c => r[c]).join('|||');
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(parseFloat(r[aggCol]) || 0);
+            });
+            const result = Object.entries(groups).map(([key, vals]) => {
+                const row = {};
+                groupCols.forEach((c,i) => row[c] = key.split('|||')[i]);
+                let agg;
+                switch(aggFunc) {
+                    case 'sum': agg = vals.reduce((a,b) => a+b, 0); break;
+                    case 'mean': agg = vals.reduce((a,b) => a+b, 0) / vals.length; break;
+                    case 'count': agg = vals.length; break;
+                    case 'min': agg = Math.min(...vals); break;
+                    case 'max': agg = Math.max(...vals); break;
+                }
+                row[aggFunc + '_' + aggCol] = agg.toFixed(2);
+                return row;
+            }).sort((a,b) => parseFloat(b[aggFunc+'_'+aggCol]) - parseFloat(a[aggFunc+'_'+aggCol]));
+            document.getElementById('groupByOutput').innerHTML = createTable(result, [...groupCols, aggFunc+'_'+aggCol]);
+        }
+
+        // =========================================================================
+        // PIVOT TABLE
+        // =========================================================================
+        function createPivotTable() {
+            if (!currentData.length) return;
+            const rowCol = document.getElementById('pivotRows').value;
+            const colCol = document.getElementById('pivotCols').value;
+            const valCol = document.getElementById('pivotValues').value;
+            const aggFunc = document.getElementById('pivotAgg').value;
+            const rowVals = [...new Set(currentData.map(r => r[rowCol]))].sort();
+            const colVals = [...new Set(currentData.map(r => r[colCol]))].sort();
+            const pivot = {};
+            rowVals.forEach(rv => { pivot[rv] = {}; colVals.forEach(cv => pivot[rv][cv] = []); });
+            currentData.forEach(r => pivot[r[rowCol]][r[colCol]].push(parseFloat(r[valCol]) || 0));
+            const result = [], totals = {}; colVals.forEach(cv => totals[cv] = 0); totals['TOTAL'] = 0;
+            rowVals.forEach(rv => {
+                const row = {[rowCol]: rv}; let rt = 0;
+                colVals.forEach(cv => {
+                    const vals = pivot[rv][cv];
+                    let agg = 0;
+                    if (vals.length) {
+                        switch(aggFunc) { case 'sum': agg = vals.reduce((a,b)=>a+b,0); break; case 'mean': agg = vals.reduce((a,b)=>a+b,0)/vals.length; break; case 'count': agg = vals.length; break; }
+                    }
+                    row[cv] = agg.toFixed(2); rt += agg; totals[cv] += agg;
+                });
+                row['TOTAL'] = rt.toFixed(2); totals['TOTAL'] += rt; result.push(row);
+            });
+            const totalRow = {[rowCol]: 'TOTAL'}; colVals.forEach(cv => totalRow[cv] = totals[cv].toFixed(2)); totalRow['TOTAL'] = totals['TOTAL'].toFixed(2); result.push(totalRow);
+            document.getElementById('pivotOutput').innerHTML = createTable(result, [rowCol, ...colVals, 'TOTAL']);
+        }
+
+        // =========================================================================
+        // FILTER
+        // =========================================================================
+        function applyFilter() {
+            if (!originalData.length) return;
+            const col = document.getElementById('filterColumn').value;
+            const op = document.getElementById('filterOperator').value;
+            const val = document.getElementById('filterValue').value;
+            currentData = originalData.filter(r => {
+                const cv = r[col];
+                if (columnTypes[col] === 'numeric') {
+                    const n = parseFloat(cv), v = parseFloat(val);
+                    switch(op) { case '==': return n===v; case '!=': return n!==v; case '>': return n>v; case '>=': return n>=v; case '<': return n<v; case '<=': return n<=v; case 'contains': return String(cv).toLowerCase().includes(val.toLowerCase()); }
+                } else {
+                    const s = String(cv||'').toLowerCase(), v = val.toLowerCase();
+                    switch(op) { case '==': return s===v; case '!=': return s!==v; case 'contains': return s.includes(v); default: return s.includes(v); }
+                }
+            });
+            document.getElementById('filterStatus').style.display = 'block';
+            document.getElementById('filterStatus').className = 'output-box success';
+            document.getElementById('filterStatus').textContent = '✓ Filter: ' + currentData.length + ' rows (from ' + originalData.length + ')';
+            document.getElementById('dataInfo').textContent = currentData.length.toLocaleString() + ' rows × ' + columns.length + ' cols (filtered)';
+            document.getElementById('filterOutput').innerHTML = createTable(currentData.slice(0,30), columns);
+        }
+
+        function resetFilter() {
+            currentData = [...originalData];
+            document.getElementById('filterStatus').style.display = 'none';
+            document.getElementById('filterOutput').innerHTML = '';
+            document.getElementById('dataInfo').textContent = currentData.length.toLocaleString() + ' rows × ' + columns.length + ' cols';
+        }
+
+        // =========================================================================
+        // DISTRIBUTION
+        // =========================================================================
+        function showDistribution() {
+            if (!currentData.length) return;
+            const col = document.getElementById('distColumn').value;
+            const bins = parseInt(document.getElementById('distBins').value) || 10;
+            if (columnTypes[col] === 'numeric') {
+                const vals = currentData.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+                const min = Math.min(...vals), max = Math.max(...vals), range = max - min, bw = range / bins;
+                const hist = new Array(bins).fill(0);
+                vals.forEach(v => { let bi = Math.floor((v-min)/bw); if(bi>=bins) bi=bins-1; hist[bi]++; });
+                const maxH = Math.max(...hist);
+                let html = '<div class="output-box">Min: '+min.toFixed(2)+' | Max: '+max.toFixed(2)+' | Mean: '+(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2)+'</div><div style="margin-top:1rem;">';
+                hist.forEach((c,i) => {
+                    html += '<div class="dist-bar-container"><div class="dist-bar-label"><span>'+(min+i*bw).toFixed(1)+' - '+(min+(i+1)*bw).toFixed(1)+'</span><span>'+c+'</span></div><div class="dist-bar"><div class="dist-bar-fill" style="width:'+(c/maxH*100)+'%"></div></div></div>';
+                });
+                document.getElementById('distOutput').innerHTML = html + '</div>';
+            } else {
+                document.getElementById('uniqueColumn').value = col;
+                showUniqueValues();
+                document.getElementById('distOutput').innerHTML = document.getElementById('uniqueOutput').innerHTML;
+            }
+        }
+
+        // =========================================================================
+        // ANOMALY DETECTION
+        // =========================================================================
+        function detectAnomalies() {
+            if (!currentData.length) return alert('No data');
+            const col = document.getElementById('anomalyColumn').value;
+            const res = findAnomalies(col);
+            displayAnomalies([{column: col, ...res}]);
+        }
+
+        function detectAllAnomalies() {
+            if (!currentData.length) return alert('No data');
+            const results = columns.map(col => ({column: col, ...findAnomalies(col)})).filter(r => r.indices.length > 0);
+            displayAnomalies(results);
+        }
+
+        function findAnomalies(col) {
+            const method = document.getElementById('anomalyMethod').value;
+            const sens = document.getElementById('anomalySensitivity').value;
+            const thresh = {low: {iqr: 2.5, z: 3.5, rare: 0.5}, medium: {iqr: 1.5, z: 2.5, rare: 1}, high: {iqr: 1.0, z: 2.0, rare: 2}}[sens];
+            const indices = [], details = [];
+
+            if (columnTypes[col] === 'numeric' && method !== 'isolation') {
+                const vals = currentData.map((r,i) => ({v: parseFloat(r[col]), i})).filter(x => !isNaN(x.v));
+                if (method === 'iqr') {
+                    const sorted = vals.map(x => x.v).sort((a,b) => a-b);
+                    const q1 = sorted[Math.floor(sorted.length * 0.25)];
+                    const q3 = sorted[Math.floor(sorted.length * 0.75)];
+                    const iqr = q3 - q1;
+                    const lo = q1 - thresh.iqr * iqr, hi = q3 + thresh.iqr * iqr;
+                    vals.forEach(x => {
+                        if (x.v < lo || x.v > hi) {
+                            indices.push(x.i);
+                            details.push({i: x.i, v: x.v, r: x.v < lo ? 'Below ' + lo.toFixed(2) : 'Above ' + hi.toFixed(2), bounds: {lo, hi}});
+                        }
+                    });
+                } else {
+                    const mean = vals.reduce((a,b) => a + b.v, 0) / vals.length;
+                    const std = Math.sqrt(vals.map(x => Math.pow(x.v - mean, 2)).reduce((a,b) => a+b, 0) / vals.length);
+                    vals.forEach(x => {
+                        const z = Math.abs((x.v - mean) / std);
+                        if (z > thresh.z) {
+                            indices.push(x.i);
+                            details.push({i: x.i, v: x.v, r: 'Z-score: ' + z.toFixed(2), z});
+                        }
+                    });
+                }
+            } else {
+                const counts = {};
+                currentData.forEach((r,i) => { const v = r[col]; if (!counts[v]) counts[v] = []; counts[v].push(i); });
+                Object.entries(counts).forEach(([v, idxs]) => {
+                    const pct = idxs.length / currentData.length * 100;
+                    if (pct < thresh.rare) {
+                        idxs.forEach(i => {
+                            indices.push(i);
+                            details.push({i, v, r: 'Rare (' + pct.toFixed(2) + '%)'});
+                        });
+                    }
+                });
+            }
+            return {indices, details};
+        }
+
+        function displayAnomalies(results) {
+            detectedAnomalies = [];
+            results.forEach(r => r.details.forEach(d => detectedAnomalies.push({...d, column: r.column})));
+            const uniqueRows = new Set(detectedAnomalies.map(a => a.i));
+            const total = uniqueRows.size;
+
+            document.getElementById('anomalyStats').innerHTML = `
+                <div class="stat-card ${total ? 'anomaly' : 'match'}"><div class="stat-value ${total ? 'danger' : 'success'}">${total}</div><div class="stat-label">Anomalous Rows</div></div>
+                <div class="stat-card"><div class="stat-value">${results.length}</div><div class="stat-label">Affected Columns</div></div>
+                <div class="stat-card"><div class="stat-value">${(total/currentData.length*100).toFixed(1)}%</div><div class="stat-label">Anomaly Rate</div></div>
+                <div class="stat-card"><div class="stat-value">${currentData.length - total}</div><div class="stat-label">Normal Rows</div></div>
+            `;
+
+            let html = '<div class="output-box">';
+            if (!results.length) {
+                html += '✓ No anomalies detected with current settings.\nTry increasing sensitivity or changing method.';
+            } else {
+                html += 'ANOMALIES DETECTED BY COLUMN:\n\n';
+                results.forEach(r => html += '▸ ' + r.column + ': ' + r.indices.length + ' anomalies found\n');
+            }
+            document.getElementById('anomalyOutput').innerHTML = html + '</div>';
+
+            // Show anomaly chart for numeric columns
+            if (results.length === 1 && columnTypes[results[0].column] === 'numeric') {
+                showAnomalyChart(results[0].column, results[0]);
+            } else {
+                document.getElementById('anomalyChartContainer').style.display = 'none';
+            }
+
+            // Show anomalous rows
+            if (detectedAnomalies.length) {
+                const rows = [...uniqueRows].slice(0, 100).map(i => {
+                    const reasons = detectedAnomalies.filter(a => a.i === i).map(a => a.column + ': ' + a.r).join('; ');
+                    return {...currentData[i], _Reason: reasons, _anomaly: true};
+                });
+                document.getElementById('anomalyTable').innerHTML = '<div style="color:#ff6600;margin-bottom:0.5rem;">Showing up to 100 anomalous rows:</div>' + createTable(rows, [...columns, '_Reason']);
+            } else {
+                document.getElementById('anomalyTable').innerHTML = '';
+            }
+        }
+
+        function showAnomalyChart(col, result) {
+            const container = document.getElementById('anomalyChartContainer');
+            container.style.display = 'block';
+            
+            const vals = currentData.map((r,i) => ({v: parseFloat(r[col]), i, anomaly: result.indices.includes(i)})).filter(x => !isNaN(x.v));
+            const normal = vals.filter(x => !x.anomaly).map(x => x.v);
+            const anomalous = vals.filter(x => x.anomaly).map(x => x.v);
+            
+            // Create histogram
+            const allVals = vals.map(x => x.v);
+            const min = Math.min(...allVals), max = Math.max(...allVals);
+            const bins = 20, bw = (max - min) / bins;
+            const normalHist = new Array(bins).fill(0);
+            const anomalyHist = new Array(bins).fill(0);
+            
+            vals.forEach(x => {
+                let bi = Math.floor((x.v - min) / bw);
+                if (bi >= bins) bi = bins - 1;
+                if (x.anomaly) anomalyHist[bi]++;
+                else normalHist[bi]++;
+            });
+            
+            const labels = [];
+            for (let i = 0; i < bins; i++) labels.push((min + i*bw).toFixed(1));
+            
+            if (anomalyChart) anomalyChart.destroy();
+            anomalyChart = new Chart(document.getElementById('anomalyChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        {label: 'Normal', data: normalHist, backgroundColor: 'rgba(255,165,0,0.6)', borderColor: '#FFA500', borderWidth: 1},
+                        {label: 'Anomaly', data: anomalyHist, backgroundColor: 'rgba(255,68,68,0.8)', borderColor: '#ff4444', borderWidth: 1}
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {legend: {labels: {color: '#FFA500'}}, title: {display: true, text: 'Distribution: ' + col, color: '#FFB732'}},
+                    scales: {x: {stacked: true, ticks: {color: '#FFA500'}, grid: {color: '#331a00'}}, y: {stacked: true, ticks: {color: '#FFA500'}, grid: {color: '#331a00'}}}
+                }
+            });
+        }
+
+        function filterToAnomalies() {
+            if (!detectedAnomalies.length) return alert('Run anomaly detection first');
+            const indices = new Set(detectedAnomalies.map(a => a.i));
+            currentData = originalData.filter((r, i) => indices.has(i));
+            document.getElementById('dataInfo').textContent = currentData.length.toLocaleString() + ' rows × ' + columns.length + ' cols (anomalies only)';
+            alert('Filtered to ' + currentData.length + ' anomalous rows. Use FILTER > RESET to restore all data.');
+        }
+
+        function clearAnomalies() {
+            detectedAnomalies = [];
+            document.getElementById('anomalyStats').innerHTML = '';
+            document.getElementById('anomalyOutput').innerHTML = '';
+            document.getElementById('anomalyTable').innerHTML = '';
+            document.getElementById('anomalyChartContainer').style.display = 'none';
+            if (anomalyChart) { anomalyChart.destroy(); anomalyChart = null; }
+        }
+
+        // =========================================================================
+        // DATASET COMPARISON
+        // =========================================================================
+        function clearDatasetB() {
+            datasetB = []; columnsB = []; columnTypesB = {};
+            document.getElementById('secondaryStatus').style.display = 'none';
+            document.getElementById('compareDatasetB').innerHTML = '';
+            document.getElementById('compareStats').innerHTML = '';
+            document.getElementById('compareOutput').innerHTML = '';
+            document.getElementById('compareTable').innerHTML = '';
+            document.getElementById('compareChartContainer').style.display = 'none';
+            comparisonResults = null;
+        }
+
+        function compareDatasets() {
+            if (!currentData.length) return alert('Load Dataset A first');
+            if (!datasetB.length) return alert('Load Dataset B first');
+            const type = document.getElementById('compareType').value;
+            switch(type) {
+                case 'schema': compareSchema(); break;
+                case 'statistics': compareStatistics(); break;
+                case 'values': compareValues(); break;
+                case 'rows': compareRows(); break;
+                case 'diff': compareDetailedDiff(); break;
+            }
+        }
+
+        function compareSchema() {
+            const onlyA = columns.filter(c => !columnsB.includes(c));
+            const onlyB = columnsB.filter(c => !columns.includes(c));
+            const common = columns.filter(c => columnsB.includes(c));
+            const typeMismatch = common.filter(c => columnTypes[c] !== columnTypesB[c]);
+
+            comparisonResults = {type: 'schema', onlyA, onlyB, common, typeMismatch};
+
+            document.getElementById('compareStats').innerHTML = `
+                <div class="stat-card match"><div class="stat-value success">${common.length}</div><div class="stat-label">Common Columns</div></div>
+                <div class="stat-card ${onlyA.length?'diff':''}"><div class="stat-value ${onlyA.length?'warning':''}">${onlyA.length}</div><div class="stat-label">Only in A</div></div>
+                <div class="stat-card ${onlyB.length?'diff':''}"><div class="stat-value ${onlyB.length?'warning':''}">${onlyB.length}</div><div class="stat-label">Only in B</div></div>
+                <div class="stat-card ${typeMismatch.length?'diff':'match'}"><div class="stat-value ${typeMismatch.length?'danger':'success'}">${typeMismatch.length}</div><div class="stat-label">Type Mismatch</div></div>
+            `;
+
+            let html = '<div class="output-box">SCHEMA COMPARISON RESULTS\n\n';
+            html += '═══ Common Columns (' + common.length + ') ═══\n';
+            common.forEach(c => {
+                const match = columnTypes[c] === columnTypesB[c];
+                html += '  ' + c + ': A=' + columnTypes[c] + ', B=' + columnTypesB[c] + (match ? ' ✓' : ' ⚠ MISMATCH') + '\n';
+            });
+            if (onlyA.length) html += '\n═══ Only in Dataset A ═══\n  ' + onlyA.join(', ') + '\n';
+            if (onlyB.length) html += '\n═══ Only in Dataset B ═══\n  ' + onlyB.join(', ') + '\n';
+            document.getElementById('compareOutput').innerHTML = html + '</div>';
+            document.getElementById('compareTable').innerHTML = '';
+            document.getElementById('compareChartContainer').style.display = 'none';
+        }
+
+        function compareStatistics() {
+            const common = columns.filter(c => columnsB.includes(c) && columnTypes[c] === 'numeric' && columnTypesB[c] === 'numeric');
+            if (!common.length) {
+                document.getElementById('compareOutput').innerHTML = '<div class="output-box warning">No common numeric columns to compare</div>';
+                return;
+            }
+
+            const stats = common.map(col => {
+                const vA = currentData.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+                const vB = datasetB.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+                const meanA = vA.reduce((a,b) => a+b, 0) / vA.length;
+                const meanB = vB.reduce((a,b) => a+b, 0) / vB.length;
+                const diffPct = ((meanB - meanA) / meanA * 100);
+                return {
+                    Column: col,
+                    'Mean A': meanA.toFixed(2),
+                    'Mean B': meanB.toFixed(2),
+                    'Diff %': (diffPct >= 0 ? '+' : '') + diffPct.toFixed(1) + '%',
+                    'Min A': Math.min(...vA).toFixed(2),
+                    'Min B': Math.min(...vB).toFixed(2),
+                    'Max A': Math.max(...vA).toFixed(2),
+                    'Max B': Math.max(...vB).toFixed(2),
+                    _diff: Math.abs(diffPct) > 10
+                };
+            });
+
+            comparisonResults = {type: 'statistics', stats};
+
+            document.getElementById('compareStats').innerHTML = `
+                <div class="stat-card"><div class="stat-value">${currentData.length}</div><div class="stat-label">A Rows</div></div>
+                <div class="stat-card"><div class="stat-value">${datasetB.length}</div><div class="stat-label">B Rows</div></div>
+                <div class="stat-card"><div class="stat-value">${common.length}</div><div class="stat-label">Columns Compared</div></div>
+            `;
+            document.getElementById('compareOutput').innerHTML = '';
+            document.getElementById('compareTable').innerHTML = createTable(stats, ['Column','Mean A','Mean B','Diff %','Min A','Min B','Max A','Max B']);
+
+            // Show comparison chart
+            showCompareChart(stats);
+        }
+
+        function showCompareChart(stats) {
+            document.getElementById('compareChartContainer').style.display = 'block';
+            if (compareChart) compareChart.destroy();
+            
+            const labels = stats.map(s => s.Column);
+            const dataA = stats.map(s => parseFloat(s['Mean A']));
+            const dataB = stats.map(s => parseFloat(s['Mean B']));
+
+            compareChart = new Chart(document.getElementById('compareChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        {label: 'Dataset A', data: dataA, backgroundColor: 'rgba(255,165,0,0.7)', borderColor: '#FFA500', borderWidth: 1},
+                        {label: 'Dataset B', data: dataB, backgroundColor: 'rgba(255,102,0,0.7)', borderColor: '#ff6600', borderWidth: 1}
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {legend: {labels: {color: '#FFA500'}}, title: {display: true, text: 'Mean Values Comparison', color: '#FFB732'}},
+                    scales: {x: {ticks: {color: '#FFA500'}, grid: {color: '#331a00'}}, y: {ticks: {color: '#FFA500'}, grid: {color: '#331a00'}}}
+                }
+            });
+        }
+
+        function compareValues() {
+            const common = columns.filter(c => columnsB.includes(c) && columnTypes[c] === 'categorical');
+            if (!common.length) {
+                document.getElementById('compareOutput').innerHTML = '<div class="output-box warning">No common categorical columns</div>';
+                return;
+            }
+
+            let html = '<div class="output-box">VALUE DISTRIBUTION COMPARISON\n\n';
+            common.forEach(col => {
+                const cA = {}, cB = {};
+                currentData.forEach(r => cA[r[col]] = (cA[r[col]]||0) + 1);
+                datasetB.forEach(r => cB[r[col]] = (cB[r[col]]||0) + 1);
+                const allVals = [...new Set([...Object.keys(cA), ...Object.keys(cB)])];
+                const onlyA = allVals.filter(v => cA[v] && !cB[v]);
+                const onlyB = allVals.filter(v => cB[v] && !cA[v]);
+
+                html += '═══ ' + col + ' (' + allVals.length + ' unique) ═══\n';
+                allVals.slice(0, 10).forEach(v => {
+                    const a = cA[v] || 0, b = cB[v] || 0;
+                    const marker = !cA[v] ? ' [NEW in B]' : (!cB[v] ? ' [REMOVED]' : (a !== b ? ' *' : ''));
+                    html += '  ' + v + ': A=' + a + ', B=' + b + marker + '\n';
+                });
+                if (allVals.length > 10) html += '  ...and ' + (allVals.length - 10) + ' more values\n';
+                html += '\n';
+            });
+
+            document.getElementById('compareOutput').innerHTML = html + '</div>';
+            document.getElementById('compareStats').innerHTML = '';
+            document.getElementById('compareTable').innerHTML = '';
+            document.getElementById('compareChartContainer').style.display = 'none';
+        }
+
+        function compareRows() {
+            const key = document.getElementById('compareKey').value;
+            if (!key) return alert('Select a key column');
+
+            const mapA = new Map(currentData.map(r => [String(r[key]), r]));
+            const mapB = new Map(datasetB.map(r => [String(r[key]), r]));
+            const onlyA = [...mapA.keys()].filter(k => !mapB.has(k));
+            const onlyB = [...mapB.keys()].filter(k => !mapA.has(k));
+            const both = [...mapA.keys()].filter(k => mapB.has(k));
+            const common = columns.filter(c => columnsB.includes(c) && c !== key);
+            const changed = both.filter(k => common.some(c => String(mapA.get(k)[c]) !== String(mapB.get(k)[c])));
+
+            comparisonResults = {type: 'rows', key, onlyA, onlyB, both, changed, mapA, mapB, common};
+
+            document.getElementById('compareStats').innerHTML = `
+                <div class="stat-card ${onlyA.length?'diff':'match'}"><div class="stat-value ${onlyA.length?'warning':'success'}">${onlyA.length}</div><div class="stat-label">Only in A</div></div>
+                <div class="stat-card ${onlyB.length?'diff':'match'}"><div class="stat-value ${onlyB.length?'warning':'success'}">${onlyB.length}</div><div class="stat-label">Only in B</div></div>
+                <div class="stat-card match"><div class="stat-value">${both.length}</div><div class="stat-label">In Both</div></div>
+                <div class="stat-card ${changed.length?'diff':'match'}"><div class="stat-value ${changed.length?'danger':'success'}">${changed.length}</div><div class="stat-label">Changed</div></div>
+            `;
+
+            let html = '<div class="output-box">ROW COMPARISON BY: ' + key + '\n\n';
+            if (onlyA.length) html += '═══ Only in A (' + onlyA.length + ') ═══\n  ' + onlyA.slice(0, 10).join(', ') + (onlyA.length > 10 ? '...' : '') + '\n\n';
+            if (onlyB.length) html += '═══ Only in B (' + onlyB.length + ') ═══\n  ' + onlyB.slice(0, 10).join(', ') + (onlyB.length > 10 ? '...' : '') + '\n\n';
+            if (changed.length) html += '═══ Changed Rows ═══\n  ' + changed.length + ' rows have different values\n';
+            document.getElementById('compareOutput').innerHTML = html + '</div>';
+            document.getElementById('compareTable').innerHTML = '';
+            document.getElementById('compareChartContainer').style.display = 'none';
+        }
+
+        function compareDetailedDiff() {
+            const key = document.getElementById('compareKey').value;
+            if (!key) return alert('Select a key column');
+
+            const mapA = new Map(currentData.map(r => [String(r[key]), r]));
+            const mapB = new Map(datasetB.map(r => [String(r[key]), r]));
+            const common = columns.filter(c => columnsB.includes(c));
+            const allKeys = [...new Set([...mapA.keys(), ...mapB.keys()])];
+
+            const diffRows = [];
+            allKeys.forEach(k => {
+                const inA = mapA.has(k), inB = mapB.has(k);
+                if (!inA) {
+                    diffRows.push({[key]: k, _Status: 'ADDED', _added: true, ...mapB.get(k)});
+                } else if (!inB) {
+                    diffRows.push({[key]: k, _Status: 'REMOVED', _removed: true, ...mapA.get(k)});
+                } else {
+                    const rowA = mapA.get(k), rowB = mapB.get(k);
+                    const changedCols = common.filter(c => String(rowA[c]) !== String(rowB[c]));
+                    if (changedCols.length) {
+                        const diffRow = {[key]: k, _Status: 'MODIFIED', _diff: true, _changedCols: changedCols};
+                        common.forEach(c => {
+                            if (changedCols.includes(c)) {
+                                diffRow[c] = rowA[c] + ' → ' + rowB[c];
+                            } else {
+                                diffRow[c] = rowA[c];
+                            }
+                        });
+                        diffRows.push(diffRow);
+                    }
+                }
+            });
+
+            comparisonResults = {type: 'diff', diffRows};
+
+            const added = diffRows.filter(r => r._added).length;
+            const removed = diffRows.filter(r => r._removed).length;
+            const modified = diffRows.filter(r => r._diff).length;
+
+            document.getElementById('compareStats').innerHTML = `
+                <div class="stat-card ${added?'diff':''}"><div class="stat-value ${added?'success':''}">${added}</div><div class="stat-label">Added</div></div>
+                <div class="stat-card ${removed?'diff':''}"><div class="stat-value ${removed?'danger':''}">${removed}</div><div class="stat-label">Removed</div></div>
+                <div class="stat-card ${modified?'diff':''}"><div class="stat-value ${modified?'warning':''}">${modified}</div><div class="stat-label">Modified</div></div>
+                <div class="stat-card"><div class="stat-value">${allKeys.length - diffRows.length}</div><div class="stat-label">Unchanged</div></div>
+            `;
+
+            document.getElementById('compareOutput').innerHTML = '<div class="output-box">Showing ' + Math.min(diffRows.length, 100) + ' of ' + diffRows.length + ' differences.\nGreen = Added, Red = Removed, Yellow = Modified</div>';
+            document.getElementById('compareTable').innerHTML = createTable(diffRows.slice(0, 100), ['_Status', key, ...common.filter(c => c !== key)]);
+            document.getElementById('compareChartContainer').style.display = 'none';
+        }
+
+        function exportComparison() {
+            if (!comparisonResults) return alert('Run a comparison first');
+            let content = 'DATASET COMPARISON EXPORT\n' + '='.repeat(50) + '\n';
+            content += 'Type: ' + comparisonResults.type + '\n';
+            content += 'Date: ' + new Date().toISOString() + '\n\n';
+
+            if (comparisonResults.type === 'diff' && comparisonResults.diffRows) {
+                content += Papa.unparse(comparisonResults.diffRows);
+            } else {
+                content += JSON.stringify(comparisonResults, null, 2);
+            }
+            download(content, 'comparison_export.txt', 'text/plain');
+        }
+
+        // =========================================================================
+        // VISUALIZATION
+        // =========================================================================
+        function createChart() {
+            if (!currentData.length) return;
+            const type = document.getElementById('chartType').value;
+            const xCol = document.getElementById('chartX').value;
+            const yCol = document.getElementById('chartY').value;
+            const aggFunc = document.getElementById('chartAgg').value;
+            
+            const groups = {};
+            currentData.forEach(r => { if (!groups[r[xCol]]) groups[r[xCol]] = []; groups[r[xCol]].push(parseFloat(r[yCol]) || 0); });
+            const data = Object.entries(groups).map(([k,v]) => {
+                let agg;
+                switch(aggFunc) { case 'sum': agg = v.reduce((a,b)=>a+b,0); break; case 'mean': agg = v.reduce((a,b)=>a+b,0)/v.length; break; case 'count': agg = v.length; break; }
+                return {label: k, value: agg};
+            }).sort((a,b) => b.value - a.value);
+
+            if (mainChart) mainChart.destroy();
+            const colors = ['#FFA500','#FF8C00','#FF7F00','#FF6600','#FF4500','#CC8400','#996300','#664200','#FFB732','#FFCC66'];
+            mainChart = new Chart(document.getElementById('mainChart').getContext('2d'), {
+                type,
+                data: { labels: data.slice(0,15).map(d=>d.label), datasets: [{label: aggFunc+' of '+yCol, data: data.slice(0,15).map(d=>d.value), backgroundColor: type==='line'?'transparent':colors, borderColor: type==='line'?'#FFA500':colors, borderWidth: type==='line'?2:1, tension: 0.3}] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: {legend: {labels: {color: '#FFA500'}}}, scales: type!=='pie'&&type!=='doughnut' ? {x: {ticks: {color: '#FFA500'}, grid: {color: '#331a00'}}, y: {ticks: {color: '#FFA500'}, grid: {color: '#331a00'}}} : {} }
+            });
+        }
+
+        // =========================================================================
+        // EXPORT
+        // =========================================================================
+        function exportCSV() { if (!currentData.length) return alert('No data'); download(Papa.unparse(currentData), 'export.csv', 'text/csv'); }
+        function exportJSON() { if (!currentData.length) return alert('No data'); download(JSON.stringify(currentData, null, 2), 'export.json', 'application/json'); }
+        function exportAnomalies() {
+            if (!detectedAnomalies.length) return alert('Run anomaly detection first');
+            const indices = new Set(detectedAnomalies.map(a => a.i));
+            const rows = [...indices].map(i => {
+                const reasons = detectedAnomalies.filter(a => a.i === i).map(a => a.column + ': ' + a.r).join('; ');
+                return {...currentData[i], _AnomalyReason: reasons};
+            });
+            download(Papa.unparse(rows), 'anomalies.csv', 'text/csv');
+        }
+        function generateReport() {
+            if (!currentData.length) return alert('No data');
+            let r = '═'.repeat(60) + '\nTGF DATA ANALYSIS REPORT\n' + new Date().toISOString() + '\n' + '═'.repeat(60) + '\n\n';
+            r += 'OVERVIEW\n  Rows: ' + currentData.length + '\n  Columns: ' + columns.length + '\n\n';
+            r += 'COLUMNS\n' + columns.map(c => '  • ' + c + ' (' + columnTypes[c] + ')').join('\n') + '\n\n';
+            if (detectedAnomalies.length) {
+                const uniqueAnom = new Set(detectedAnomalies.map(a => a.i)).size;
+                r += 'ANOMALIES\n  ' + uniqueAnom + ' rows flagged (' + (uniqueAnom/currentData.length*100).toFixed(1) + '%)\n\n';
+            }
+            if (datasetB.length) {
+                r += 'COMPARISON DATASET LOADED\n  B Rows: ' + datasetB.length + '\n  B Columns: ' + columnsB.length + '\n\n';
+            }
+            r += '═'.repeat(60) + '\nEND OF REPORT\n' + '═'.repeat(60);
+            document.getElementById('reportOutput').style.display = 'block';
+            document.getElementById('reportOutput').textContent = r;
+            download(r, 'report.txt', 'text/plain');
+        }
+        function download(content, name, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], {type})); a.download = name; a.click(); }
+    </script>
+</body>
+</html>
