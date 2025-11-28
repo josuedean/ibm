@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TGF Data Analysis Terminal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #FFA500;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(white, rgba(255, 165, 0, 0.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255, 165, 0, 0.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255, 165, 0, 0.1) 2px, transparent 40px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            animation: stars 120s linear infinite;
+        }
+
+        @keyframes stars {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: 550px 550px, 350px 350px, 250px 250px; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .terminal {
+            background: rgba(30, 20, 0, 0.95);
+            border: 2px solid #FFA500;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #FFA500;
+            padding-bottom: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px #FFA500;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #CC8400;
+            margin-top: 0.5rem;
+        }
+
+        .blinking {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: rgba(20, 15, 0, 0.8);
+            border: 1px solid #FFA500;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .sidebar h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            border-bottom: 1px solid #663300;
+            padding-bottom: 0.5rem;
+        }
+
+        .nav-item {
+            display: block;
+            width: 100%;
+            background: transparent;
+            border: 1px solid #663300;
+            color: #FFA500;
+            padding: 0.6rem 0.8rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+            text-align: left;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .nav-item:hover {
+            background: #331a00;
+            border-color: #FFA500;
+        }
+
+        .nav-item.active {
+            background: #663300;
+            border-color: #FFA500;
+            box-shadow: 0 0 5px rgba(255, 165, 0, 0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            background: rgba(20, 15, 0, 0.8);
+            border: 1px solid #FFA500;
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 500px;
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .panel h2 {
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            color: #FFB732;
+            border-bottom: 1px solid #663300;
+            padding-bottom: 0.5rem;
+        }
+
+        /* File Upload */
+        .upload-zone {
+            border: 2px dashed #663300;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #FFA500;
+            background: rgba(255, 165, 0, 0.05);
+        }
+
+        .upload-zone input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Inputs and Buttons */
+        input, select, textarea {
+            background: #1a1100;
+            border: 1px solid #663300;
+            color: #FFA500;
+            padding: 0.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            border-radius: 4px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #FFA500;
+            box-shadow: 0 0 5px rgba(255, 165, 0, 0.3);
+        }
+
+        button {
+            background: #663300;
+            border: 1px solid #FFA500;
+            color: #FFA500;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background: #FFB732;
+            color: #1a1100;
+            box-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin: 1rem 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        th, td {
+            border: 1px solid #663300;
+            padding: 0.4rem 0.6rem;
+            text-align: left;
+        }
+
+        th {
+            background: #331a00;
+            color: #FFB732;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(102, 51, 0, 0.2);
+        }
+
+        tr:hover {
+            background: rgba(255, 165, 0, 0.1);
+        }
+
+        /* Output/Results */
+        .output-box {
+            background: #0d0800;
+            border: 1px solid #663300;
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .output-box.success {
+            border-color: #FFA500;
+        }
+
+        .output-box.error {
+            border-color: #f00;
+            color: #f00;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-card {
+            background: #1a1100;
+            border: 1px solid #663300;
+            border-radius: 6px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            color: #FFB732;
+            text-shadow: 0 0 5px rgba(255, 165, 0, 0.3);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #CC8400;
+            margin-top: 0.3rem;
+        }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-size: 0.85rem;
+            color: #CC8400;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: rgba(13, 8, 0, 0.8);
+            border: 1px solid #663300;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+            max-width: 100%;
+            height: 350px;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: #1a1100;
+            border: 1px solid #663300;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #663300;
+        }
+
+        .status-dot.active {
+            background: #00ff00;
+            box-shadow: 0 0 5px #00ff00;
+        }
+
+        /* Distribution bars */
+        .dist-bar-container {
+            margin: 0.3rem 0;
+        }
+
+        .dist-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .dist-bar {
+            height: 16px;
+            background: #1a1100;
+            border: 1px solid #663300;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .dist-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #663300, #FFA500);
+            transition: width 0.3s ease;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1100;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #663300;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FFA500;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid #663300;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .tab-btn.active {
+            background: #663300;
+            border-color: #FFA500;
+        }
+
+        /* Help text */
+        .help-text {
+            font-size: 0.75rem;
+            color: #996600;
+            margin-top: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="terminal">
+            <div class="header">
+                <div class="logo">
+                    [TGF Data Analysis Terminal]<br>
+                    === Resource Analytics Suite ===
+                </div>
+                <div class="subtitle">Authorized Personnel Only <span class="blinking">▊</span></div>
+            </div>
+
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">No data loaded</span>
+                </div>
+                <div id="dataInfo">--</div>
+            </div>
+
+            <div class="grid">
+                <!-- Sidebar Navigation -->
+                <div class="sidebar">
+                    <h3>// OPERATIONS</h3>
+                    <button class="nav-item active" data-panel="upload">▸ DATA INPUT</button>
+                    <button class="nav-item" data-panel="preview">▸ PREVIEW</button>
+                    <button class="nav-item" data-panel="info">▸ DATA INFO</button>
+                    <button class="nav-item" data-panel="statistics">▸ STATISTICS</button>
+                    <button class="nav-item" data-panel="missing">▸ MISSING VALUES</button>
+                    <button class="nav-item" data-panel="unique">▸ UNIQUE VALUES</button>
+                    <button class="nav-item" data-panel="groupby">▸ GROUP BY</button>
+                    <button class="nav-item" data-panel="pivot">▸ PIVOT TABLE</button>
+                    <button class="nav-item" data-panel="filter">▸ FILTER DATA</button>
+                    <button class="nav-item" data-panel="distribution">▸ DISTRIBUTION</button>
+                    <button class="nav-item" data-panel="visualize">▸ VISUALIZE</button>
+                    <button class="nav-item" data-panel="export">▸ EXPORT</button>
+                </div>
+
+                <!-- Main Content Panels -->
+                <div class="main-content">
+                    
+                    <!-- Upload Panel -->
+                    <div class="panel active" id="panel-upload">
+                        <h2>// DATA INPUT MODULE</h2>
+                        <div class="upload-zone" id="uploadZone">
+                            <div class="upload-icon">⬆</div>
+                            <div>DROP CSV FILE HERE</div>
+                            <div style="font-size: 0.8rem; color: #996600; margin-top: 0.5rem;">or click to browse</div>
+                            <input type="file" id="fileInput" accept=".csv,.tsv,.txt">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Delimiter</label>
+                                <select id="delimiter">
+                                    <option value=",">Comma (,)</option>
+                                    <option value="&#9;">Tab</option>
+                                    <option value=";">Semicolon (;)</option>
+                                    <option value="|">Pipe (|)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Header Row</label>
+                                <select id="hasHeader">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="uploadResult" class="output-box" style="display:none;"></div>
+                    </div>
+
+                    <!-- Preview Panel -->
+                    <div class="panel" id="panel-preview">
+                        <h2>// DATA PREVIEW</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Rows to display</label>
+                                <input type="number" id="previewRows" value="10" min="1" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Position</label>
+                                <select id="previewPosition">
+                                    <option value="head">First (Head)</option>
+                                    <option value="tail">Last (Tail)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button onclick="showPreview()">DISPLAY</button>
+                            </div>
+                        </div>
+                        <div class="table-container" id="previewTable"></div>
+                    </div>
+
+                    <!-- Info Panel -->
+                    <div class="panel" id="panel-info">
+                        <h2>// DATA INFO</h2>
+                        <div class="stats-grid" id="infoStats"></div>
+                        <div class="table-container" id="infoTable"></div>
+                    </div>
+
+                    <!-- Statistics Panel -->
+                    <div class="panel" id="panel-statistics">
+                        <h2>// SUMMARY STATISTICS</h2>
+                        <div class="tabs">
+                            <button class="tab-btn active" onclick="showStats('numeric')">NUMERIC</button>
+                            <button class="tab-btn" onclick="showStats('categorical')">CATEGORICAL</button>
+                        </div>
+                        <div id="statsOutput"></div>
+                    </div>
+
+                    <!-- Missing Values Panel -->
+                    <div class="panel" id="panel-missing">
+                        <h2>// MISSING VALUE ANALYSIS</h2>
+                        <div id="missingOutput"></div>
+                    </div>
+
+                    <!-- Unique Values Panel -->
+                    <div class="panel" id="panel-unique">
+                        <h2>// UNIQUE VALUE COUNTS</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Select Column</label>
+                                <select id="uniqueColumn"></select>
+                            </div>
+                            <div class="form-group">
+                                <button onclick="showUniqueValues()">ANALYZE</button>
+                            </div>
+                        </div>
+                        <div id="uniqueOutput"></div>
+                    </div>
+
+                    <!-- Group By Panel -->
+                    <div class="panel" id="panel-groupby">
+                        <h2>// GROUP BY AGGREGATION</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Group By Column(s)</label>
+                                <select id="groupByColumns" multiple style="height: 80px;"></select>
+                                <div class="help-text">Ctrl+Click for multiple</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Aggregate Column</label>
+                                <select id="aggColumn"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Function</label>
+                                <select id="aggFunction">
+                                    <option value="sum">Sum</option>
+                                    <option value="mean">Mean</option>
+                                    <option value="count">Count</option>
+                                    <option value="min">Min</option>
+                                    <option value="max">Max</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="performGroupBy()">EXECUTE</button>
+                        <div class="table-container" id="groupByOutput"></div>
+                    </div>
+
+                    <!-- Pivot Table Panel -->
+                    <div class="panel" id="panel-pivot">
+                        <h2>// PIVOT TABLE</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Row Labels</label>
+                                <select id="pivotRows"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Column Labels</label>
+                                <select id="pivotCols"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Values</label>
+                                <select id="pivotValues"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Aggregation</label>
+                                <select id="pivotAgg">
+                                    <option value="sum">Sum</option>
+                                    <option value="mean">Mean</option>
+                                    <option value="count">Count</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="createPivotTable()">GENERATE</button>
+                        <div class="table-container" id="pivotOutput"></div>
+                    </div>
+
+                    <!-- Filter Panel -->
+                    <div class="panel" id="panel-filter">
+                        <h2>// DATA FILTER</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Column</label>
+                                <select id="filterColumn" onchange="updateFilterOperators()"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Operator</label>
+                                <select id="filterOperator">
+                                    <option value="==">Equals (==)</option>
+                                    <option value="!=">Not Equals (!=)</option>
+                                    <option value=">">Greater Than (>)</option>
+                                    <option value=">=">Greater or Equal (>=)</option>
+                                    <option value="<">Less Than (<)</option>
+                                    <option value="<=">Less or Equal (<=)</option>
+                                    <option value="contains">Contains</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Value</label>
+                                <input type="text" id="filterValue" placeholder="Enter value...">
+                            </div>
+                        </div>
+                        <button onclick="applyFilter()">APPLY FILTER</button>
+                        <button onclick="resetFilter()">RESET</button>
+                        <div id="filterStatus" class="output-box" style="display:none;"></div>
+                        <div class="table-container" id="filterOutput"></div>
+                    </div>
+
+                    <!-- Distribution Panel -->
+                    <div class="panel" id="panel-distribution">
+                        <h2>// VALUE DISTRIBUTION</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Select Column</label>
+                                <select id="distColumn"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Bins (numeric only)</label>
+                                <input type="number" id="distBins" value="10" min="2" max="50">
+                            </div>
+                            <div class="form-group">
+                                <button onclick="showDistribution()">ANALYZE</button>
+                            </div>
+                        </div>
+                        <div id="distOutput"></div>
+                    </div>
+
+                    <!-- Visualize Panel -->
+                    <div class="panel" id="panel-visualize">
+                        <h2>// DATA VISUALIZATION</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Chart Type</label>
+                                <select id="chartType">
+                                    <option value="bar">Bar Chart</option>
+                                    <option value="line">Line Chart</option>
+                                    <option value="pie">Pie Chart</option>
+                                    <option value="doughnut">Doughnut Chart</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>X-Axis / Labels</label>
+                                <select id="chartX"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Y-Axis / Values</label>
+                                <select id="chartY"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Aggregation</label>
+                                <select id="chartAgg">
+                                    <option value="sum">Sum</option>
+                                    <option value="mean">Mean</option>
+                                    <option value="count">Count</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="createChart()">GENERATE CHART</button>
+                        <div class="chart-container">
+                            <canvas id="mainChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Export Panel -->
+                    <div class="panel" id="panel-export">
+                        <h2>// EXPORT DATA</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <button onclick="exportCSV()" style="width: 100%;">EXPORT CSV</button>
+                                <div class="stat-label">Download current data</div>
+                            </div>
+                            <div class="stat-card">
+                                <button onclick="generateReport()" style="width: 100%;">GENERATE REPORT</button>
+                                <div class="stat-label">Text summary report</div>
+                            </div>
+                            <div class="stat-card">
+                                <button onclick="exportJSON()" style="width: 100%;">EXPORT JSON</button>
+                                <div class="stat-label">JSON format</div>
+                            </div>
+                        </div>
+                        <div id="reportOutput" class="output-box" style="display:none;"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // GLOBAL STATE
+        // =========================================================================
+        let originalData = [];
+        let currentData = [];
+        let columns = [];
+        let columnTypes = {};
+        let mainChart = null;
+
+        // =========================================================================
+        // NAVIGATION
+        // =========================================================================
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                document.getElementById('panel-' + btn.dataset.panel).classList.add('active');
+            });
+        });
+
+        // =========================================================================
+        // FILE UPLOAD
+        // =========================================================================
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            const delimiter = document.getElementById('delimiter').value;
+            const hasHeader = document.getElementById('hasHeader').value === 'true';
+            const resultDiv = document.getElementById('uploadResult');
+
+            Papa.parse(file, {
+                delimiter: delimiter,
+                header: hasHeader,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    originalData = results.data;
+                    currentData = [...originalData];
+                    columns = hasHeader ? results.meta.fields : Object.keys(results.data[0] || {});
+                    
+                    detectColumnTypes();
+                    updateStatus(true, `Loaded: ${file.name}`);
+                    document.getElementById('dataInfo').textContent = 
+                        `${currentData.length.toLocaleString()} rows × ${columns.length} cols`;
+                    
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'output-box success';
+                    resultDiv.textContent = `✓ Successfully loaded "${file.name}"\n` +
+                        `  Rows: ${currentData.length.toLocaleString()}\n` +
+                        `  Columns: ${columns.length}\n` +
+                        `  Columns: ${columns.join(', ')}`;
+                    
+                    populateSelects();
+                },
+                error: function(error) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'output-box error';
+                    resultDiv.textContent = `✗ Error: ${error.message}`;
+                    updateStatus(false, 'Load failed');
+                }
+            });
+        }
+
+        function detectColumnTypes() {
+            columnTypes = {};
+            columns.forEach(col => {
+                let isNumeric = true;
+                let hasValues = false;
+                
+                for (let i = 0; i < Math.min(100, currentData.length); i++) {
+                    const val = currentData[i][col];
+                    if (val !== null && val !== undefined && val !== '') {
+                        hasValues = true;
+                        if (isNaN(parseFloat(val))) {
+                            isNumeric = false;
+                            break;
+                        }
+                    }
+                }
+                
+                columnTypes[col] = hasValues && isNumeric ? 'numeric' : 'categorical';
+            });
+        }
+
+        function updateStatus(active, text) {
+            document.getElementById('statusDot').className = active ? 'status-dot active' : 'status-dot';
+            document.getElementById('statusText').textContent = text;
+        }
+
+        function populateSelects() {
+            const selects = ['uniqueColumn', 'groupByColumns', 'aggColumn', 
+                           'pivotRows', 'pivotCols', 'pivotValues',
+                           'filterColumn', 'distColumn', 'chartX', 'chartY'];
+            
+            selects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = columns.map(col => 
+                        `<option value="${col}">${col}</option>`
+                    ).join('');
+                }
+            });
+        }
+
+        // =========================================================================
+        // PREVIEW
+        // =========================================================================
+        function showPreview() {
+            if (!currentData.length) {
+                alert('No data loaded');
+                return;
+            }
+            
+            const n = parseInt(document.getElementById('previewRows').value) || 10;
+            const position = document.getElementById('previewPosition').value;
+            
+            let data;
+            if (position === 'head') {
+                data = currentData.slice(0, n);
+            } else {
+                data = currentData.slice(-n);
+            }
+            
+            document.getElementById('previewTable').innerHTML = createTable(data, columns);
+        }
+
+        function createTable(data, cols) {
+            if (!data.length) return '<div class="output-box">No data to display</div>';
+            
+            let html = '<table><thead><tr>';
+            html += '<th>#</th>';
+            cols.forEach(col => {
+                html += `<th>${escapeHtml(col)}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            data.forEach((row, idx) => {
+                html += '<tr>';
+                html += `<td>${idx + 1}</td>`;
+                cols.forEach(col => {
+                    const val = row[col];
+                    html += `<td>${val !== null && val !== undefined ? escapeHtml(String(val)) : ''}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            return html;
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // =========================================================================
+        // DATA INFO
+        // =========================================================================
+        document.querySelector('[data-panel="info"]').addEventListener('click', showDataInfo);
+
+        function showDataInfo() {
+            if (!currentData.length) return;
+            
+            const statsHtml = `
+                <div class="stat-card">
+                    <div class="stat-value">${currentData.length.toLocaleString()}</div>
+                    <div class="stat-label">Total Rows</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${columns.length}</div>
+                    <div class="stat-label">Columns</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${Object.values(columnTypes).filter(t => t === 'numeric').length}</div>
+                    <div class="stat-label">Numeric Cols</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${Object.values(columnTypes).filter(t => t === 'categorical').length}</div>
+                    <div class="stat-label">Categorical Cols</div>
+                </div>
+            `;
+            document.getElementById('infoStats').innerHTML = statsHtml;
+            
+            let tableData = columns.map(col => {
+                const values = currentData.map(r => r[col]);
+                const nonNull = values.filter(v => v !== null && v !== undefined && v !== '').length;
+                const nullCount = currentData.length - nonNull;
+                const unique = new Set(values).size;
+                
+                return {
+                    Column: col,
+                    Type: columnTypes[col],
+                    'Non-Null': nonNull,
+                    'Null': nullCount,
+                    'Unique': unique
+                };
+            });
+            
+            document.getElementById('infoTable').innerHTML = createTable(tableData, 
+                ['Column', 'Type', 'Non-Null', 'Null', 'Unique']);
+        }
+
+        // =========================================================================
+        // STATISTICS
+        // =========================================================================
+        document.querySelector('[data-panel="statistics"]').addEventListener('click', () => showStats('numeric'));
+
+        function showStats(type) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase().includes(type));
+            });
+            
+            if (!currentData.length) {
+                document.getElementById('statsOutput').innerHTML = '<div class="output-box">No data loaded</div>';
+                return;
+            }
+            
+            if (type === 'numeric') {
+                showNumericStats();
+            } else {
+                showCategoricalStats();
+            }
+        }
+
+        function showNumericStats() {
+            const numericCols = columns.filter(col => columnTypes[col] === 'numeric');
+            
+            if (!numericCols.length) {
+                document.getElementById('statsOutput').innerHTML = 
+                    '<div class="output-box">No numeric columns found</div>';
+                return;
+            }
+            
+            let statsData = numericCols.map(col => {
+                const values = currentData.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+                const sorted = [...values].sort((a, b) => a - b);
+                
+                return {
+                    Column: col,
+                    Count: values.length,
+                    Mean: (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2),
+                    Std: calculateStd(values).toFixed(2),
+                    Min: Math.min(...values).toFixed(2),
+                    '25%': percentile(sorted, 25).toFixed(2),
+                    '50%': percentile(sorted, 50).toFixed(2),
+                    '75%': percentile(sorted, 75).toFixed(2),
+                    Max: Math.max(...values).toFixed(2)
+                };
+            });
+            
+            document.getElementById('statsOutput').innerHTML = createTable(statsData,
+                ['Column', 'Count', 'Mean', 'Std', 'Min', '25%', '50%', '75%', 'Max']);
+        }
+
+        function showCategoricalStats() {
+            const catCols = columns.filter(col => columnTypes[col] === 'categorical');
+            
+            if (!catCols.length) {
+                document.getElementById('statsOutput').innerHTML = 
+                    '<div class="output-box">No categorical columns found</div>';
+                return;
+            }
+            
+            let html = '';
+            catCols.forEach(col => {
+                const values = currentData.map(r => r[col]);
+                const counts = {};
+                values.forEach(v => {
+                    const key = v || '(empty)';
+                    counts[key] = (counts[key] || 0) + 1;
+                });
+                
+                const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+                const unique = sorted.length;
+                const top5 = sorted.slice(0, 5);
+                
+                html += `<div class="output-box" style="margin-bottom: 1rem;">`;
+                html += `<strong>${col}</strong> (${unique} unique values)\n\n`;
+                html += `Top values:\n`;
+                top5.forEach(([val, count]) => {
+                    const pct = (count / currentData.length * 100).toFixed(1);
+                    html += `  ${val}: ${count.toLocaleString()} (${pct}%)\n`;
+                });
+                html += `</div>`;
+            });
+            
+            document.getElementById('statsOutput').innerHTML = html;
+        }
+
+        function calculateStd(values) {
+            const mean = values.reduce((a, b) => a + b, 0) / values.length;
+            const squareDiffs = values.map(v => Math.pow(v - mean, 2));
+            return Math.sqrt(squareDiffs.reduce((a, b) => a + b, 0) / values.length);
+        }
+
+        function percentile(sorted, p) {
+            const idx = (p / 100) * (sorted.length - 1);
+            const lower = Math.floor(idx);
+            const upper = Math.ceil(idx);
+            if (lower === upper) return sorted[lower];
+            return sorted[lower] + (idx - lower) * (sorted[upper] - sorted[lower]);
+        }
+
+        // =========================================================================
+        // MISSING VALUES
+        // =========================================================================
+        document.querySelector('[data-panel="missing"]').addEventListener('click', showMissingValues);
+
+        function showMissingValues() {
+            if (!currentData.length) {
+                document.getElementById('missingOutput').innerHTML = '<div class="output-box">No data loaded</div>';
+                return;
+            }
+            
+            let missingData = [];
+            let totalMissing = 0;
+            
+            columns.forEach(col => {
+                const missing = currentData.filter(r => 
+                    r[col] === null || r[col] === undefined || r[col] === ''
+                ).length;
+                
+                if (missing > 0) {
+                    totalMissing += missing;
+                    missingData.push({
+                        Column: col,
+                        Missing: missing,
+                        Percent: (missing / currentData.length * 100).toFixed(1) + '%'
+                    });
+                }
+            });
+            
+            if (missingData.length === 0) {
+                document.getElementById('missingOutput').innerHTML = 
+                    '<div class="output-box success">✓ No missing values found!</div>';
+            } else {
+                let html = `<div class="output-box">Total cells with missing values: ${totalMissing.toLocaleString()}</div>`;
+                html += '<div class="table-container">' + createTable(missingData, ['Column', 'Missing', 'Percent']) + '</div>';
+                document.getElementById('missingOutput').innerHTML = html;
+            }
+        }
+
+        // =========================================================================
+        // UNIQUE VALUES
+        // =========================================================================
+        function showUniqueValues() {
+            if (!currentData.length) return;
+            
+            const col = document.getElementById('uniqueColumn').value;
+            const values = currentData.map(r => r[col]);
+            const counts = {};
+            
+            values.forEach(v => {
+                const key = v !== null && v !== undefined && v !== '' ? v : '(empty)';
+                counts[key] = (counts[key] || 0) + 1;
+            });
+            
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+            const maxCount = sorted[0][1];
+            
+            let html = `<div class="output-box">Column: ${col}\nTotal unique values: ${sorted.length}</div>`;
+            html += '<div style="margin-top: 1rem;">';
+            
+            sorted.forEach(([val, count]) => {
+                const pct = (count / currentData.length * 100).toFixed(1);
+                const barWidth = (count / maxCount * 100).toFixed(0);
+                
+                html += `
+                    <div class="dist-bar-container">
+                        <div class="dist-bar-label">
+                            <span>${escapeHtml(String(val))}</span>
+                            <span>${count.toLocaleString()} (${pct}%)</span>
+                        </div>
+                        <div class="dist-bar">
+                            <div class="dist-bar-fill" style="width: ${barWidth}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            document.getElementById('uniqueOutput').innerHTML = html;
+        }
+
+        // =========================================================================
+        // GROUP BY
+        // =========================================================================
+        function performGroupBy() {
+            if (!currentData.length) return;
+            
+            const groupCols = Array.from(document.getElementById('groupByColumns').selectedOptions)
+                                   .map(o => o.value);
+            const aggCol = document.getElementById('aggColumn').value;
+            const aggFunc = document.getElementById('aggFunction').value;
+            
+            if (!groupCols.length) {
+                alert('Select at least one column to group by');
+                return;
+            }
+            
+            const groups = {};
+            currentData.forEach(row => {
+                const key = groupCols.map(c => row[c]).join('|||');
+                if (!groups[key]) {
+                    groups[key] = [];
+                }
+                groups[key].push(parseFloat(row[aggCol]) || 0);
+            });
+            
+            const result = Object.entries(groups).map(([key, values]) => {
+                const keyParts = key.split('|||');
+                const row = {};
+                groupCols.forEach((col, i) => {
+                    row[col] = keyParts[i];
+                });
+                
+                let aggValue;
+                switch(aggFunc) {
+                    case 'sum': aggValue = values.reduce((a, b) => a + b, 0); break;
+                    case 'mean': aggValue = values.reduce((a, b) => a + b, 0) / values.length; break;
+                    case 'count': aggValue = values.length; break;
+                    case 'min': aggValue = Math.min(...values); break;
+                    case 'max': aggValue = Math.max(...values); break;
+                }
+                
+                row[`${aggFunc}_${aggCol}`] = typeof aggValue === 'number' ? aggValue.toFixed(2) : aggValue;
+                return row;
+            });
+            
+            const aggKey = `${aggFunc}_${aggCol}`;
+            result.sort((a, b) => parseFloat(b[aggKey]) - parseFloat(a[aggKey]));
+            
+            document.getElementById('groupByOutput').innerHTML = 
+                createTable(result, [...groupCols, aggKey]);
+        }
+
+        // =========================================================================
+        // PIVOT TABLE
+        // =========================================================================
+        function createPivotTable() {
+            if (!currentData.length) return;
+            
+            const rowCol = document.getElementById('pivotRows').value;
+            const colCol = document.getElementById('pivotCols').value;
+            const valCol = document.getElementById('pivotValues').value;
+            const aggFunc = document.getElementById('pivotAgg').value;
+            
+            const rowVals = [...new Set(currentData.map(r => r[rowCol]))].sort();
+            const colVals = [...new Set(currentData.map(r => r[colCol]))].sort();
+            
+            const pivot = {};
+            rowVals.forEach(rv => {
+                pivot[rv] = {};
+                colVals.forEach(cv => {
+                    pivot[rv][cv] = [];
+                });
+            });
+            
+            currentData.forEach(row => {
+                const rv = row[rowCol];
+                const cv = row[colCol];
+                const val = parseFloat(row[valCol]) || 0;
+                pivot[rv][cv].push(val);
+            });
+            
+            const result = [];
+            const totals = {};
+            colVals.forEach(cv => totals[cv] = 0);
+            totals['TOTAL'] = 0;
+            
+            rowVals.forEach(rv => {
+                const row = { [rowCol]: rv };
+                let rowTotal = 0;
+                
+                colVals.forEach(cv => {
+                    const values = pivot[rv][cv];
+                    let aggVal = 0;
+                    
+                    if (values.length) {
+                        switch(aggFunc) {
+                            case 'sum': aggVal = values.reduce((a, b) => a + b, 0); break;
+                            case 'mean': aggVal = values.reduce((a, b) => a + b, 0) / values.length; break;
+                            case 'count': aggVal = values.length; break;
+                        }
+                    }
+                    
+                    row[cv] = aggVal.toFixed(2);
+                    rowTotal += aggVal;
+                    totals[cv] += aggVal;
+                });
+                
+                row['TOTAL'] = rowTotal.toFixed(2);
+                totals['TOTAL'] += rowTotal;
+                result.push(row);
+            });
+            
+            const totalRow = { [rowCol]: 'TOTAL' };
+            colVals.forEach(cv => {
+                totalRow[cv] = totals[cv].toFixed(2);
+            });
+            totalRow['TOTAL'] = totals['TOTAL'].toFixed(2);
+            result.push(totalRow);
+            
+            document.getElementById('pivotOutput').innerHTML = 
+                createTable(result, [rowCol, ...colVals, 'TOTAL']);
+        }
+
+        // =========================================================================
+        // FILTER
+        // =========================================================================
+        function updateFilterOperators() {
+            const col = document.getElementById('filterColumn').value;
+            const isNumeric = columnTypes[col] === 'numeric';
+            const opSelect = document.getElementById('filterOperator');
+            
+            Array.from(opSelect.options).forEach(opt => {
+                if (['>', '>=', '<', '<='].includes(opt.value)) {
+                    opt.disabled = !isNumeric;
+                }
+            });
+        }
+
+        function applyFilter() {
+            if (!originalData.length) return;
+            
+            const col = document.getElementById('filterColumn').value;
+            const op = document.getElementById('filterOperator').value;
+            const val = document.getElementById('filterValue').value;
+            
+            const statusDiv = document.getElementById('filterStatus');
+            
+            currentData = originalData.filter(row => {
+                const cellVal = row[col];
+                
+                if (columnTypes[col] === 'numeric') {
+                    const numCell = parseFloat(cellVal);
+                    const numVal = parseFloat(val);
+                    
+                    switch(op) {
+                        case '==': return numCell === numVal;
+                        case '!=': return numCell !== numVal;
+                        case '>': return numCell > numVal;
+                        case '>=': return numCell >= numVal;
+                        case '<': return numCell < numVal;
+                        case '<=': return numCell <= numVal;
+                        case 'contains': return String(cellVal).toLowerCase().includes(val.toLowerCase());
+                    }
+                } else {
+                    const strCell = String(cellVal || '').toLowerCase();
+                    const strVal = val.toLowerCase();
+                    
+                    switch(op) {
+                        case '==': return strCell === strVal;
+                        case '!=': return strCell !== strVal;
+                        case 'contains': return strCell.includes(strVal);
+                        default: return strCell.includes(strVal);
+                    }
+                }
+            });
+            
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'output-box success';
+            statusDiv.textContent = `✓ Filter applied: ${currentData.length.toLocaleString()} rows (from ${originalData.length.toLocaleString()})`;
+            
+            document.getElementById('dataInfo').textContent = 
+                `${currentData.length.toLocaleString()} rows × ${columns.length} cols (filtered)`;
+            
+            const preview = currentData.slice(0, 20);
+            document.getElementById('filterOutput').innerHTML = createTable(preview, columns);
+        }
+
+        function resetFilter() {
+            currentData = [...originalData];
+            document.getElementById('filterStatus').style.display = 'none';
+            document.getElementById('filterOutput').innerHTML = '';
+            document.getElementById('dataInfo').textContent = 
+                `${currentData.length.toLocaleString()} rows × ${columns.length} cols`;
+        }
+
+        // =========================================================================
+        // DISTRIBUTION
+        // =========================================================================
+        function showDistribution() {
+            if (!currentData.length) return;
+            
+            const col = document.getElementById('distColumn').value;
+            const bins = parseInt(document.getElementById('distBins').value) || 10;
+            
+            if (columnTypes[col] === 'numeric') {
+                showNumericDistribution(col, bins);
+            } else {
+                document.getElementById('uniqueColumn').value = col;
+                showUniqueValues();
+                document.getElementById('distOutput').innerHTML = document.getElementById('uniqueOutput').innerHTML;
+            }
+        }
+
+        function showNumericDistribution(col, bins) {
+            const values = currentData.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+            
+            if (!values.length) {
+                document.getElementById('distOutput').innerHTML = 
+                    '<div class="output-box error">No numeric values found</div>';
+                return;
+            }
+            
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            const range = max - min;
+            const binWidth = range / bins;
+            
+            const histogram = new Array(bins).fill(0);
+            values.forEach(v => {
+                let binIdx = Math.floor((v - min) / binWidth);
+                if (binIdx >= bins) binIdx = bins - 1;
+                histogram[binIdx]++;
+            });
+            
+            const maxCount = Math.max(...histogram);
+            const mean = values.reduce((a, b) => a + b, 0) / values.length;
+            const sorted = [...values].sort((a, b) => a - b);
+            const median = percentile(sorted, 50);
+            
+            let html = `<div class="output-box">
+Column: ${col}
+Min: ${min.toFixed(2)}  |  Max: ${max.toFixed(2)}
+Mean: ${mean.toFixed(2)}  |  Median: ${median.toFixed(2)}
+Std Dev: ${calculateStd(values).toFixed(2)}
+</div>`;
+            
+            html += '<div style="margin-top: 1rem;">';
+            histogram.forEach((count, i) => {
+                const rangeStart = min + (i * binWidth);
+                const rangeEnd = min + ((i + 1) * binWidth);
+                const barWidth = (count / maxCount * 100).toFixed(0);
+                
+                html += `
+                    <div class="dist-bar-container">
+                        <div class="dist-bar-label">
+                            <span>${rangeStart.toFixed(1)} - ${rangeEnd.toFixed(1)}</span>
+                            <span>${count.toLocaleString()}</span>
+                        </div>
+                        <div class="dist-bar">
+                            <div class="dist-bar-fill" style="width: ${barWidth}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            document.getElementById('distOutput').innerHTML = html;
+        }
+
+        // =========================================================================
+        // VISUALIZATION
+        // =========================================================================
+        function createChart() {
+            if (!currentData.length) return;
+            
+            const chartType = document.getElementById('chartType').value;
+            const xCol = document.getElementById('chartX').value;
+            const yCol = document.getElementById('chartY').value;
+            const aggFunc = document.getElementById('chartAgg').value;
+            
+            const groups = {};
+            currentData.forEach(row => {
+                const key = row[xCol];
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(parseFloat(row[yCol]) || 0);
+            });
+            
+            const labels = Object.keys(groups);
+            const data = labels.map(label => {
+                const values = groups[label];
+                switch(aggFunc) {
+                    case 'sum': return values.reduce((a, b) => a + b, 0);
+                    case 'mean': return values.reduce((a, b) => a + b, 0) / values.length;
+                    case 'count': return values.length;
+                }
+            });
+            
+            const combined = labels.map((label, i) => ({ label, value: data[i] }));
+            combined.sort((a, b) => b.value - a.value);
+            
+            const sortedLabels = combined.map(c => c.label);
+            const sortedData = combined.map(c => c.value);
+            
+            if (mainChart) {
+                mainChart.destroy();
+            }
+            
+            const colors = [
+                '#FFA500', '#FF8C00', '#FF7F00', '#FF6600', '#FF4500',
+                '#CC8400', '#996300', '#664200', '#FFB732', '#FFCC66'
+            ];
+            
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            mainChart = new Chart(ctx, {
+                type: chartType,
+                data: {
+                    labels: sortedLabels.slice(0, 20),
+                    datasets: [{
+                        label: `${aggFunc} of ${yCol}`,
+                        data: sortedData.slice(0, 20),
+                        backgroundColor: chartType === 'line' ? 'transparent' : colors,
+                        borderColor: chartType === 'line' ? '#FFA500' : colors,
+                        borderWidth: chartType === 'line' ? 2 : 1,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#FFA500' }
+                        }
+                    },
+                    scales: chartType !== 'pie' && chartType !== 'doughnut' ? {
+                        x: {
+                            ticks: { color: '#FFA500' },
+                            grid: { color: '#331a00' }
+                        },
+                        y: {
+                            ticks: { color: '#FFA500' },
+                            grid: { color: '#331a00' }
+                        }
+                    } : {}
+                }
+            });
+        }
+
+        // =========================================================================
+        // EXPORT
+        // =========================================================================
+        function exportCSV() {
+            if (!currentData.length) {
+                alert('No data to export');
+                return;
+            }
+            
+            const csv = Papa.unparse(currentData);
+            downloadFile(csv, 'data_export.csv', 'text/csv');
+        }
+
+        function exportJSON() {
+            if (!currentData.length) {
+                alert('No data to export');
+                return;
+            }
+            
+            const json = JSON.stringify(currentData, null, 2);
+            downloadFile(json, 'data_export.json', 'application/json');
+        }
+
+        function generateReport() {
+            if (!currentData.length) {
+                alert('No data loaded');
+                return;
+            }
+            
+            let report = '='.repeat(70) + '\n';
+            report += 'TGF DATA ANALYSIS REPORT\n';
+            report += `Generated: ${new Date().toISOString()}\n`;
+            report += '='.repeat(70) + '\n\n';
+            
+            report += '## OVERVIEW\n';
+            report += `Total Records: ${currentData.length.toLocaleString()}\n`;
+            report += `Total Columns: ${columns.length}\n`;
+            report += `Numeric Columns: ${Object.values(columnTypes).filter(t => t === 'numeric').length}\n`;
+            report += `Categorical Columns: ${Object.values(columnTypes).filter(t => t === 'categorical').length}\n\n`;
+            
+            report += '## COLUMNS\n';
+            columns.forEach(col => {
+                report += `  - ${col} (${columnTypes[col]})\n`;
+            });
+            report += '\n';
+            
+            const numericCols = columns.filter(col => columnTypes[col] === 'numeric');
+            if (numericCols.length) {
+                report += '## NUMERIC SUMMARY\n';
+                numericCols.forEach(col => {
+                    const values = currentData.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+                    if (values.length) {
+                        const mean = values.reduce((a, b) => a + b, 0) / values.length;
+                        report += `${col}: min=${Math.min(...values).toFixed(2)}, max=${Math.max(...values).toFixed(2)}, mean=${mean.toFixed(2)}\n`;
+                    }
+                });
+                report += '\n';
+            }
+            
+            let hasMissing = false;
+            report += '## MISSING VALUES\n';
+            columns.forEach(col => {
+                const missing = currentData.filter(r => 
+                    r[col] === null || r[col] === undefined || r[col] === ''
+                ).length;
+                if (missing > 0) {
+                    hasMissing = true;
+                    report += `  ${col}: ${missing} (${(missing/currentData.length*100).toFixed(1)}%)\n`;
+                }
+            });
+            if (!hasMissing) report += '  No missing values found\n';
+            report += '\n';
+            
+            report += '='.repeat(70) + '\n';
+            report += 'END OF REPORT\n';
+            report += '='.repeat(70) + '\n';
+            
+            document.getElementById('reportOutput').style.display = 'block';
+            document.getElementById('reportOutput').textContent = report;
+            
+            downloadFile(report, 'data_report.txt', 'text/plain');
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type: type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
