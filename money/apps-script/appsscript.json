@@ -3,4 +3,5 @@
   "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8",
   "dependencies": {}
+  "runtimeVersion": "V8"
 }

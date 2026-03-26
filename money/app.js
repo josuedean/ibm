@@ -1,4 +1,6 @@
 (function () {
+  const APP_BUILD = "2026-03-26-neon";
+  console.info(`Money dashboard build ${APP_BUILD}`);
   const homeSection = document.getElementById("homeSection");
   const formSection = document.getElementById("formSection");
   const recordingOverlay = document.getElementById("recordingOverlay");
@@ -70,6 +72,7 @@
     setMessage(el, "", null);
   }
 
+
   function animatePanel(panelEl) {
     panelEl.classList.remove("panel-enter");
     requestAnimationFrame(() => panelEl.classList.add("panel-enter"));
@@ -79,6 +82,9 @@
     formSection.classList.add("hidden");
     homeSection.classList.remove("hidden");
     animatePanel(homeSection);
+  function showHome() {
+    formSection.classList.add("hidden");
+    homeSection.classList.remove("hidden");
     currentType = "";
     form.reset();
     dateTimeEl.value = toKstDateTimeLocal();

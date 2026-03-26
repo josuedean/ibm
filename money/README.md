@@ -128,6 +128,12 @@ You can serve this app by:
 - Add new counterparties (tutee/merchant).
 - Counterparty dropdown dynamically filtered by transaction type.
 - Required field validation before submit and server-side validation before sheet write.
+- Add cash received or spent entries.
+- Add new counterparties (tutee/merchant).
+- Counterparty dropdown dynamically filtered by transaction type.
+- Required field validation before submit.
+- Server-side validation in Apps Script before writing to sheet.
+- Display all-time total cash and recent transactions.
 
 ---
 

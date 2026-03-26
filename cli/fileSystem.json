@@ -158,7 +158,7 @@
                             {
                               "name": "Treasure.txt",
                               "type": "file",
-                              "content": "WW91IGhhdmUgZGlzY292ZXJlZCB0aGUgQVNDSUkgQ2hhbGljZSEgRm9sbG93IHRoaXMgbGluayB0byBjbGFpbSB5b3VyIHJld2FyZDogaHR0cHM6Ly95b3VyX3RlYWNoZXJfc19zaXRlL3RyZWFzdXJlLmh0bWw=",
+                              "content": "WW91IGhhdmUgZGlzY292ZXJlZCB0aGUgQVNDSUkgQ2hhbGljZSEgRm9sbG93IHRoaXMgbGluayB0byBjbGFpbSB5b3VyIHJld2FyZDogaHR0cHM6Ly9qb3N1ZWRlYW4uZ2l0aHViLmlvL2libS9jbGkvdHJlYXN1cmUuaHRtbA===",
                               "attributeFlags": {
                                 "hidden": false,
                                 "readOnly": false
