@@ -82,6 +82,9 @@
     formSection.classList.add("hidden");
     homeSection.classList.remove("hidden");
     animatePanel(homeSection);
+  function showHome() {
+    formSection.classList.add("hidden");
+    homeSection.classList.remove("hidden");
     currentType = "";
     form.reset();
     dateTimeEl.value = toKstDateTimeLocal();
