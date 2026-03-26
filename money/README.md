@@ -116,16 +116,12 @@ You can serve this app by:
 
 ## 6) Current functionality
 
-- Home screen has two large centered actions: **Record Cash Received** and **Record Cash Spent**.
-- Home screen displays:
-  - all-time total cash (received - spent),
-  - current month received cash,
-  - current month spent cash.
-- Pressing a record button switches to a focused form-only screen (other dashboard items hidden).
-- After successful submit, a **Recording Transaction...** overlay appears while waiting on Apps Script, then app returns to home screen.
+- Add cash received or spent entries.
 - Add new counterparties (tutee/merchant).
 - Counterparty dropdown dynamically filtered by transaction type.
-- Required field validation before submit and server-side validation before sheet write.
+- Required field validation before submit.
+- Server-side validation in Apps Script before writing to sheet.
+- Display all-time total cash and recent transactions.
 
 ---
 
