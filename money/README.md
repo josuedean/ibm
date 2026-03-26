@@ -1,5 +1,7 @@
 # Money Dashboard (GitHub Pages + Google Apps Script + Google Sheets)
 
+_Last updated: 2026-03-26_
+
 This folder contains a mobile-first web app for recording cash transactions and displaying all-time total cash:
 
 - Total Cash = Total Received - Total Spent
@@ -116,6 +118,16 @@ You can serve this app by:
 
 ## 6) Current functionality
 
+- Home screen has two large centered actions: **Record Cash Received** and **Record Cash Spent**.
+- Home screen displays:
+  - all-time total cash (received - spent),
+  - current month received cash,
+  - current month spent cash.
+- Pressing a record button switches to a focused form-only screen (other dashboard items hidden).
+- After successful submit, a **Recording Transaction...** overlay appears while waiting on Apps Script, then app returns to home screen.
+- Add new counterparties (tutee/merchant).
+- Counterparty dropdown dynamically filtered by transaction type.
+- Required field validation before submit and server-side validation before sheet write.
 - Add cash received or spent entries.
 - Add new counterparties (tutee/merchant).
 - Counterparty dropdown dynamically filtered by transaction type.
@@ -132,3 +144,11 @@ You can serve this app by:
 - Import/export CSV
 - PIN gate or API key checks for spam control
 - Soft delete/edit transactions with audit trail
+
+
+## 8) Visual theme
+
+- Dark neon retro theme with subtle grid background and glow accents.
+- Smooth panel transitions and loading overlay animation for recording state.
+- No CDN/runtime external UI dependencies; all assets are local files in `money/`.
+

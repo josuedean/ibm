@@ -1,4 +1,5 @@
 /**
+ * Build stamp: 2026-03-26
  * Money Dashboard Apps Script API
  *
  * Deploy as Web app:

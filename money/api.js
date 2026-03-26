@@ -1,4 +1,5 @@
 (function () {
+  // api client build: 2026-03-26
   const { APPS_SCRIPT_URL } = window.MONEY_APP_CONFIG;
 
   function assertConfigured() {

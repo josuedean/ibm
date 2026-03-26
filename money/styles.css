@@ -1,3 +1,16 @@
+/* money dashboard styles */
+:root {
+  --bg-0: #070b14;
+  --bg-1: #0d1324;
+  --bg-2: #141d34;
+  --border: rgba(94, 126, 185, 0.32);
+  --text: #e8f1ff;
+  --text-muted: #90a3c9;
+  --neon-cyan: #00e5ff;
+  --neon-magenta: #ff3dff;
+  --neon-lime: #7cff5b;
+  --danger-neon: #ff5a7a;
+  --success-neon: #23e28f;
 :root {
   --bg: #eef2f7;
   --card: #ffffff;
@@ -14,6 +27,32 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Inter, Arial, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 20% -10%, rgba(0, 229, 255, 0.12), transparent 38%),
+    radial-gradient(circle at 95% 110%, rgba(255, 61, 255, 0.11), transparent 40%),
+    var(--bg-0);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.024) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.024) 1px, transparent 1px);
+  background-size: 26px 26px;
+  opacity: 0.45;
+  z-index: -1;
 body {
   margin: 0;
   font-family: Inter, Arial, Helvetica, sans-serif;
@@ -28,6 +67,30 @@ body {
 }
 
 .panel {
+  background: linear-gradient(180deg, rgba(17, 26, 47, 0.95), rgba(12, 19, 37, 0.95));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow:
+    0 15px 45px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 1px rgba(0, 229, 255, 0.04);
+  transition: transform 0.24s ease, opacity 0.24s ease;
+}
+
+.panel-enter {
+  animation: panelEnter 260ms ease forwards;
+}
+
+@keyframes panelEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -38,6 +101,13 @@ body {
 .panel-header h1 {
   margin: 0;
   font-size: 1.5rem;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 16px rgba(0, 229, 255, 0.3);
+}
+
+.subtle {
+  margin: 0.35rem 0 1rem;
+  color: var(--text-muted);
 }
 
 .subtle {
@@ -50,6 +120,73 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
+  margin: 0.95rem 0 1.2rem;
+}
+
+button {
+  font: inherit;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+button:active {
+  transform: scale(0.985);
+}
+
+button:disabled {
+  opacity: 0.66;
+  cursor: wait;
+}
+
+.action {
+  position: relative;
+  width: min(430px, 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.95rem 1rem;
+  overflow: hidden;
+}
+
+.action::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.28), transparent 65%);
+  transform: translateX(-100%);
+}
+
+.action:hover::after {
+  animation: shimmer 850ms ease;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.action-received {
+  background: linear-gradient(135deg, #00c7ff, #4bf6ff);
+  color: #05111e;
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.45);
+}
+
+.action-spent {
+  background: linear-gradient(135deg, #b14dff, #ff52ef);
+  box-shadow: 0 0 24px rgba(255, 61, 255, 0.35);
+}
+
+.totals,
+.monthly-grid,
+.grid {
   margin: 0.8rem 0 1.15rem;
 }
 
@@ -86,12 +223,40 @@ body {
 .total-card {
   border: 1px solid var(--border);
   border-radius: 12px;
+  padding: 0.85rem;
+  background: linear-gradient(180deg, rgba(20, 29, 52, 0.95), rgba(13, 20, 37, 0.95));
   padding: 0.8rem;
 }
 
 .total-card h2,
 .total-card h3 {
   margin: 0;
+  font-size: 0.95rem;
+  color: #c2d2f3;
+  font-weight: 600;
+}
+
+.total-value {
+  margin: 0.52rem 0 0;
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: 0.015em;
+  font-variant-numeric: tabular-nums;
+}
+
+.total-green {
+  color: var(--neon-lime);
+  text-shadow: 0 0 15px rgba(124, 255, 91, 0.48);
+}
+
+.total-light-green {
+  color: #2bf5a6;
+  text-shadow: 0 0 13px rgba(35, 226, 143, 0.35);
+}
+
+.total-light-red {
+  color: #ff7791;
+  text-shadow: 0 0 13px rgba(255, 90, 122, 0.35);
   font-size: 0.96rem;
   color: #334155;
 }
@@ -127,6 +292,8 @@ label {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  font-size: 0.9rem;
+  color: #d1def8;
   font-size: 0.92rem;
 }
 
@@ -139,6 +306,19 @@ button {
 input,
 select {
   width: 100%;
+  border: 1px solid rgba(123, 146, 194, 0.4);
+  background: var(--bg-2);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.64rem 0.68rem;
+  outline: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.2);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0.6rem 0.65rem;
@@ -148,6 +328,36 @@ select {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
+  margin-top: 0.8rem;
+}
+
+.actions button {
+  padding: 0.62rem 0.92rem;
+  color: #fff;
+  background: linear-gradient(135deg, #2e64ff, #4b85ff);
+}
+
+button.secondary {
+  background: linear-gradient(135deg, #17a4b8, #1ac9ce);
+  color: #05111e;
+}
+
+button.ghost {
+  background: linear-gradient(135deg, #243756, #30466a);
+}
+
+.message {
+  min-height: 1.25em;
+  margin: 0.7rem 0 0;
+  font-size: 0.94rem;
+}
+
+.message.error {
+  color: #ff8ea7;
+}
+
+.message.success {
+  color: #57f3ba;
   margin-top: 0.75rem;
 }
 
@@ -185,11 +395,40 @@ button.ghost {
 .overlay {
   position: fixed;
   inset: 0;
+  background: rgba(5, 8, 18, 0.72);
   background: rgba(15, 23, 42, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
+  backdrop-filter: blur(3px);
+}
+
+.overlay-card {
+  border: 1px solid rgba(0, 229, 255, 0.45);
+  background: linear-gradient(180deg, rgba(10, 20, 39, 0.98), rgba(11, 18, 33, 0.98));
+  color: var(--text);
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  font-weight: 700;
+  animation: pulseGlow 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes pulseGlow {
+  from {
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
+  }
+  to {
+    box-shadow: 0 0 22px rgba(0, 229, 255, 0.55);
+  }
+}
+
+dialog {
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  background: rgba(13, 19, 36, 0.98);
+  border-radius: 12px;
+  color: var(--text);
+  width: min(520px, calc(100vw - 2rem));
 }
 
 .overlay-card {
