@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Money Dashboard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <h1>Money Dashboard</h1>
+        <p>Record cash activity and track all-time total cash.</p>
+      </header>
+
+      <section class="card stats">
+        <h2>Total Cash (All-Time)</h2>
+        <p class="stat-value" id="totalCash">₩0</p>
+        <p class="stat-help">Formula: Total Received − Total Spent</p>
+      </section>
+
+      <section class="card">
+        <h2>Record Transaction</h2>
+        <form id="transactionForm" novalidate>
+          <div class="grid two-col">
+            <label>
+              Transaction Type *
+              <select id="transactionType" required>
+                <option value="">Select type</option>
+                <option value="received">Cash Received</option>
+                <option value="spent">Cash Spent</option>
+              </select>
+            </label>
+
+            <label>
+              Receiver / Spender *
+              <select id="person" required>
+                <option value="">Select person</option>
+                <option value="Josh">Josh</option>
+                <option value="Victoria">Victoria</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="grid two-col">
+            <label>
+              <span id="counterpartyLabel">Payer / Payee *</span>
+              <select id="counterparty" required>
+                <option value="">Select type first</option>
+              </select>
+            </label>
+
+            <label>
+              Date &amp; Time (KST) *
+              <input id="dateTime" type="datetime-local" required />
+            </label>
+          </div>
+
+          <div class="grid two-col">
+            <label>
+              Amount (KRW) *
+              <input id="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="10000" required />
+            </label>
+
+            <label>
+              Description (Optional)
+              <input id="description" type="text" maxlength="200" placeholder="Transaction details" />
+            </label>
+          </div>
+
+          <div class="actions">
+            <button type="button" id="openCounterpartyBtn" class="secondary">Add New Payer/Payee</button>
+            <button type="submit" id="submitBtn">Submit Transaction</button>
+          </div>
+          <p id="formMessage" class="message" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Recent Transactions</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp (KST)</th>
+                <th>Type</th>
+                <th>Person</th>
+                <th>Counterparty</th>
+                <th>Amount</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody id="recentTransactionsBody">
+              <tr>
+                <td colspan="6">No data loaded yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="counterpartyDialog">
+      <form id="counterpartyForm" method="dialog" novalidate>
+        <h3>Add New Payer/Payee</h3>
+        <p>This creates a reusable counterparty in Google Sheets.</p>
+
+        <label>
+          Name *
+          <input id="newCounterpartyName" type="text" maxlength="80" required />
+        </label>
+
+        <label>
+          Category *
+          <select id="newCounterpartyCategory" required>
+            <option value="">Select category</option>
+            <option value="tutee">Tutee (for Cash Received)</option>
+            <option value="merchant">Merchant (for Cash Spent)</option>
+          </select>
+        </label>
+
+        <label>
+          Description *
+          <input id="newCounterpartyDescription" type="text" maxlength="200" required />
+        </label>
+
+        <label>
+          Phone Number *
+          <input id="newCounterpartyPhone" type="tel" maxlength="25" placeholder="010-1234-5678" required />
+        </label>
+
+        <div class="actions">
+          <button type="button" id="cancelCounterpartyBtn" class="secondary">Cancel</button>
+          <button type="submit">Save Counterparty</button>
+        </div>
+        <p id="counterpartyMessage" class="message" aria-live="polite"></p>
+      </form>
+    </dialog>
+
+    <script src="./config.js"></script>
+    <script src="./api.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
