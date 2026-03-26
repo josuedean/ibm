@@ -80,6 +80,7 @@
     homeSection.classList.remove("hidden");
     animatePanel(homeSection);
     currentType = "";
+    formSection.classList.remove("form-received", "form-spent");
     form.reset();
     dateTimeEl.value = toKstDateTimeLocal();
     clearMessage(formMessage);
@@ -87,8 +88,10 @@
 
   function showForm(type) {
     currentType = type;
-    formTitle.textContent = type === "received" ? "Record Cash Received" : "Record Cash Spent";
+    formTitle.textContent = type === "received" ? "+ Record Cash Received" : "- Record Cash Spent";
     counterpartyLabel.textContent = type === "received" ? "Payer (Tutee) *" : "Payee (Merchant) *";
+    formSection.classList.remove("form-received", "form-spent");
+    formSection.classList.add(type === "received" ? "form-received" : "form-spent");
     renderCounterpartyOptions();
     dateTimeEl.value = toKstDateTimeLocal();
     clearMessage(formMessage);
