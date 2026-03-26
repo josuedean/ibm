@@ -7,31 +7,47 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="container">
-      <header class="header">
-        <h1>Money Dashboard</h1>
-        <p>Record cash activity and track all-time total cash.</p>
-      </header>
+    <main class="app-shell">
+      <section id="homeSection" class="panel">
+        <header class="panel-header">
+          <h1>Money Dashboard</h1>
+          <p class="subtle">Quick cash recording with KST totals.</p>
+        </header>
 
-      <section class="card stats">
-        <h2>Total Cash (All-Time)</h2>
-        <p class="stat-value" id="totalCash">₩0</p>
-        <p class="stat-help">Formula: Total Received − Total Spent</p>
+        <div class="action-buttons">
+          <button id="startReceivedBtn" class="action action-received">Record Cash Received</button>
+          <button id="startSpentBtn" class="action action-spent">Record Cash Spent</button>
+        </div>
+
+        <section class="totals">
+          <article class="total-card total-main">
+            <h2>Total Cash (All-Time)</h2>
+            <p id="totalCash" class="total-value total-green">₩0</p>
+          </article>
+
+          <div class="monthly-grid">
+            <article class="total-card">
+              <h3>This Month Received</h3>
+              <p id="monthReceived" class="total-value total-light-green">₩0</p>
+            </article>
+            <article class="total-card">
+              <h3>This Month Spent</h3>
+              <p id="monthSpent" class="total-value total-light-red">₩0</p>
+            </article>
+          </div>
+        </section>
+
+        <p id="homeMessage" class="message" aria-live="polite"></p>
       </section>
 
-      <section class="card">
-        <h2>Record Transaction</h2>
-        <form id="transactionForm" novalidate>
-          <div class="grid two-col">
-            <label>
-              Transaction Type *
-              <select id="transactionType" required>
-                <option value="">Select type</option>
-                <option value="received">Cash Received</option>
-                <option value="spent">Cash Spent</option>
-              </select>
-            </label>
+      <section id="formSection" class="panel hidden">
+        <header class="panel-header">
+          <h1 id="formTitle">Record Transaction</h1>
+          <p class="subtle">Only fields needed for this transaction are shown.</p>
+        </header>
 
+        <form id="transactionForm" novalidate>
+          <div class="grid">
             <label>
               Receiver / Spender *
               <select id="person" required>
@@ -40,13 +56,11 @@
                 <option value="Victoria">Victoria</option>
               </select>
             </label>
-          </div>
 
-          <div class="grid two-col">
             <label>
               <span id="counterpartyLabel">Payer / Payee *</span>
               <select id="counterparty" required>
-                <option value="">Select type first</option>
+                <option value="">Loading...</option>
               </select>
             </label>
 
@@ -54,9 +68,7 @@
               Date &amp; Time (KST) *
               <input id="dateTime" type="datetime-local" required />
             </label>
-          </div>
 
-          <div class="grid two-col">
             <label>
               Amount (KRW) *
               <input id="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="10000" required />
@@ -70,40 +82,21 @@
 
           <div class="actions">
             <button type="button" id="openCounterpartyBtn" class="secondary">Add New Payer/Payee</button>
+            <button type="button" id="cancelFormBtn" class="ghost">Back</button>
             <button type="submit" id="submitBtn">Submit Transaction</button>
           </div>
           <p id="formMessage" class="message" aria-live="polite"></p>
         </form>
       </section>
-
-      <section class="card">
-        <h2>Recent Transactions</h2>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Timestamp (KST)</th>
-                <th>Type</th>
-                <th>Person</th>
-                <th>Counterparty</th>
-                <th>Amount</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody id="recentTransactionsBody">
-              <tr>
-                <td colspan="6">No data loaded yet.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
     </main>
+
+    <div id="recordingOverlay" class="overlay hidden" role="status" aria-live="assertive">
+      <div class="overlay-card">Recording Transaction...</div>
+    </div>
 
     <dialog id="counterpartyDialog">
       <form id="counterpartyForm" method="dialog" novalidate>
         <h3>Add New Payer/Payee</h3>
-        <p>This creates a reusable counterparty in Google Sheets.</p>
 
         <label>
           Name *
