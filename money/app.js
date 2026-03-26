@@ -1,6 +1,19 @@
 (function () {
+  const homeSection = document.getElementById("homeSection");
+  const formSection = document.getElementById("formSection");
+  const recordingOverlay = document.getElementById("recordingOverlay");
+
+  const startReceivedBtn = document.getElementById("startReceivedBtn");
+  const startSpentBtn = document.getElementById("startSpentBtn");
+  const formTitle = document.getElementById("formTitle");
+  const cancelFormBtn = document.getElementById("cancelFormBtn");
+
+  const totalCashEl = document.getElementById("totalCash");
+  const monthReceivedEl = document.getElementById("monthReceived");
+  const monthSpentEl = document.getElementById("monthSpent");
+  const homeMessage = document.getElementById("homeMessage");
+
   const form = document.getElementById("transactionForm");
-  const typeEl = document.getElementById("transactionType");
   const personEl = document.getElementById("person");
   const counterpartyEl = document.getElementById("counterparty");
   const counterpartyLabel = document.getElementById("counterpartyLabel");
@@ -9,9 +22,6 @@
   const descriptionEl = document.getElementById("description");
   const submitBtn = document.getElementById("submitBtn");
   const formMessage = document.getElementById("formMessage");
-
-  const totalCashEl = document.getElementById("totalCash");
-  const recentTransactionsBody = document.getElementById("recentTransactionsBody");
 
   const openCounterpartyBtn = document.getElementById("openCounterpartyBtn");
   const counterpartyDialog = document.getElementById("counterpartyDialog");
@@ -24,6 +34,7 @@
   const counterpartyMessage = document.getElementById("counterpartyMessage");
 
   let counterparties = [];
+  let currentType = "";
 
   function formatKRW(value) {
     return `₩${Number(value || 0).toLocaleString("ko-KR")}`;
@@ -59,47 +70,61 @@
     setMessage(el, "", null);
   }
 
-  function filterCounterparties() {
-    const type = typeEl.value;
-    if (!type) {
-      return [];
-    }
+  function showHome() {
+    formSection.classList.add("hidden");
+    homeSection.classList.remove("hidden");
+    currentType = "";
+    form.reset();
+    dateTimeEl.value = toKstDateTimeLocal();
+    clearMessage(formMessage);
+  }
 
+  function showForm(type) {
+    currentType = type;
+    formTitle.textContent = type === "received" ? "Record Cash Received" : "Record Cash Spent";
+    counterpartyLabel.textContent = type === "received" ? "Payer (Tutee) *" : "Payee (Merchant) *";
+    renderCounterpartyOptions();
+    dateTimeEl.value = toKstDateTimeLocal();
+    clearMessage(formMessage);
+
+    homeSection.classList.add("hidden");
+    formSection.classList.remove("hidden");
+  }
+
+  function showRecordingOverlay(isVisible) {
+    recordingOverlay.classList.toggle("hidden", !isVisible);
+  }
+
+  function filterCounterpartiesByType(type) {
     const category = type === "received" ? "tutee" : "merchant";
     return counterparties.filter((cp) => cp.category === category && cp.active === true);
   }
 
   function renderCounterpartyOptions() {
-    const type = typeEl.value;
-    const label = type === "received" ? "Payer (Tutee) *" : type === "spent" ? "Payee (Merchant) *" : "Payer / Payee *";
-    counterpartyLabel.textContent = label;
-
-    const options = filterCounterparties();
-    if (!type) {
-      counterpartyEl.innerHTML = '<option value="">Select type first</option>';
+    if (!currentType) {
+      counterpartyEl.innerHTML = '<option value="">Select a record action first</option>';
       return;
     }
 
+    const options = filterCounterpartiesByType(currentType);
     if (options.length === 0) {
-      counterpartyEl.innerHTML = '<option value="">No names yet. Add one below.</option>';
+      const hint = currentType === "received" ? "No tutees yet. Add payer." : "No merchants yet. Add payee.";
+      counterpartyEl.innerHTML = `<option value="">${hint}</option>`;
       return;
     }
 
-    const placeholder = type === "received" ? "Select payer" : "Select payee";
+    const placeholder = currentType === "received" ? "Select payer" : "Select payee";
     counterpartyEl.innerHTML = `<option value="">${placeholder}</option>` +
-      options
-        .map((cp) => `<option value="${cp.id}">${cp.name}</option>`)
-        .join("");
+      options.map((cp) => `<option value="${cp.id}">${cp.name}</option>`).join("");
   }
 
   function validateTransaction() {
-    const type = typeEl.value;
     const person = personEl.value;
     const counterpartyId = counterpartyEl.value;
     const dateTimeKst = dateTimeEl.value;
     const amount = Number(amountEl.value);
 
-    if (!type) return "Select transaction type.";
+    if (!currentType) return "Choose received or spent from home screen.";
     if (!person) return "Select receiver/spender.";
     if (!counterpartyId) return "Select payer/payee.";
     if (!dateTimeKst) return "Select date and time.";
@@ -110,25 +135,8 @@
   async function refreshDashboard() {
     const data = await window.moneyApi.getDashboard();
     totalCashEl.textContent = formatKRW(data.dashboard.totalCash);
-
-    const rows = data.dashboard.recentTransactions || [];
-    if (rows.length === 0) {
-      recentTransactionsBody.innerHTML = '<tr><td colspan="6">No transactions yet.</td></tr>';
-      return;
-    }
-
-    recentTransactionsBody.innerHTML = rows
-      .map((row) => `
-        <tr>
-          <td>${row.dateTimeKst}</td>
-          <td>${row.type === "received" ? "Received" : "Spent"}</td>
-          <td>${row.person}</td>
-          <td>${row.counterpartyName}</td>
-          <td>${formatKRW(row.amountKrw)}</td>
-          <td>${row.description || ""}</td>
-        </tr>
-      `)
-      .join("");
+    monthReceivedEl.textContent = formatKRW(data.dashboard.monthReceived);
+    monthSpentEl.textContent = formatKRW(data.dashboard.monthSpent);
   }
 
   async function loadCounterparties() {
@@ -137,7 +145,9 @@
     renderCounterpartyOptions();
   }
 
-  typeEl.addEventListener("change", renderCounterpartyOptions);
+  startReceivedBtn.addEventListener("click", () => showForm("received"));
+  startSpentBtn.addEventListener("click", () => showForm("spent"));
+  cancelFormBtn.addEventListener("click", showHome);
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -150,9 +160,11 @@
     }
 
     submitBtn.disabled = true;
+    showRecordingOverlay(true);
+
     try {
       const payload = {
-        type: typeEl.value,
+        type: currentType,
         person: personEl.value,
         counterpartyId: counterpartyEl.value,
         dateTimeKst: dateTimeEl.value,
@@ -161,16 +173,13 @@
       };
 
       await window.moneyApi.addTransaction(payload);
-      setMessage(formMessage, "Transaction saved.", "success");
-
-      amountEl.value = "";
-      descriptionEl.value = "";
-      dateTimeEl.value = toKstDateTimeLocal();
-
       await refreshDashboard();
+      showHome();
+      setMessage(homeMessage, "Transaction recorded.", "success");
     } catch (err) {
       setMessage(formMessage, err.message || "Failed to save transaction.", "error");
     } finally {
+      showRecordingOverlay(false);
       submitBtn.disabled = false;
     }
   });
@@ -219,8 +228,8 @@
       await refreshDashboard();
     } catch (err) {
       setMessage(
-        formMessage,
-        `Setup error: ${err.message}. Configure APPS_SCRIPT_URL in money/config.js and deploy Apps Script as a web app.`,
+        homeMessage,
+        `Setup error: ${err.message}. Configure APPS_SCRIPT_URL in money/config.js and deploy Apps Script web app.`,
         "error"
       );
     }
