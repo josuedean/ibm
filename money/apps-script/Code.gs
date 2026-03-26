@@ -148,41 +148,40 @@ function getDashboard_() {
     return {
       dashboard: {
         totalCash: 0,
-        recentTransactions: [],
+        monthReceived: 0,
+        monthSpent: 0,
       },
     };
   }
 
+  const monthKey = Utilities.formatDate(new Date(), TZ, 'yyyy-MM');
   const header = values[0];
   const rows = values.slice(1).filter(r => String(r[0]).trim() !== '');
 
   let totalReceived = 0;
   let totalSpent = 0;
+  let monthReceived = 0;
+  let monthSpent = 0;
 
-  const txRows = rows.map(row => {
+  rows.forEach(row => {
     const type = String(row[header.indexOf('type')] || '');
     const amount = Number(row[header.indexOf('amount_krw')] || 0);
+    const txKst = String(row[header.indexOf('transaction_datetime_kst')] || '');
+
     if (type === 'received') totalReceived += amount;
     if (type === 'spent') totalSpent += amount;
 
-    return {
-      id: String(row[header.indexOf('transaction_id')] || ''),
-      dateTimeKst: String(row[header.indexOf('transaction_datetime_kst')] || ''),
-      type,
-      person: String(row[header.indexOf('person')] || ''),
-      counterpartyName: String(row[header.indexOf('counterparty_name')] || ''),
-      amountKrw: amount,
-      description: String(row[header.indexOf('description')] || ''),
-      timestampUtc: String(row[header.indexOf('created_at_utc')] || ''),
-    };
+    if (txKst.slice(0, 7) === monthKey) {
+      if (type === 'received') monthReceived += amount;
+      if (type === 'spent') monthSpent += amount;
+    }
   });
-
-  txRows.sort((a, b) => String(b.timestampUtc).localeCompare(String(a.timestampUtc)));
 
   return {
     dashboard: {
       totalCash: totalReceived - totalSpent,
-      recentTransactions: txRows.slice(0, 20),
+      monthReceived: monthReceived,
+      monthSpent: monthSpent,
     },
   };
 }
