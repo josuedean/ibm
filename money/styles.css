@@ -11,16 +11,6 @@
   --neon-lime: #7cff5b;
   --danger-neon: #ff5a7a;
   --success-neon: #23e28f;
-:root {
-  --bg: #eef2f7;
-  --card: #ffffff;
-  --text: #0f172a;
-  --muted: #64748b;
-  --border: #d9e1eb;
-  --primary: #2563eb;
-  --green: #15803d;
-  --green-soft: #16a34a;
-  --red-soft: #ef4444;
 }
 
 * {
@@ -53,11 +43,6 @@ body::before {
   background-size: 26px 26px;
   opacity: 0.45;
   z-index: -1;
-body {
-  margin: 0;
-  font-family: Inter, Arial, Helvetica, sans-serif;
-  background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
-  color: var(--text);
 }
 
 .app-shell {
@@ -91,11 +76,6 @@ body {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1rem;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
 }
 
 .panel-header h1 {
@@ -108,11 +88,6 @@ body {
 .subtle {
   margin: 0.35rem 0 1rem;
   color: var(--text-muted);
-}
-
-.subtle {
-  margin: 0.4rem 0 0.9rem;
-  color: var(--muted);
 }
 
 .action-buttons {
@@ -187,36 +162,11 @@ button:disabled {
 .totals,
 .monthly-grid,
 .grid {
-  margin: 0.8rem 0 1.15rem;
-}
-
-.action {
-  width: min(420px, 100%);
-  border: none;
-  border-radius: 12px;
-  color: #fff;
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 0.9rem 1rem;
-  cursor: pointer;
-}
-
-.action-received {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-}
-
-.action-spent {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-
-.totals {
   display: grid;
   gap: 0.75rem;
 }
 
 .monthly-grid {
-  display: grid;
-  gap: 0.75rem;
   grid-template-columns: 1fr;
 }
 
@@ -225,7 +175,6 @@ button:disabled {
   border-radius: 12px;
   padding: 0.85rem;
   background: linear-gradient(180deg, rgba(20, 29, 52, 0.95), rgba(13, 20, 37, 0.95));
-  padding: 0.8rem;
 }
 
 .total-card h2,
@@ -257,35 +206,6 @@ button:disabled {
 .total-light-red {
   color: #ff7791;
   text-shadow: 0 0 13px rgba(255, 90, 122, 0.35);
-  font-size: 0.96rem;
-  color: #334155;
-}
-
-.total-main h2 {
-  font-size: 1rem;
-}
-
-.total-value {
-  margin: 0.5rem 0 0;
-  font-size: 1.8rem;
-  font-weight: 800;
-}
-
-.total-green {
-  color: var(--green);
-}
-
-.total-light-green {
-  color: var(--green-soft);
-}
-
-.total-light-red {
-  color: var(--red-soft);
-}
-
-.grid {
-  display: grid;
-  gap: 0.7rem;
 }
 
 label {
@@ -294,13 +214,6 @@ label {
   gap: 0.35rem;
   font-size: 0.9rem;
   color: #d1def8;
-  font-size: 0.92rem;
-}
-
-input,
-select,
-button {
-  font: inherit;
 }
 
 input,
@@ -319,9 +232,6 @@ input:focus,
 select:focus {
   border-color: var(--neon-cyan);
   box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 0.6rem 0.65rem;
 }
 
 .actions {
@@ -358,45 +268,12 @@ button.ghost {
 
 .message.success {
   color: #57f3ba;
-  margin-top: 0.75rem;
-}
-
-button {
-  border: none;
-  border-radius: 10px;
-  background: var(--primary);
-  color: #fff;
-  padding: 0.62rem 0.9rem;
-  cursor: pointer;
-}
-
-button.secondary {
-  background: #334155;
-}
-
-button.ghost {
-  background: #cbd5e1;
-  color: #0f172a;
-}
-
-.message {
-  min-height: 1.2em;
-  margin: 0.65rem 0 0;
-}
-
-.message.error {
-  color: #b91c1c;
-}
-
-.message.success {
-  color: #166534;
 }
 
 .overlay {
   position: fixed;
   inset: 0;
   background: rgba(5, 8, 18, 0.72);
-  background: rgba(15, 23, 42, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -429,14 +306,6 @@ dialog {
   border-radius: 12px;
   color: var(--text);
   width: min(520px, calc(100vw - 2rem));
-}
-
-.overlay-card {
-  background: #111827;
-  color: #fff;
-  padding: 1rem 1.2rem;
-  border-radius: 12px;
-  font-weight: 700;
 }
 
 .hidden {
