@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>International Economics Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0b1929;
+    --navy-mid: #122236;
+    --navy-light: #1a3150;
+    --gold: #c8a96e;
+    --gold-bright: #e2c98a;
+    --gold-dim: #7a6440;
+    --cream: #f0e8d8;
+    --cream-dim: #b8aa94;
+    --white: #faf7f2;
+    --accent-teal: #3d7a82;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--navy);
+    font-family: 'Jost', sans-serif;
+    color: var(--cream);
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* Decorative background grid — longitude/latitude feel */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,169,110,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,169,110,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Radial glow center */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(26,49,80,0.6) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Slide container ── */
+  #stage {
+    position: relative;
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 80px 100px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.55s ease, transform 0.55s ease;
+    transform: translateX(40px);
+  }
+
+  .slide.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(0);
+  }
+
+  .slide.exit-left {
+    opacity: 0;
+    transform: translateX(-40px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+
+  /* ── Section badge ── */
+  .section-badge {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    padding: 5px 16px;
+    border-radius: 20px;
+    margin-bottom: 28px;
+    opacity: 0.85;
+  }
+
+  /* ── Slide number ── */
+  .slide-num {
+    position: absolute;
+    top: 36px;
+    right: 56px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    color: var(--gold-dim);
+  }
+
+  /* ── Titles ── */
+  .slide-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 600;
+    color: var(--white);
+    text-align: center;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .slide-title em {
+    font-style: italic;
+    color: var(--gold-bright);
+  }
+
+  /* Decorative rule under title */
+  .title-rule {
+    width: 64px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 auto 32px;
+  }
+
+  /* ── Body text ── */
+  .slide-body {
+    max-width: 780px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .slide-body p {
+    font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+    line-height: 1.75;
+    color: var(--cream-dim);
+    font-weight: 300;
+    margin-bottom: 10px;
+  }
+
+  /* ── Bullet list ── */
+  .slide-bullets {
+    list-style: none;
+    max-width: 700px;
+    width: 100%;
+    text-align: left;
+  }
+
+  .slide-bullets li {
+    font-size: clamp(0.9rem, 1.3vw, 1.05rem);
+    line-height: 1.7;
+    color: var(--cream);
+    font-weight: 300;
+    padding: 8px 0 8px 28px;
+    position: relative;
+    border-bottom: 1px solid rgba(200,169,110,0.08);
+  }
+
+  .slide-bullets li:last-child { border-bottom: none; }
+
+  .slide-bullets li::before {
+    content: '◆';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    font-size: 7px;
+    color: var(--gold);
+    line-height: 1.7;
+  }
+
+  .slide-bullets li strong {
+    color: var(--gold-bright);
+    font-weight: 500;
+  }
+
+  /* ── Correction / note box ── */
+  .note-box {
+    max-width: 700px;
+    width: 100%;
+    margin-top: 24px;
+    border-left: 2px solid var(--gold);
+    padding: 14px 20px;
+    background: rgba(200,169,110,0.05);
+    text-align: left;
+  }
+
+  .note-box .note-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .note-box p {
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--cream-dim);
+    font-style: italic;
+  }
+
+  /* ── Two-column vocab ── */
+  .vocab-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 36px;
+    max-width: 820px;
+    width: 100%;
+    text-align: left;
+  }
+
+  .vocab-item {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(200,169,110,0.1);
+  }
+
+  .vocab-term {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gold-bright);
+    letter-spacing: 0.02em;
+    margin-bottom: 3px;
+  }
+
+  .vocab-def {
+    font-size: 0.82rem;
+    color: var(--cream-dim);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  /* ── Summary card ── */
+  .summary-card {
+    max-width: 720px;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(26,49,80,0.8), rgba(11,25,41,0.9));
+    border: 1px solid rgba(200,169,110,0.25);
+    border-radius: 4px;
+    padding: 28px 36px;
+    margin-top: 16px;
+    text-align: center;
+  }
+
+  .summary-card p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+    font-style: italic;
+    font-weight: 300;
+    color: var(--cream);
+    line-height: 1.75;
+  }
+
+  /* ── 7 Themes grid ── */
+  .themes-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    max-width: 820px;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .theme-chip {
+    padding: 12px 10px;
+    border: 1px solid rgba(200,169,110,0.2);
+    background: rgba(200,169,110,0.04);
+    text-align: center;
+    border-radius: 2px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .theme-chip:hover {
+    border-color: rgba(200,169,110,0.5);
+    background: rgba(200,169,110,0.08);
+  }
+
+  .theme-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 300;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .theme-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--cream-dim);
+    line-height: 1.35;
+  }
+
+  /* ── Real-world 2×2 ── */
+  .use-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    max-width: 800px;
+    width: 100%;
+  }
+
+  .use-card {
+    border: 1px solid rgba(200,169,110,0.18);
+    background: rgba(18,34,54,0.6);
+    padding: 20px 22px;
+    border-radius: 3px;
+    text-align: left;
+  }
+
+  .use-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--gold-bright);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+
+  .use-card p {
+    font-size: 0.83rem;
+    line-height: 1.6;
+    color: var(--cream-dim);
+    font-weight: 300;
+  }
+
+  /* ── Decorative corner marks ── */
+  .corner-mark {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    opacity: 0.25;
+  }
+  .corner-mark.tl { top: 24px; left: 40px; border-top: 1px solid var(--gold); border-left: 1px solid var(--gold); }
+  .corner-mark.tr { top: 24px; right: 40px; border-top: 1px solid var(--gold); border-right: 1px solid var(--gold); }
+  .corner-mark.bl { bottom: 80px; left: 40px; border-bottom: 1px solid var(--gold); border-left: 1px solid var(--gold); }
+  .corner-mark.br { bottom: 80px; right: 40px; border-bottom: 1px solid var(--gold); border-right: 1px solid var(--gold); }
+
+  /* ── Navigation bar ── */
+  #nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 16px 24px 22px;
+    background: linear-gradient(to top, rgba(11,25,41,0.98) 60%, transparent);
+  }
+
+  .nav-btn {
+    background: none;
+    border: 1px solid rgba(200,169,110,0.35);
+    color: var(--gold);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .nav-btn:hover:not(:disabled) {
+    background: rgba(200,169,110,0.12);
+    border-color: var(--gold);
+    transform: scale(1.05);
+  }
+
+  .nav-btn:disabled {
+    opacity: 0.2;
+    cursor: default;
+  }
+
+  #dots {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 480px;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(200,169,110,0.2);
+    border: 1px solid rgba(200,169,110,0.3);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+  }
+
+  .dot.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    transform: scale(1.4);
+  }
+
+  .dot:hover:not(.active) {
+    background: rgba(200,169,110,0.45);
+  }
+
+  /* ── Title slide special layout ── */
+  .slide-hero .slide-title {
+    font-size: clamp(2.4rem, 5.5vw, 4rem);
+    margin-bottom: 20px;
+  }
+
+  .hero-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--gold-dim);
+    letter-spacing: 0.08em;
+    margin-bottom: 36px;
+    text-align: center;
+  }
+
+  .hero-chapters {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .hero-chip {
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    border: 1px solid rgba(200,169,110,0.2);
+    padding: 6px 18px;
+    border-radius: 20px;
+  }
+
+  /* ── Gravity model visual ── */
+  .gravity-visual {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 24px auto 8px;
+    max-width: 640px;
+    justify-content: center;
+  }
+
+  .gravity-node {
+    text-align: center;
+    padding: 0 12px;
+  }
+
+  .gravity-circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 1px solid rgba(200,169,110,0.4);
+    background: radial-gradient(circle at 35% 35%, rgba(200,169,110,0.15), rgba(11,25,41,0.6));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.8rem;
+    color: var(--gold-bright);
+    text-align: center;
+    line-height: 1.3;
+    margin: 0 auto 8px;
+  }
+
+  .gravity-circle.large {
+    width: 120px;
+    height: 120px;
+    font-size: 0.9rem;
+    border-color: rgba(200,169,110,0.6);
+    background: radial-gradient(circle at 35% 35%, rgba(200,169,110,0.25), rgba(11,25,41,0.7));
+  }
+
+  .gravity-arrow {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+
+  .gravity-arrow::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(200,169,110,0.4), rgba(200,169,110,0.8), rgba(200,169,110,0.4));
+    transform: translateY(-50%);
+  }
+
+  .gravity-label {
+    font-size: 0.68rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    position: relative;
+    background: var(--navy);
+    padding: 0 8px;
+    font-weight: 500;
+  }
+
+  .gravity-node-label {
+    font-size: 0.72rem;
+    color: var(--cream-dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Trade timeline ── */
+  .timeline {
+    max-width: 720px;
+    width: 100%;
+    position: relative;
+    padding-left: 20px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent);
+  }
+
+  .tl-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 10px 0 10px 20px;
+    position: relative;
+  }
+
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 16px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--navy);
+    box-shadow: 0 0 6px rgba(200,169,110,0.5);
+  }
+
+  .tl-era {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--gold-bright);
+    min-width: 140px;
+    padding-top: 2px;
+    letter-spacing: 0.02em;
+  }
+
+  .tl-desc {
+    font-size: 0.87rem;
+    color: var(--cream-dim);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* ── Keyboard hint ── */
+  #keyboard-hint {
+    position: fixed;
+    bottom: 22px;
+    right: 36px;
+    font-size: 0.65rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    z-index: 101;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 680px) {
+    .slide { padding: 32px 28px 90px; }
+    .vocab-grid { grid-template-columns: 1fr; }
+    .themes-grid { grid-template-columns: repeat(2,1fr); }
+    .use-grid { grid-template-columns: 1fr; }
+    .gravity-visual { flex-direction: column; }
+    .corner-mark { display: none; }
+    .slide-num { top: 18px; right: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+  <!-- ── Slide 0: Hero / Intro ── -->
+  <div class="slide slide-hero" data-slide="0">
+    <div class="corner-mark tl"></div>
+    <div class="corner-mark tr"></div>
+    <div class="corner-mark bl"></div>
+    <div class="corner-mark br"></div>
+    <div class="section-badge">International Economics</div>
+    <h1 class="slide-title">Chapters 1 &amp; 2<br><em>Review</em></h1>
+    <p class="hero-subtitle">The World Economy — Trade, Distance &amp; Global Patterns</p>
+    <div class="hero-chapters">
+      <span class="hero-chip">7 Recurring Themes</span>
+      <span class="hero-chip">Gravity Model</span>
+      <span class="hero-chip">World Trade History</span>
+      <span class="hero-chip">Vocabulary</span>
+    </div>
+  </div>
+
+  <!-- ── Slide 1: Learning Objective ── -->
+  <div class="slide" data-slide="1">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">01 / 14</span>
+    <div class="section-badge">Main Review</div>
+    <h2 class="slide-title">Learning <em>Objectives</em></h2>
+    <div class="title-rule"></div>
+    <ul class="slide-bullets">
+      <li>Identify the <strong>seven recurring themes</strong> that structure international economics as a field</li>
+      <li>Explain how the <strong>gravity model</strong> predicts the volume of trade between two countries</li>
+      <li>Describe how world trade changed over time in both <strong>amount</strong> and <strong>composition</strong></li>
+    </ul>
+  </div>
+
+  <!-- ── Slide 2: What It Studies ── -->
+  <div class="slide" data-slide="2">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">02 / 14</span>
+    <div class="section-badge">Main Review</div>
+    <h2 class="slide-title">What International Economics <em>Studies</em></h2>
+    <div class="title-rule"></div>
+    <ul class="slide-bullets">
+      <li>Studies <strong>economic interaction between sovereign states</strong> — not simply regions inside a single country</li>
+      <li>The underlying economics is the same, but nations can independently set <strong>tariffs</strong>, use <strong>different currencies</strong>, and pursue <strong>separate policies</strong></li>
+      <li>Core concerns: <strong>trade</strong>, international <strong>payments</strong>, <strong>exchange rates</strong>, <strong>policy coordination</strong>, and <strong>capital flows</strong></li>
+    </ul>
+    <div class="note-box">
+      <div class="note-label">Why it matters</div>
+      <p>These independent policy choices are precisely what make international economics a distinct discipline — and what make trade so fascinating to study.</p>
+    </div>
+  </div>
+
+  <!-- ── Slide 3: 7 Themes ── -->
+  <div class="slide" data-slide="3">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">03 / 14</span>
+    <div class="section-badge">Main Review</div>
+    <h2 class="slide-title">The <em>7</em> Recurring Themes</h2>
+    <div class="title-rule"></div>
+    <div class="themes-grid">
+      <div class="theme-chip"><span class="theme-num">I</span><span class="theme-label">Gains from Trade</span></div>
+      <div class="theme-chip"><span class="theme-num">II</span><span class="theme-label">Pattern of Trade</span></div>
+      <div class="theme-chip"><span class="theme-num">III</span><span class="theme-label">How Much Trade / Protectionism</span></div>
+      <div class="theme-chip"><span class="theme-num">IV</span><span class="theme-label">Balance of Payments</span></div>
+      <div class="theme-chip"><span class="theme-num">V</span><span class="theme-label">Exchange Rate Determination</span></div>
+      <div class="theme-chip"><span class="theme-num">VI</span><span class="theme-label">Intl. Policy Coordination</span></div>
+      <div class="theme-chip"><span class="theme-num">VII</span><span class="theme-label">Intl. Capital Market</span></div>
+      <div class="theme-chip" style="border-color:rgba(200,169,110,0.08); background:rgba(200,169,110,0.01);">
+        <span class="theme-label" style="color:var(--gold-dim); font-size:0.68rem; line-height:1.5;">Not random topics — recurring <em>questions</em> that organize the entire field</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Slide 4: What Students Miss ── -->
+  <div class="slide" data-slide="4">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">04 / 14</span>
+    <div class="section-badge">Main Review</div>
+    <h2 class="slide-title">What Students Often <em>Miss</em></h2>
+    <div class="title-rule"></div>
+    <ul class="slide-bullets">
+      <li><strong>Gains from trade</strong> — asks <em>why</em> trade can benefit both sides, even when one country is more efficient at everything</li>
+      <li><strong>Pattern of trade</strong> — asks <em>who</em> trades <em>what</em> with <em>whom</em>, and why specialization emerges</li>
+      <li><strong>How much trade</strong> — is really about limits, barriers, and the politics of <em>protectionism</em></li>
+      <li>The <strong>last four themes</strong> connect trade to money, finance, and the coordination of economic policy between nations</li>
+    </ul>
+    <div class="note-box">
+      <div class="note-label">Common Correction</div>
+      <p>International economics is not only about imports and exports — money, exchange rates, capital flows, and policy all belong to the same field.</p>
+    </div>
+  </div>
+
+  <!-- ── Slide 5: Gravity Model ── -->
+  <div class="slide" data-slide="5">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">05 / 14</span>
+    <div class="section-badge">Main Review</div>
+    <h2 class="slide-title">Gravity Model: <em>The Big Idea</em></h2>
+    <div class="title-rule"></div>
+    <div class="gravity-visual">
+      <div class="gravity-node">
+        <div class="gravity-circle large">Country<br>A<br><span style="font-size:0.68rem;color:var(--gold);">Large GDP</span></div>
+        <div class="gravity-node-label">Large Economy</div>
+      </div>
+      <div class="gravity-arrow"><span class="gravity-label">Trade Volume</span></div>
+      <div class="gravity-node">
+        <div class="gravity-circle large">Country<br>B<br><span style="font-size:0.68rem;color:var(--gold);">Large GDP</span></div>
+        <div class="gravity-node-label">Large Economy</div>
+      </div>
+    </div>
+    <ul class="slide-bullets" style="margin-top:12px;">
+      <li><strong>Bigger economies</strong> generate more trade — both as buyers and as sellers</li>
+      <li><strong>Greater distance</strong> reduces trade by raising transport and coordination costs</li>
+      <li>Simple rule: <em>economic size raises trade; distance reduces it</em></li>
+      <li>Explains <em>who trades with whom</em> before deeper theories of specialization are introduced</li>
+    </ul>
+  </div>
+
+  <!-- ── Slide 6: 2 Best Predictors ── -->
+  <div class="slide" data-slide="6">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">06 / 14</span>
+    <div class="section-badge">Main Review</div>
+    <h2 class="slide-title">The <em>2</em> Best Predictors of Trade Volume</h2>
+    <div class="title-rule"></div>
+    <div style="display:flex; gap:20px; max-width:680px; width:100%; margin-bottom:24px;">
+      <div style="flex:1; border:1px solid rgba(200,169,110,0.3); padding:24px 20px; text-align:center; background:rgba(200,169,110,0.04); border-radius:3px;">
+        <div style="font-family:'Cormorant Garamond',serif; font-size:2.8rem; font-weight:300; color:var(--gold); line-height:1;">GDP</div>
+        <div style="font-size:0.8rem; color:var(--cream-dim); margin-top:8px; line-height:1.5;">Size of both economies<br>combined — trade grows<br>with economic mass</div>
+      </div>
+      <div style="display:flex; align-items:center; color:var(--gold-dim); font-family:'Cormorant Garamond',serif; font-size:1.6rem;">÷</div>
+      <div style="flex:1; border:1px solid rgba(200,169,110,0.3); padding:24px 20px; text-align:center; background:rgba(200,169,110,0.04); border-radius:3px;">
+        <div style="font-family:'Cormorant Garamond',serif; font-size:2.8rem; font-weight:300; color:var(--gold); line-height:1;">D</div>
+        <div style="font-size:0.8rem; color:var(--cream-dim); margin-top:8px; line-height:1.5;">Distance between them<br>— trade falls as the<br>journey lengthens</div>
+      </div>
+    </div>
+    <div class="note-box">
+      <div class="note-label">Likely Misunderstanding</div>
+      <p>Trade is not predicted mainly by "friendship," diplomatic ties, or policy agreements alone. GDP and distance do most of the basic predictive work in the model — everything else is adjustment.</p>
+    </div>
+  </div>
+
+  <!-- ── Slide 7: Distance Still Matters ── -->
+  <div class="slide" data-slide="7">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">07 / 14</span>
+    <div class="section-badge">Main Review</div>
+    <h2 class="slide-title">Why Distance &amp; Borders <em>Still Matter</em></h2>
+    <div class="title-rule"></div>
+    <ul class="slide-bullets">
+      <li><strong>Distance raises costs</strong> — freight, insurance, communication delays, and coordination overhead all increase with separation</li>
+      <li><strong>Nearby countries trade more</strong> — proximity creates familiarity, shared infrastructure, and cultural ties that facilitate exchange</li>
+      <li><strong>Borders reduce trade</strong> even when formal tariffs are low — differing regulations, standards, languages, and legal systems all add friction</li>
+      <li><strong>Trade agreements help</strong>, but they cannot erase geography or dissolve national institutions</li>
+    </ul>
+    <div class="note-box">
+      <div class="note-label">Correction</div>
+      <p>Globalization did not make distance irrelevant. Empirical research consistently finds that distance still has a large, statistically significant negative effect on trade volumes.</p>
+    </div>
+  </div>
+
+  <!-- ── Slide 8: Amount Over Time ── -->
+  <div class="slide" data-slide="8">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">08 / 14</span>
+    <div class="section-badge">Main Review</div>
+    <h2 class="slide-title">How the <em>Amount</em> of World Trade Changed</h2>
+    <div class="title-rule"></div>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-era">Pre–WWI</div>
+        <div class="tl-desc">Trade expanded strongly during the first great age of globalization — falling transport costs and the gold standard supported growing exchange</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-era">1914 – 1945</div>
+        <div class="tl-desc">War, the Great Depression, and a wave of protectionism (Smoot-Hawley era) caused world trade to collapse dramatically</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-era">Post–WWII Recovery</div>
+        <div class="tl-desc">Slow reconstruction under GATT, Bretton Woods institutions, and gradual tariff reduction brought trade back</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-era">Late 20th–21st C.</div>
+        <div class="tl-desc">Trade surged sharply — driven by containerization, global supply chains, digital coordination, and WTO membership expansion</div>
+      </div>
+    </div>
+    <div class="note-box" style="margin-top:14px;">
+      <div class="note-label">Key Point</div>
+      <p>There were two major ages of globalization — not one smooth upward trend. History shows that trade can reverse.</p>
+    </div>
+  </div>
+
+  <!-- ── Slide 9: Composition ── -->
+  <div class="slide" data-slide="9">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">09 / 14</span>
+    <div class="section-badge">Main Review</div>
+    <h2 class="slide-title">How the <em>Composition</em> of Trade Changed</h2>
+    <div class="title-rule"></div>
+    <ul class="slide-bullets">
+      <li><strong>Earlier trade</strong> relied heavily on <em>primary products</em> — agricultural commodities, raw materials, and natural resources</li>
+      <li><strong>Modern trade</strong> is dominated by <em>manufactured goods</em> — machinery, electronics, vehicles, and complex industrial products</li>
+      <li><strong>Services</strong> have become increasingly important, enabled by improved telecommunications, the internet, and digital trade platforms</li>
+      <li><strong>Developing countries</strong> have shifted from exporting mostly primary goods to exporting a broad range of manufactured products — dramatically changing their place in world trade</li>
+    </ul>
+  </div>
+
+  <!-- ── Slide 10: Review Check ── -->
+  <div class="slide" data-slide="10">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">10 / 14</span>
+    <div class="section-badge">Main Review</div>
+    <h2 class="slide-title">Review <em>Check</em></h2>
+    <div class="title-rule"></div>
+    <ul class="slide-bullets">
+      <li>International economics studies interaction <strong>across sovereign states</strong></li>
+      <li>The <strong>7 themes</strong> frame the whole subject — they are recurring questions, not chapter topics</li>
+      <li>Gravity model: <strong>GDP ↑ → trade ↑ · Distance ↑ → trade ↓</strong></li>
+      <li>Borders and distance <strong>still matter</strong>, even with trade agreements</li>
+      <li>Trade changed in both <em>how much</em> and <em>what gets traded</em></li>
+    </ul>
+    <div class="summary-card">
+      <p>World trade expanded over time, but unevenly — and today it is shaped by large economies, distance, and a long-run shift toward manufactures and services.</p>
+    </div>
+  </div>
+
+  <!-- ── Slide 11: Vocabulary ── -->
+  <div class="slide" data-slide="11">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">11 / 14</span>
+    <div class="section-badge">Add-On</div>
+    <h2 class="slide-title">Key <em>Vocabulary</em></h2>
+    <div class="title-rule"></div>
+    <div class="vocab-grid">
+      <div class="vocab-item"><div class="vocab-term">International Economics</div><div class="vocab-def">Study of trade, finance, and policy across sovereign countries</div></div>
+      <div class="vocab-item"><div class="vocab-term">Sovereign State</div><div class="vocab-def">An independent country with its own government and policy-setting powers</div></div>
+      <div class="vocab-item"><div class="vocab-term">Gains from Trade</div><div class="vocab-def">Benefits both countries receive from exchanging goods or services</div></div>
+      <div class="vocab-item"><div class="vocab-term">Pattern of Trade</div><div class="vocab-def">Who trades what with whom — and why specialization arises</div></div>
+      <div class="vocab-item"><div class="vocab-term">Protectionism</div><div class="vocab-def">Government actions limiting foreign competition — tariffs, quotas, subsidies</div></div>
+      <div class="vocab-item"><div class="vocab-term">Balance of Payments</div><div class="vocab-def">Complete record of a country's international transactions</div></div>
+      <div class="vocab-item"><div class="vocab-term">Exchange Rate</div><div class="vocab-def">Price of one currency expressed in terms of another</div></div>
+      <div class="vocab-item"><div class="vocab-term">Gravity Model</div><div class="vocab-def">Predicts trade volume using economic size (GDP) and geographic distance</div></div>
+      <div class="vocab-item"><div class="vocab-term">GDP</div><div class="vocab-def">Total value of all goods and services produced in an economy in a year</div></div>
+      <div class="vocab-item"><div class="vocab-term">Globalization</div><div class="vocab-def">Increasing economic integration and interdependence across countries</div></div>
+    </div>
+  </div>
+
+  <!-- ── Slide 12: Direct Answers ── -->
+  <div class="slide" data-slide="12">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">12 / 14</span>
+    <div class="section-badge">Add-On</div>
+    <h2 class="slide-title"><em>Direct</em> Answers</h2>
+    <div class="title-rule"></div>
+    <ul class="slide-bullets">
+      <li><strong>The 7 recurring themes:</strong> gains from trade · pattern of trade · protectionism/how much trade · balance of payments · exchange rate determination · international policy coordination · international capital market</li>
+      <li><strong>Two strongest predictors of trade volume:</strong> the size of both economies (GDP) and the geographic distance between them</li>
+      <li><strong>Trade over time:</strong> first expanded → fell during wars, depression, and protectionism → recovered slowly → surged to very high levels; composition shifted from primary products toward manufactured goods, with services increasingly important</li>
+    </ul>
+  </div>
+
+  <!-- ── Slide 13: Real-World Uses ── -->
+  <div class="slide" data-slide="13">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">13 / 14</span>
+    <div class="section-badge">Add-On</div>
+    <h2 class="slide-title"><em>Real-World</em> Applications</h2>
+    <div class="title-rule"></div>
+    <div class="use-grid">
+      <div class="use-card">
+        <div class="use-card-title">Governments &amp; Policy</div>
+        <p>Use these frameworks for trade negotiations, interpreting current-account deficits or surpluses, and designing tariff or subsidy regimes</p>
+      </div>
+      <div class="use-card">
+        <div class="use-card-title">Businesses &amp; Exporters</div>
+        <p>Use gravity model logic to choose export markets, evaluate suppliers, and decide where to locate production facilities</p>
+      </div>
+      <div class="use-card">
+        <div class="use-card-title">Logistics &amp; Supply Chains</div>
+        <p>Multinational firms use market size, distance, and trade barriers to plan distribution networks and manage global inventory</p>
+      </div>
+      <div class="use-card">
+        <div class="use-card-title">Economists &amp; Investors</div>
+        <p>Use these ideas to explain global trade patterns, forecast shifts in specialization, and assess country-level economic risk</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Slide 14: Limits ── -->
+  <div class="slide" data-slide="14">
+    <div class="corner-mark tl"></div><div class="corner-mark tr"></div><div class="corner-mark bl"></div><div class="corner-mark br"></div>
+    <span class="slide-num">14 / 14</span>
+    <div class="section-badge">Add-On</div>
+    <h2 class="slide-title">Where the Ideas <em>Don't Fully Explain</em></h2>
+    <div class="title-rule"></div>
+    <ul class="slide-bullets">
+      <li>The <strong>gravity model</strong> predicts broad patterns well — but not perfectly; outliers exist and require additional explanation</li>
+      <li>Special factors — shared <strong>language</strong>, <strong>colonial history</strong>, <strong>multinational firms</strong>, and regional geography — can push trade above or below the model's prediction</li>
+      <li><em>"The world got smaller"</em> is only partly true: distance and borders retain large, measurable effects on trade even today</li>
+      <li>Chapters 1–2 introduce patterns and regularities, but do not yet fully explain <strong>comparative advantage</strong>, specialization, or all modern trade outcomes — those come later</li>
+    </ul>
+    <div class="note-box">
+      <div class="note-label">Looking Ahead</div>
+      <p>The gravity model describes what we observe. The theories of comparative advantage and factor endowments (Heckscher-Ohlin) explain why these patterns arise — that's where the course goes next.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Navigation ── -->
+<nav id="nav">
+  <button class="nav-btn" id="btn-prev" aria-label="Previous slide">&#8592;</button>
+  <div id="dots"></div>
+  <button class="nav-btn" id="btn-next" aria-label="Next slide">&#8594;</button>
+</nav>
+
+<div id="keyboard-hint">← → or click dots</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsContainer = document.getElementById('dots');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  const TOTAL = slides.length;
+  let current = 0;
+  let animating = false;
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('button');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.setAttribute('aria-label', `Go to slide ${i + 1}`);
+    d.addEventListener('click', () => goTo(i));
+    dotsContainer.appendChild(d);
+  });
+
+  const dots = document.querySelectorAll('.dot');
+
+  function goTo(idx) {
+    if (idx === current || animating) return;
+    animating = true;
+
+    const prev = slides[current];
+    prev.classList.add('exit-left');
+    setTimeout(() => {
+      prev.classList.remove('active', 'exit-left');
+    }, 350);
+
+    dots[current].classList.remove('active');
+    current = idx;
+    dots[current].classList.add('active');
+
+    setTimeout(() => {
+      slides[current].classList.add('active');
+      animating = false;
+      updateNav();
+    }, 60);
+  }
+
+  function updateNav() {
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === TOTAL - 1;
+  }
+
+  btnPrev.addEventListener('click', () => goTo(current - 1));
+  btnNext.addEventListener('click', () => goTo(current + 1));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(Math.min(current + 1, TOTAL - 1));
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(Math.max(current - 1, 0));
+  });
+
+  // Init
+  slides[0].classList.add('active');
+  updateNav();
+</script>
+</body>
+</html>
