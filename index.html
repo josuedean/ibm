@@ -1,20 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Cube Landing Page</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- Using CDN for Three.js that will work on file:// protocol -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.159.0/three.min.js"></script>
-</head>
-<body>
-    <div id="container">
-        <div id="loading">Loading 3D cube...</div>
-        <div id="error-message" style="display: none;">Failed to load 3D cube. Please check console for errors.</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Mitigating Bruises — a text-based JavaScript game about surviving the banana supply chain, beginning at the farm."
+    />
+    <title>Mitigating Bruises — Stage 1: Farm</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <p class="eyebrow">Stage 1 · Farm</p>
+        <h1>Mitigating Bruises</h1>
+        <p class="tagline">A banana's first lesson in supply chain survival.</p>
+      </header>
+
+      <main class="game-layout" aria-live="polite">
+        <aside class="panel stats-panel" aria-labelledby="stats-heading">
+          <div class="panel-header">
+            <h2 id="stats-heading">Condition Report</h2>
+            <span id="scene-counter" class="scene-counter">Scene 1 of 3</span>
+          </div>
+          <div id="stats-list" class="stats-list"></div>
+          <div class="legend">
+            <p><strong>Goal:</strong> stay firm, stay fresh, keep the bruises theoretical.</p>
+          </div>
+        </aside>
+
+        <section class="panel story-panel" aria-labelledby="scene-title">
+          <div class="story-copy">
+            <p id="scene-kicker" class="scene-kicker"></p>
+            <h2 id="scene-title">Loading…</h2>
+            <p id="scene-text" class="scene-text"></p>
+            <p id="scene-flavor" class="scene-flavor"></p>
+          </div>
+
+          <div id="feedback" class="feedback" hidden></div>
+
+          <div class="choices-wrap">
+            <h3>Choose your response</h3>
+            <div id="choices" class="choices" role="list"></div>
+          </div>
+        </section>
+      </main>
+
+      <section id="ending-panel" class="panel ending-panel" hidden aria-labelledby="ending-title">
+        <p class="eyebrow">Stage Outcome</p>
+        <h2 id="ending-title"></h2>
+        <p id="ending-text" class="ending-text"></p>
+        <div id="summary-tags" class="summary-tags"></div>
+        <button id="restart-button" class="primary-button" type="button">Play Again</button>
+      </section>
+
+      <section id="error-panel" class="panel error-panel" hidden>
+        <h2>Game failed to load</h2>
+        <p id="error-text">Something went wrong while loading the stage data.</p>
+      </section>
     </div>
-    
-    <!-- Load our script as a regular script, not a module -->
-    <script src="script.js"></script>
-</body>
+
+    <script src="app.js" defer></script>
+  </body>
 </html>

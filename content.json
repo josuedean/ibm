@@ -1,0 +1,202 @@
+{
+  "meta": {
+    "title": "Mitigating Bruises",
+    "stage": "Stage 1: Farm",
+    "subtitle": "A banana's first lesson in supply chain survival."
+  },
+  "initialStats": {
+    "freshness": 78,
+    "firmness": 72,
+    "bruiseRisk": 18,
+    "grade": 70
+  },
+  "scenes": [
+    {
+      "id": "scene-1",
+      "kicker": "Scene 1 · On the Plant",
+      "title": "Growing Under Tropical Negotiation",
+      "text": "You hang in a crowded cluster beneath large leaves and indifferent weather. Rain has been heavy, heat has been uneven, and everyone keeps using phrases like 'optimal yield' without once asking how you feel about it.",
+      "flavor": "Every supply chain begins with weather and optimism.",
+      "choices": [
+        {
+          "label": "Tuck inward beneath the bunch",
+          "preview": "Reduce exposure and preserve firmness, but develop a slightly less impressive look.",
+          "result": "You press inward, protected by your neighbors. It is not glamorous, but neither is impact trauma.",
+          "effects": {
+            "freshness": 4,
+            "firmness": 6,
+            "bruiseRisk": -4,
+            "grade": -2
+          }
+        },
+        {
+          "label": "Stretch toward the sun",
+          "preview": "Improve appearance and grade, but risk softness and later handling problems.",
+          "result": "You angle outward for color and shape. You look commercially promising and personally vulnerable.",
+          "effects": {
+            "freshness": 2,
+            "firmness": -5,
+            "bruiseRisk": 6,
+            "grade": 7
+          }
+        },
+        {
+          "label": "Hold steady and conserve energy",
+          "preview": "A balanced response with smaller gains and fewer risks.",
+          "result": "You commit to quiet professionalism: no heroics, no panic, no dramatic peel behavior.",
+          "effects": {
+            "freshness": 3,
+            "firmness": 2,
+            "bruiseRisk": -1,
+            "grade": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "scene-2",
+      "kicker": "Scene 2 · Nearly Ready",
+      "title": "Ripeness Is a Political Question",
+      "text": "The farm is preparing for harvest decisions. Too early and you may seem underdeveloped. Too late and you begin to soften into a logistical liability. Timing, as always, is being discussed by people with knives.",
+      "flavor": "Readiness is not the same thing as comfort.",
+      "choices": [
+        {
+          "label": "Stay firmer for the journey ahead",
+          "preview": "Safer for handling and export, but less likely to earn top visual marks right now.",
+          "result": "You resist the temptation to ripen too fast. This is wise, if not immediately photogenic.",
+          "effects": {
+            "freshness": 2,
+            "firmness": 7,
+            "bruiseRisk": -3,
+            "grade": -1
+          }
+        },
+        {
+          "label": "Push for ideal-looking maturity",
+          "preview": "Higher grade if judged now, but more delicate at harvest.",
+          "result": "You lean into market appeal. Somewhere, a quality inspector nods while your structural integrity files a complaint.",
+          "effects": {
+            "freshness": -2,
+            "firmness": -6,
+            "bruiseRisk": 7,
+            "grade": 8
+          }
+        },
+        {
+          "label": "Aim for balanced readiness",
+          "preview": "Moderate gains across the board without strong specialization.",
+          "result": "You choose moderation, the least glamorous and often most survivable philosophy in agriculture.",
+          "effects": {
+            "freshness": 1,
+            "firmness": 2,
+            "bruiseRisk": -1,
+            "grade": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "scene-3",
+      "kicker": "Scene 3 · Harvest Day",
+      "title": "The Hands Arrive",
+      "text": "Morning begins with cutting tools, hurried footsteps, and a level of physical trust you did not consent to. Once detached from the plant, your future depends on angles, cushioning, timing, and whether anyone drops your cluster while discussing lunch.",
+      "flavor": "Bruises are often just logistics made visible.",
+      "choices": [
+        {
+          "label": "Brace and stay compact during cutting",
+          "preview": "Protect against impact and preserve grade, though some freshness is lost in the stress.",
+          "result": "You keep your structure tight and survive the transfer with only minor indignities.",
+          "effects": {
+            "freshness": -3,
+            "firmness": 4,
+            "bruiseRisk": -6,
+            "grade": 4
+          }
+        },
+        {
+          "label": "Relax and hope for gentle handling",
+          "preview": "Best case keeps freshness high; worst case invites bruising.",
+          "result": "You choose trust. The universe responds with mixed professionalism.",
+          "effects": {
+            "freshness": 3,
+            "firmness": -4,
+            "bruiseRisk": 8,
+            "grade": -2
+          }
+        },
+        {
+          "label": "Angle for the padded side of the crate",
+          "preview": "Reduce bruising and preserve appearance through careful positioning.",
+          "result": "A slight turn, a fortunate landing, and suddenly your odds improve. Tiny adjustments matter.",
+          "effects": {
+            "freshness": 1,
+            "firmness": 1,
+            "bruiseRisk": -4,
+            "grade": 6
+          }
+        }
+      ]
+    }
+  ],
+  "endings": [
+    {
+      "id": "premium",
+      "title": "Premium Export Candidate",
+      "text": "You leave the farm impressively intact: firm, fresh, and visibly marketable. Someone writes a favorable note about your condition. You are still anxious, of course, but now with premium potential.",
+      "rule": {
+        "freshnessMin": 78,
+        "firmnessMin": 75,
+        "bruiseRiskMax": 18,
+        "gradeMin": 78
+      },
+      "summary": [
+        "High export potential",
+        "Low visible damage risk",
+        "Strong start for downstream handling"
+      ]
+    },
+    {
+      "id": "shipment",
+      "title": "Acceptable for Shipment",
+      "text": "You make it through the farm stage in good working order. Not flawless, not tragic, just commercially competent. In supply chain terms, that is a respectable victory.",
+      "rule": {
+        "freshnessMin": 65,
+        "firmnessMin": 60,
+        "bruiseRiskMax": 32,
+        "gradeMin": 68
+      },
+      "summary": [
+        "Viable for packing and export",
+        "Some resilience remains",
+        "Manageable quality risk"
+      ]
+    },
+    {
+      "id": "discount",
+      "title": "Discount Bin Trajectory",
+      "text": "You survive, but the signs are there: a softer edge, rising bruise risk, maybe a little less commercial glamour than the premium bunch. You are still in the chain, just with reduced leverage.",
+      "rule": {
+        "freshnessMin": 45,
+        "firmnessMin": 40,
+        "bruiseRiskMax": 55,
+        "gradeMin": 45
+      },
+      "summary": [
+        "Shipment possible, but risky",
+        "Quality concerns are emerging",
+        "Future stages will be less forgiving"
+      ]
+    },
+    {
+      "id": "rejected",
+      "title": "Rejected at Farm Gate",
+      "text": "Your farm journey ends early. Whether through softness, bruising, poor timing, or simple bad luck, you do not advance in good condition. The chain is ruthless, and agriculture seldom pauses for your inner life.",
+      "rule": {},
+      "summary": [
+        "Insufficient post-harvest condition",
+        "High downstream loss risk",
+        "A cautionary agricultural tale"
+      ]
+    }
+  ]
+}
