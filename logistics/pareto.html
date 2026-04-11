@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PARETO — TLC Incident Command</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;500;600;700;900&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════
+   THEME TOKENS
+══════════════════════════════════════════════════ */
+[data-theme="dark"] {
+  --bg:          #07090d;
+  --surface:     #0c1016;
+  --surface-2:   #111820;
+  --border:      #1a2433;
+  --border-hi:   #263348;
+  --accent:      #f5a623;
+  --accent-dim:  #7a5210;
+  --accent-glow: rgba(245,166,35,0.13);
+  --teal:        #00e5c9;
+  --teal-dim:    #006858;
+  --red:         #ff4055;
+  --green:       #00e09e;
+  --text:        #c2cedd;
+  --muted:       #3d5165;
+  --dim:         #7a8fa0;
+  --applied-bg:  #081309;
+  --header-bg:   linear-gradient(180deg,#0f1520 0%,#0c1016 100%);
+  --header-shadow: 0 6px 32px rgba(0,0,0,0.75);
+  --fx-bg:       #080c11;
+  --fix-btn-hover-bg:     rgba(245,166,35,0.10);
+  --fix-btn-hover-shadow: 0 0 20px rgba(245,166,35,0.22),inset 0 0 10px rgba(245,166,35,0.07);
+  --impact-bg:   radial-gradient(ellipse at center top,#0c1a0c 0%,#07090d 60%);
+  --number-font: 'Share Tech Mono',monospace;
+  --body-font:   'Share Tech Mono',monospace;
+  --display-font:'Barlow Condensed',sans-serif;
+  --pip-lit-bg:  var(--accent);
+  --pip-lit-border: #ffd070;
+  --pip-lit-shadow: 0 0 12px var(--accent),0 0 24px rgba(245,166,35,0.35);
+}
+
+[data-theme="light"] {
+  --bg:          #f0ece3;
+  --surface:     #faf8f4;
+  --surface-2:   #ede9df;
+  --border:      #d5c9b6;
+  --border-hi:   #b8a990;
+  --accent:      #1a5276;
+  --accent-dim:  #7fb3d3;
+  --accent-glow: rgba(26,82,118,0.09);
+  --teal:        #1a7a5a;
+  --teal-dim:    #a8d5c2;
+  --red:         #c0392b;
+  --green:       #1d7a48;
+  --text:        #1c2b3a;
+  --muted:       #8a9bb0;
+  --dim:         #5a7088;
+  --applied-bg:  #eaf5ee;
+  --header-bg:   linear-gradient(180deg,#1a5276 0%,#154360 100%);
+  --header-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  --fx-bg:       #f4f0e8;
+  --fix-btn-hover-bg:     rgba(26,82,118,0.07);
+  --fix-btn-hover-shadow: 0 2px 12px rgba(26,82,118,0.15);
+  --impact-bg:   radial-gradient(ellipse at center top,#e8f5ee 0%,#f0ece3 60%);
+  --number-font: 'Spectral',serif;
+  --body-font:   'Spectral',serif;
+  --display-font:'Barlow Condensed',sans-serif;
+  --pip-lit-bg:  #3ddc84;
+  --pip-lit-border: #2ab76a;
+  --pip-lit-shadow: 0 0 10px rgba(61,220,132,0.5);
+}
+
+/* ══════════════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--body-font);
+  min-height:100vh;
+  transition:background .35s,color .35s;
+}
+
+[data-theme="dark"] body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.035) 3px,rgba(0,0,0,.035) 4px);
+  pointer-events:none;
+  z-index:9000;
+}
+
+/* ══════════════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════════════ */
+.app-header{
+  background:var(--header-bg);
+  border-bottom:2px solid var(--accent);
+  padding:13px 24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position:sticky;
+  top:0;
+  z-index:200;
+  box-shadow:var(--header-shadow);
+  transition:box-shadow .35s;
+}
+
+.logo-block{display:flex;flex-direction:column;gap:3px}
+
+.app-title{
+  font-family:var(--display-font);
+  font-size:1.35rem;
+  font-weight:900;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:#fff;
+  text-shadow:0 0 20px rgba(255,255,255,.18);
+}
+[data-theme="dark"] .app-title{color:var(--accent);text-shadow:0 0 24px rgba(245,166,35,.45)}
+
+.app-sub{
+  font-size:.58rem;
+  color:rgba(255,255,255,.42);
+  letter-spacing:.24em;
+  text-transform:uppercase;
+  font-family:var(--display-font);
+}
+
+.header-right{display:flex;align-items:center;gap:26px}
+
+.pip-group{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.pip-label{font-size:.57rem;letter-spacing:.22em;color:rgba(255,255,255,.38);text-transform:uppercase;font-family:var(--display-font)}
+.pip-row{display:flex;gap:9px}
+.pip{width:24px;height:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);transition:all .5s ease}
+.pip.lit{background:var(--pip-lit-bg);border-color:var(--pip-lit-border);box-shadow:var(--pip-lit-shadow)}
+
+/* Theme toggle */
+.theme-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.toggle-icon{font-size:.95rem;transition:transform .4s;display:inline-block}
+.theme-toggle:hover .toggle-icon{transform:rotate(22deg)}
+.toggle-track{width:40px;height:20px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:10px;position:relative;transition:background .3s}
+[data-theme="light"] .toggle-track{background:rgba(255,255,255,.55);border-color:rgba(255,255,255,.7)}
+.toggle-knob{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3);transition:left .3s cubic-bezier(.34,1.56,.64,1)}
+[data-theme="light"] .toggle-knob{left:22px;background:var(--accent)}
+.toggle-label{font-size:.58rem;color:rgba(255,255,255,.52);letter-spacing:.16em;text-transform:uppercase;font-family:var(--display-font)}
+
+/* ══════════════════════════════════════════════════
+   STATUS BAR
+══════════════════════════════════════════════════ */
+.status-bar{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:7px 24px;
+  display:flex;
+  gap:30px;
+  font-size:.63rem;
+  color:var(--muted);
+  flex-wrap:wrap;
+  align-items:center;
+  transition:background .35s,border-color .35s;
+}
+.s-item{display:flex;align-items:center;gap:6px}
+.s-key{letter-spacing:.14em;text-transform:uppercase;font-size:.57rem;font-family:var(--display-font)}
+.s-val{color:var(--dim);font-family:var(--number-font)}
+.s-formula{
+  color:var(--muted);
+  font-size:.57rem;
+  letter-spacing:.04em;
+  border-left:1px solid var(--border);
+  padding-left:18px;
+  margin-left:4px;
+  font-family:var(--number-font);
+}
+
+/* ══════════════════════════════════════════════════
+   INSTRUCTIONS
+══════════════════════════════════════════════════ */
+.instructions{
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  padding:6px 24px;
+  display:flex;
+  gap:24px;
+  font-size:.59rem;
+  color:var(--muted);
+  flex-wrap:wrap;
+  transition:background .35s;
+  font-family:var(--display-font);
+  letter-spacing:.06em;
+}
+.instructions span::before{content:'▸ ';color:var(--accent-dim)}
+
+/* ══════════════════════════════════════════════════
+   TABLE
+══════════════════════════════════════════════════ */
+.table-wrapper{padding:20px 24px 0;overflow-x:auto}
+
+table{border-collapse:collapse;width:100%;min-width:1200px}
+
+thead th{
+  font-family:var(--display-font);
+  font-size:.68rem;
+  font-weight:700;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  padding:9px 11px;
+  border-bottom:2px solid var(--border-hi);
+  border-right:1px solid var(--border);
+  white-space:nowrap;
+  user-select:none;
+  background:var(--surface);
+  transition:background .2s,color .2s,border-color .35s;
+}
+
+th.data-col{color:var(--accent);cursor:grab}
+th.data-col:hover{background:var(--surface-2)}
+th.data-col.sort-asc::after {content:' ▲';font-size:.56rem;color:var(--teal)}
+th.data-col.sort-desc::after{content:' ▼';font-size:.56rem;color:var(--teal)}
+th.data-col.drag-src {opacity:.28;cursor:grabbing}
+th.data-col.drag-over{border-left:2px solid var(--teal);background:var(--surface-2)}
+
+th.fx-col{color:var(--dim);cursor:default;background:var(--fx-bg);border-left:2px solid var(--accent-dim);font-weight:400}
+
+tbody tr{transition:background .15s}
+tbody tr:hover td.data-td{background:var(--surface-2)}
+tbody tr.row-applied td.data-td{background:var(--applied-bg)}
+
+td{
+  padding:9px 11px;
+  border-bottom:1px solid var(--border);
+  border-right:1px solid var(--border);
+  font-size:.75rem;
+  vertical-align:middle;
+  transition:background .2s,color .35s,border-color .35s;
+}
+
+td.num      {text-align:right;font-family:var(--number-font);font-variant-numeric:tabular-nums}
+td.cat-td   {color:var(--muted);font-size:.64rem;font-family:var(--display-font);letter-spacing:.08em;text-transform:uppercase}
+td.issue-td {white-space:nowrap;font-weight:600;color:var(--text)}
+[data-theme="light"] td.issue-td{font-family:'Spectral',serif;font-style:italic}
+
+/* ══════════════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════════════ */
+@keyframes numDecrease{
+  0%  {color:var(--green);transform:scale(1.07);text-shadow:0 0 14px var(--green)}
+  55% {color:var(--green)}
+  100%{transform:scale(1);text-shadow:none}
+}
+@keyframes numIncrease{
+  0%  {color:var(--red);transform:scale(1.07);text-shadow:0 0 14px var(--red)}
+  55% {color:var(--red)}
+  100%{transform:scale(1);text-shadow:none}
+}
+.anim-dec{animation:numDecrease 1.1s ease-out forwards}
+.anim-inc{animation:numIncrease 1.1s ease-out forwards}
+
+/* ══════════════════════════════════════════════════
+   FIX COLUMN
+══════════════════════════════════════════════════ */
+td.td-fix{
+  background:var(--fx-bg);
+  border-left:2px solid var(--accent-dim);
+  padding:7px 9px;
+  vertical-align:middle;
+  transition:background .35s,border-color .35s;
+}
+
+.btn-fix{
+  font-family:var(--display-font);
+  font-size:.68rem;
+  font-weight:600;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  padding:7px 12px;
+  background:transparent;
+  border:1px solid var(--accent);
+  color:var(--accent);
+  cursor:pointer;
+  width:100%;
+  min-width:195px;
+  text-align:left;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  line-height:1.25;
+  transition:background .2s,box-shadow .2s,color .2s,border-color .2s,opacity .2s;
+}
+.btn-fix .fi{flex-shrink:0;font-size:.8rem}
+.btn-fix:hover:not(:disabled):not(.applied){
+  background:var(--fix-btn-hover-bg);
+  box-shadow:var(--fix-btn-hover-shadow);
+}
+.btn-fix.applied{border-color:var(--green);color:var(--green);cursor:default;background:rgba(0,200,130,.05)}
+.btn-fix:disabled:not(.applied){border-color:var(--border-hi);color:var(--muted);cursor:not-allowed;opacity:.6}
+
+/* ══════════════════════════════════════════════════
+   EFFECT COLUMNS
+══════════════════════════════════════════════════ */
+td.td-eff{
+  background:var(--fx-bg);
+  padding:7px 11px;
+  vertical-align:top;
+  font-size:.65rem;
+  min-width:145px;
+  max-width:170px;
+  line-height:1.5;
+  transition:background .35s;
+}
+
+.eff-hd{
+  font-family:var(--display-font);
+  font-size:.56rem;
+  font-weight:700;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  margin-bottom:3px;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.eff-hd::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+.eff-hd.h-direct   {color:var(--teal-dim)}   .eff-hd.h-direct::before   {background:var(--teal)}
+.eff-hd.h-secondary{color:var(--muted)}       .eff-hd.h-secondary::before{background:var(--dim)}
+.eff-hd.h-hidden   {color:var(--accent-dim)}  .eff-hd.h-hidden::before   {background:var(--accent)}
+
+.eff-val              {line-height:1.45}
+.eff-val.v-direct     {color:var(--teal)}
+.eff-val.v-secondary  {color:var(--dim)}
+.eff-val.v-locked     {color:var(--border-hi);letter-spacing:.1em;font-size:.62rem;font-family:var(--number-font)}
+.eff-val.v-hidden     {color:var(--red)}
+
+@keyframes revealHidden{
+  0%  {opacity:0;letter-spacing:.4em;filter:blur(6px)}
+  35% {opacity:.5}
+  100%{opacity:1;letter-spacing:0;filter:blur(0)}
+}
+.v-hidden{animation:revealHidden 1s ease-out forwards}
+
+/* ══════════════════════════════════════════════════
+   IMPACT SECTION
+══════════════════════════════════════════════════ */
+.impact-section{
+  display:none;
+  padding:56px 24px 70px;
+  border-top:1px solid var(--border-hi);
+  background:var(--impact-bg);
+  transition:background .35s;
+}
+.impact-section.visible{
+  display:block;
+  animation:slideUp .9s cubic-bezier(.22,1,.36,1) forwards;
+}
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(28px)}
+  to  {opacity:1;transform:translateY(0)}
+}
+
+.impact-inner{max-width:640px;margin:0 auto;text-align:center}
+
+.impact-eyebrow{
+  font-family:var(--display-font);
+  font-size:.62rem;
+  letter-spacing:.28em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:22px;
+}
+.impact-eyebrow span{color:var(--border-hi)}
+
+.impact-formula-box{
+  font-family:var(--number-font);
+  font-size:.59rem;
+  color:var(--muted);
+  border:1px solid var(--border);
+  padding:6px 16px;
+  display:inline-block;
+  margin-bottom:32px;
+  letter-spacing:.05em;
+  background:var(--surface);
+}
+
+.impact-num{
+  font-family:var(--display-font);
+  font-size:6rem;
+  font-weight:900;
+  line-height:1;
+  margin-bottom:6px;
+  letter-spacing:-.02em;
+}
+.impact-num.good{color:var(--green);text-shadow:0 0 50px rgba(0,224,100,.30)}
+.impact-num.bad {color:var(--red);  text-shadow:0 0 50px rgba(255,64,85,.30)}
+
+.impact-label{
+  font-size:.62rem;
+  color:var(--muted);
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  margin-bottom:38px;
+  font-family:var(--display-font);
+}
+
+.impact-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  margin-top:28px;
+}
+.ic{background:var(--surface);padding:20px 10px;transition:background .35s}
+
+.ic-val{
+  font-family:var(--display-font);
+  font-size:2rem;
+  font-weight:700;
+  color:var(--text);
+  margin-bottom:4px;
+}
+.ic-lbl{
+  font-family:var(--display-font);
+  font-size:.57rem;
+  color:var(--muted);
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+
+/* ══════════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════════ */
+.page-footer{
+  padding:14px 24px;
+  border-top:1px solid var(--border);
+  font-size:.58rem;
+  color:var(--muted);
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:8px;
+  font-family:var(--display-font);
+  letter-spacing:.1em;
+  transition:border-color .35s;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="logo-block">
+    <div class="app-title">▌ PARETO &nbsp;·&nbsp; TLC Incident Command</div>
+    <div class="app-sub">Always Be Calculating — Logistics Optimization Interface</div>
+  </div>
+  <div class="header-right">
+    <div class="pip-group">
+      <div class="pip-label">Fixes Deployed</div>
+      <div class="pip-row">
+        <div class="pip" id="pip0"></div>
+        <div class="pip" id="pip1"></div>
+        <div class="pip" id="pip2"></div>
+      </div>
+    </div>
+    <div class="theme-toggle" id="themeToggle" title="Toggle light / dark theme">
+      <span class="toggle-icon" id="toggleIcon">☾</span>
+      <div class="toggle-track"><div class="toggle-knob"></div></div>
+      <span class="toggle-label" id="toggleLabel">Dark</span>
+    </div>
+  </div>
+</header>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="s-item"><span class="s-key">Issues</span><span class="s-val">10</span></div>
+  <div class="s-item"><span class="s-key">Baseline Score</span><span class="s-val">138,691</span></div>
+  <div class="s-item"><span class="s-key">Fixes Remaining</span><span class="s-val" id="fixesLeft">3</span></div>
+  <div class="s-formula">Row Score = (Incidents × Avg Delay) + (Incidents × Cost/Inc) + Complaints</div>
+</div>
+
+<!-- INSTRUCTIONS -->
+<div class="instructions">
+  <span>Drag column headers to reorder</span>
+  <span>Click any header to sort</span>
+  <span>Apply exactly 3 fixes — permanent &amp; irreversible</span>
+  <span>Calculate your own impact score before deploying</span>
+</div>
+
+<!-- TABLE -->
+<div class="table-wrapper">
+  <table id="mainTable">
+    <thead><tr id="headerRow"></tr></thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<!-- IMPACT -->
+<div class="impact-section" id="impactSection">
+  <div class="impact-inner">
+    <div class="impact-eyebrow"><span>————  </span>All 3 Fixes Deployed — Analysis Complete<span>  ————</span></div>
+    <div class="impact-formula-box">Impact Score = Σ(Current Row Scores) − 138,691</div>
+    <div class="impact-num" id="impactNum">—</div>
+    <div class="impact-label">Total Impact Score vs. Baseline</div>
+    <div class="impact-grid">
+      <div class="ic"><div class="ic-val">138,691</div><div class="ic-lbl">Baseline Score</div></div>
+      <div class="ic"><div class="ic-val" id="statNew">—</div><div class="ic-lbl">Final Score</div></div>
+      <div class="ic"><div class="ic-val" id="statPct">—</div><div class="ic-lbl">% Change</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="page-footer">
+  <span>PARETO // TLC Incident Command &nbsp;·&nbsp; Logistics Optimization Tool</span>
+  <span>Score = (I × D) + (I × C) + Co</span>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════
+   THEME TOGGLE
+════════════════════════════════════════════════════ */
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const html   = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('toggleIcon').textContent  = isDark ? '☀' : '☾';
+  document.getElementById('toggleLabel').textContent = isDark ? 'Light' : 'Dark';
+});
+
+/* ════════════════════════════════════════════════════
+   DATA
+   Baseline total = 138,691
+   Row score = (incidents × avgDelay) + (incidents × cost) + complaints
+════════════════════════════════════════════════════ */
+const BASELINE = 138691;
+
+const rawData = [
+  {order:1, category:'Information',  issue:'Address Errors',          incidents:50,  avgDelay:15,  costPerIncident:5,   complaints:50 },
+  {order:2, category:'Information',  issue:'Order Processing Delays', incidents:100, avgDelay:150, costPerIncident:90,  complaints:210},
+  {order:3, category:'Inventory',    issue:'Stockouts',               incidents:90,  avgDelay:210, costPerIncident:170, complaints:270},
+  {order:4, category:'Inventory',    issue:'Inventory Inaccuracy',    incidents:120, avgDelay:20,  costPerIncident:20,  complaints:70 },
+  {order:5, category:'Warehouse',    issue:'Picking Errors',          incidents:130, avgDelay:15,  costPerIncident:7,   complaints:125},
+  {order:6, category:'Warehouse',    issue:'Receiving Backlog',       incidents:85,  avgDelay:360, costPerIncident:14,  complaints:60 },
+  {order:7, category:'Packaging',    issue:'Damaged Packaging',       incidents:70,  avgDelay:10,  costPerIncident:5,   complaints:66 },
+  {order:8, category:'Packaging',    issue:'Labeling Errors',         incidents:90,  avgDelay:10,  costPerIncident:2,   complaints:80 },
+  {order:9, category:'Distribution', issue:'Traffic Delays',         incidents:160, avgDelay:30,  costPerIncident:12,  complaints:140},
+  {order:10,category:'Distribution', issue:'Vehicle Breakdowns',     incidents:50,  avgDelay:450, costPerIncident:150, complaints:120},
+];
+
+const data = rawData.map(r => ({...r}));
+
+function calcScore(r) {
+  return Math.round((r.incidents * r.avgDelay) + (r.incidents * r.costPerIncident) + r.complaints);
+}
+function totalScore() { return data.reduce((s,r) => s + calcScore(r), 0); }
+
+/* ════════════════════════════════════════════════════
+   FIX EFFECT MAP
+
+   PEDAGOGICAL DESIGN
+   ──────────────────
+   The naive choice (top 3 by raw score) is:
+     Stockouts (34,470) + Receiving Backlog (31,850) + Vehicle Breakdowns (30,120)
+   Net saving ≈ −44,457 after hidden penalties.
+
+   The OPTIMAL choice — discoverable only by calculation — is:
+     Order Processing Delays + Receiving Backlog + Stockouts
+   Net saving ≈ −47,322, because:
+     1. OPD fix pre-deflates Stockouts incidents −20% BEFORE the
+        Stockouts fix fires, compounding both savings.
+     2. Vehicle Breakdowns' hidden effect (maintenance contracts ↑35%
+        cost/incident) is the realistic trade-off any ops-literate
+        student should predict: fixed contract overhead spread over
+        fewer incidents inflates the per-event cost.
+     3. OPD secondary (Stockouts incidents −20%) saves ≈6,840 points
+        and is visible upfront — but requires multiplication to feel.
+
+   All hidden effects follow domain logic a logistics student
+   can infer from first principles:
+     • OPD automation → more volume floods picking → errors rise
+     • Safety stock increase → larger inventory → audit cost/event rises
+     • Dock scheduling → surge windows → traffic spikes near facility
+     • Preventive maintenance → contract overhead → cost/incident rises
+     • Cycle counting → dock staff diverted → receiving backlog rises
+     • Barcode scanning → pick bottleneck → order processing slows
+     • Label automation → no manual fallback on exception → more mis-picks
+     • Route optimisation → unpredictable ETAs → receiving backlog rises
+     • Reinforced packaging → heavier loads → vehicle wear-cost rises
+     • Address validation → external API lookup → order delay rises
+
+   Effect schema: type, desc, target (issue string|null),
+                  field (data key|null), mult (multiplier)
+════════════════════════════════════════════════════ */
+const fixEffects = {
+
+  /* Net ≈ −384  (marginally harmful — API latency hurts OPD more than it saves) */
+  'Address Errors': {
+    fixName:'Address Validation Software',
+    effects:[
+      {type:'direct',
+       desc:'Address Errors incidents ↓ 60%',
+       target:'Address Errors', field:'incidents', mult:0.40},
+      {type:'secondary',
+       desc:'Labeling Errors incidents ↓ 10%',
+       target:'Labeling Errors', field:'incidents', mult:0.90},
+      {type:'hidden',
+       desc:'Order Processing Delays avg delay ↑ 8%',
+       target:'Order Processing Delays', field:'avgDelay', mult:1.08},
+    ]
+  },
+
+  /* Net ≈ −19,600  (best single fix — direct + powerful Stockouts cascade) */
+  'Order Processing Delays': {
+    fixName:'Order Automation System',
+    effects:[
+      {type:'direct',
+       desc:'Order Processing Delays incidents ↓ 55%',
+       target:'Order Processing Delays', field:'incidents', mult:0.45},
+      {type:'secondary',
+       desc:'Stockouts incidents ↓ 20%',
+       target:'Stockouts', field:'incidents', mult:0.80},
+      {type:'hidden',
+       desc:'Picking Errors incidents ↑ 15%',
+       target:'Picking Errors', field:'incidents', mult:1.15},
+    ]
+  },
+
+  /* Net ≈ −14,522  (strong, but hidden cost hits Inventory Inaccuracy) */
+  'Stockouts': {
+    fixName:'Safety Stock Increase',
+    effects:[
+      {type:'direct',
+       desc:'Stockouts incidents ↓ 50%',
+       target:'Stockouts', field:'incidents', mult:0.50},
+      {type:'secondary',
+       desc:'Order Processing Delays complaints ↓ 20%',
+       target:'Order Processing Delays', field:'complaints', mult:0.80},
+      {type:'hidden',
+       desc:'Inventory Inaccuracy cost/incident ↑ 30%',
+       target:'Inventory Inaccuracy', field:'costPerIncident', mult:1.30},
+    ]
+  },
+
+  /* Net ≈ −1,758  (trap — hidden effect balloons the second-highest scorer) */
+  'Inventory Inaccuracy': {
+    fixName:'Cycle Counting Program',
+    effects:[
+      {type:'direct',
+       desc:'Inventory Inaccuracy incidents ↓ 50%',
+       target:'Inventory Inaccuracy', field:'incidents', mult:0.50},
+      {type:'secondary',
+       desc:'Picking Errors incidents ↓ 25%',
+       target:'Picking Errors', field:'incidents', mult:0.75},
+      {type:'hidden',
+       desc:'Receiving Backlog incidents ↑ 15%',
+       target:'Receiving Backlog', field:'incidents', mult:1.15},
+    ]
+  },
+
+  /* Net ≈ −948  (trap — scan bottleneck pushes back into order pipeline) */
+  'Picking Errors': {
+    fixName:'Barcode Scanning System',
+    effects:[
+      {type:'direct',
+       desc:'Picking Errors incidents ↓ 60%',
+       target:'Picking Errors', field:'incidents', mult:0.40},
+      {type:'secondary',
+       desc:'Labeling Errors incidents ↓ 20%',
+       target:'Labeling Errors', field:'incidents', mult:0.80},
+      {type:'hidden',
+       desc:'Order Processing Delays incidents ↑ 12%',
+       target:'Order Processing Delays', field:'incidents', mult:1.12},
+    ]
+  },
+
+  /* Net ≈ −16,248  (excellent — high direct saving, manageable hidden penalty) */
+  'Receiving Backlog': {
+    fixName:'Dock Scheduling System',
+    effects:[
+      {type:'direct',
+       desc:'Receiving Backlog incidents ↓ 55%',
+       target:'Receiving Backlog', field:'incidents', mult:0.45},
+      {type:'secondary',
+       desc:'Inventory Inaccuracy complaints ↓ 20%',
+       target:'Inventory Inaccuracy', field:'complaints', mult:0.80},
+      {type:'hidden',
+       desc:'Traffic Delays incidents ↑ 20%',
+       target:'Traffic Delays', field:'incidents', mult:1.20},
+    ]
+  },
+
+  /* Net ≈ −748  (marginal — heavier packaging raises vehicle breakdown cost) */
+  'Damaged Packaging': {
+    fixName:'Reinforced Packaging Materials',
+    effects:[
+      {type:'direct',
+       desc:'Damaged Packaging incidents ↓ 70%',
+       target:'Damaged Packaging', field:'incidents', mult:0.30},
+      {type:'secondary',
+       desc:'Damaged Packaging complaints ↓ 20%',
+       target:'Damaged Packaging', field:'complaints', mult:0.80},
+      {type:'hidden',
+       desc:'Vehicle Breakdowns cost/incident ↑ 10%',
+       target:'Vehicle Breakdowns', field:'costPerIncident', mult:1.10},
+    ]
+  },
+
+  /* Net ≈ +5,000  (surprise — secondary slashes Receiving Backlog avg delay
+                    by 15%, which is worth ~4,590 pts on its own) */
+  'Labeling Errors': {
+    fixName:'Automated Label Printing',
+    effects:[
+      {type:'direct',
+       desc:'Labeling Errors incidents ↓ 65%',
+       target:'Labeling Errors', field:'incidents', mult:0.35},
+      {type:'secondary',
+       desc:'Receiving Backlog avg delay ↓ 15%',
+       target:'Receiving Backlog', field:'avgDelay', mult:0.85},
+      {type:'hidden',
+       desc:'Picking Errors incidents ↑ 10%',
+       target:'Picking Errors', field:'incidents', mult:1.10},
+    ]
+  },
+
+  /* Net ≈ +1,656  (moderate — secondary helps OPD, hidden spikes Receiving Backlog) */
+  'Traffic Delays': {
+    fixName:'Route Optimization Software',
+    effects:[
+      {type:'direct',
+       desc:'Traffic Delays incidents ↓ 40%',
+       target:'Traffic Delays', field:'incidents', mult:0.60},
+      {type:'secondary',
+       desc:'Order Processing Delays incidents ↓ 15%',
+       target:'Order Processing Delays', field:'incidents', mult:0.85},
+      {type:'hidden',
+       desc:'Receiving Backlog incidents ↑ 15%',
+       target:'Receiving Backlog', field:'incidents', mult:1.15},
+    ]
+  },
+
+  /* Net ≈ +13,687  (appears best for high scorers — but hidden maintenance
+                     contract overhead raises cost/incident 35%, which a
+                     student who understands ops finance should predict) */
+  'Vehicle Breakdowns': {
+    fixName:'Preventive Maintenance Program',
+    effects:[
+      {type:'direct',
+       desc:'Vehicle Breakdowns incidents ↓ 50%',
+       target:'Vehicle Breakdowns', field:'incidents', mult:0.50},
+      {type:'secondary',
+       desc:'Vehicle Breakdowns complaints ↓ 10%',
+       target:'Vehicle Breakdowns', field:'complaints', mult:0.90},
+      {type:'hidden',
+       desc:'Vehicle Breakdowns cost/incident ↑ 35%',
+       target:'Vehicle Breakdowns', field:'costPerIncident', mult:1.35},
+    ]
+  },
+};
+
+/* ════════════════════════════════════════════════════
+   COLUMN STATE  (score column excluded from display)
+════════════════════════════════════════════════════ */
+const colDefs = [
+  {key:'order',           label:'#',               type:'num' },
+  {key:'category',        label:'Category',        type:'text'},
+  {key:'issue',           label:'Issue',           type:'text'},
+  {key:'incidents',       label:'Incidents',       type:'num' },
+  {key:'avgDelay',        label:'Avg Delay (min)', type:'num' },
+  {key:'costPerIncident', label:'Cost / Incident', type:'num' },
+  {key:'complaints',      label:'Complaints',      type:'num' },
+];
+
+let colOrder     = colDefs.map(c => c.key);
+let sortKey      = null;
+let sortDir      = 'asc';
+let dragSrcIdx   = null;
+let fixesApplied = 0;
+const appliedSet = new Set();
+
+/* ════════════════════════════════════════════════════
+   RENDER
+════════════════════════════════════════════════════ */
+function render() { renderHeader(); renderBody(); }
+
+function renderHeader() {
+  const tr = document.getElementById('headerRow');
+  tr.innerHTML = '';
+
+  colOrder.forEach((key, idx) => {
+    const def = colDefs.find(c => c.key === key);
+    const th  = document.createElement('th');
+    th.className   = 'data-col';
+    th.dataset.key = key;
+    th.draggable   = true;
+    th.textContent = def.label;
+    if (sortKey === key) th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+
+    th.addEventListener('click', () => {
+      if (sortKey === key) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+      else { sortKey = key; sortDir = 'asc'; }
+      render();
+    });
+
+    th.addEventListener('dragstart', e => {
+      dragSrcIdx = idx;
+      th.classList.add('drag-src');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    th.addEventListener('dragend', () => {
+      th.classList.remove('drag-src');
+      tr.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    });
+    th.addEventListener('dragover', e => {
+      e.preventDefault();
+      tr.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      if (dragSrcIdx !== idx) th.classList.add('drag-over');
+    });
+    th.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrcIdx !== null && dragSrcIdx !== idx) {
+        const moved = colOrder.splice(dragSrcIdx, 1)[0];
+        colOrder.splice(idx, 0, moved);
+        dragSrcIdx = null;
+        render();
+      }
+    });
+    tr.appendChild(th);
+  });
+
+  ['Fix','Direct Effect','Secondary Effect','Hidden Effect'].forEach(label => {
+    const th = document.createElement('th');
+    th.className   = 'fx-col';
+    th.textContent = label;
+    tr.appendChild(th);
+  });
+}
+
+function getSorted() {
+  if (!sortKey) return [...data];
+  return [...data].sort((a,b) => {
+    const va = a[sortKey], vb = b[sortKey];
+    if (typeof va === 'string') return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    return sortDir === 'asc' ? va - vb : vb - va;
+  });
+}
+
+function renderBody() {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+
+  getSorted().forEach(row => {
+    const tr = document.createElement('tr');
+    tr.dataset.issue = row.issue;
+    if (appliedSet.has(row.issue)) tr.classList.add('row-applied');
+
+    // Data cells
+    colOrder.forEach(key => {
+      const td = document.createElement('td');
+      td.className     = 'data-td';
+      td.dataset.issue = row.issue;
+      td.dataset.field = key;
+      const def = colDefs.find(c => c.key === key);
+      if      (key === 'issue')    { td.classList.add('issue-td'); td.textContent = row[key]; }
+      else if (key === 'category') { td.classList.add('cat-td');   td.textContent = row[key]; }
+      else if (def.type === 'num') { td.classList.add('num');      td.textContent = row[key].toLocaleString(); }
+      else                         { td.textContent = row[key]; }
+      tr.appendChild(td);
+    });
+
+    const fix = fixEffects[row.issue];
+
+    // Fix button
+    const tdFix = document.createElement('td');
+    tdFix.className = 'td-fix';
+    const btn = document.createElement('button');
+    btn.className     = 'btn-fix';
+    btn.dataset.issue = row.issue;
+    if (appliedSet.has(row.issue)) {
+      btn.classList.add('applied'); btn.disabled = true;
+      btn.innerHTML = `<span class="fi">✓</span>${fix.fixName}`;
+    } else if (fixesApplied >= 3) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="fi">—</span>${fix.fixName}`;
+    } else {
+      btn.innerHTML = `<span class="fi">⬡</span>${fix.fixName}`;
+      btn.addEventListener('click', () => applyFix(row.issue));
+    }
+    tdFix.appendChild(btn);
+    tr.appendChild(tdFix);
+
+    // Direct
+    const eDirect = fix.effects.find(e => e.type === 'direct');
+    const tdD = document.createElement('td');
+    tdD.className = 'td-eff';
+    tdD.innerHTML = `<div class="eff-hd h-direct">Direct</div><div class="eff-val v-direct">${eDirect.desc}</div>`;
+    tr.appendChild(tdD);
+
+    // Secondary
+    const eSec = fix.effects.find(e => e.type === 'secondary');
+    const tdS = document.createElement('td');
+    tdS.className = 'td-eff';
+    tdS.innerHTML = `<div class="eff-hd h-secondary">Secondary</div><div class="eff-val v-secondary">${eSec.desc}</div>`;
+    tr.appendChild(tdS);
+
+    // Hidden
+    const eHid = fix.effects.find(e => e.type === 'hidden');
+    const tdH  = document.createElement('td');
+    tdH.className      = 'td-eff';
+    tdH.dataset.issue  = row.issue;
+    tdH.dataset.role   = 'hidden-cell';
+    if (appliedSet.has(row.issue)) {
+      tdH.innerHTML = `<div class="eff-hd h-hidden">Hidden ⚠</div><div class="eff-val v-hidden">${eHid.desc}</div>`;
+    } else {
+      tdH.innerHTML = `<div class="eff-hd h-hidden">Hidden</div><div class="eff-val v-locked">[ CLASSIFIED ]</div>`;
+    }
+    tr.appendChild(tdH);
+
+    tbody.appendChild(tr);
+  });
+}
+
+/* ════════════════════════════════════════════════════
+   APPLY FIX
+════════════════════════════════════════════════════ */
+function applyFix(issue) {
+  if (fixesApplied >= 3 || appliedSet.has(issue)) return;
+
+  const fix     = fixEffects[issue];
+  const changes = [];
+
+  fix.effects.forEach(eff => {
+    if (!eff.target || !eff.field) return;
+    const row    = data.find(r => r.issue === eff.target);
+    if (!row) return;
+    const oldVal = row[eff.field];
+    const newVal = Math.round(row[eff.field] * eff.mult);
+    row[eff.field] = newVal;
+    changes.push({issue: eff.target, field: eff.field, oldVal, newVal});
+  });
+
+  appliedSet.add(issue);
+  fixesApplied++;
+
+  document.getElementById(`pip${fixesApplied - 1}`).classList.add('lit');
+  document.getElementById('fixesLeft').textContent = 3 - fixesApplied;
+
+  // Animate data cells
+  changes.forEach(ch => animCell(ch.issue, ch.field, ch.oldVal, ch.newVal));
+
+  // Reveal hidden text
+  setTimeout(() => revealHiddenCell(issue), 210);
+
+  // Update UI state
+  setTimeout(() => {
+    const tr = document.querySelector(`tr[data-issue="${CSS.escape(issue)}"]`);
+    if (tr) tr.classList.add('row-applied');
+    const btn = document.querySelector(`.btn-fix[data-issue="${CSS.escape(issue)}"]`);
+    if (btn) {
+      btn.classList.add('applied'); btn.disabled = true;
+      btn.innerHTML = `<span class="fi">✓</span>${fix.fixName}`;
+    }
+    if (fixesApplied >= 3) {
+      document.querySelectorAll('.btn-fix:not(.applied)').forEach(b => {
+        b.disabled = true;
+        const label = b.querySelector('.fi') ? b.textContent.trim() : b.textContent;
+        b.innerHTML = `<span class="fi">—</span>${label}`;
+      });
+    }
+  }, 100);
+
+  if (fixesApplied >= 3) setTimeout(showImpact, 1800);
+}
+
+/* ════════════════════════════════════════════════════
+   ANIMATIONS
+════════════════════════════════════════════════════ */
+function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+function easeOutQuart(t) { return 1 - Math.pow(1 - t, 4); }
+
+function animCell(issue, field, oldVal, newVal) {
+  const td = document.querySelector(
+    `td[data-issue="${CSS.escape(issue)}"][data-field="${CSS.escape(field)}"]`
+  );
+  if (!td) return;
+  const cls = newVal < oldVal ? 'anim-dec' : 'anim-inc';
+  const dur = 1000, t0 = performance.now();
+  td.classList.remove('anim-dec','anim-inc');
+  void td.offsetWidth;
+  td.classList.add(cls);
+  (function tick(now) {
+    const p = Math.min((now - t0) / dur, 1);
+    td.textContent = Math.round(oldVal + (newVal - oldVal) * easeOutCubic(p)).toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
+    else { td.textContent = newVal.toLocaleString(); setTimeout(() => td.classList.remove(cls), 500); }
+  })(performance.now());
+}
+
+function revealHiddenCell(issue) {
+  const td  = document.querySelector(`td[data-issue="${CSS.escape(issue)}"][data-role="hidden-cell"]`);
+  if (!td) return;
+  const eHid = fixEffects[issue].effects.find(e => e.type === 'hidden');
+  td.innerHTML = `<div class="eff-hd h-hidden">Hidden ⚠</div><div class="eff-val v-hidden">${eHid.desc}</div>`;
+}
+
+function showImpact() {
+  const newTotal = totalScore();
+  const delta    = newTotal - BASELINE;
+  const pct      = ((delta / BASELINE) * 100).toFixed(1);
+  const isGood   = delta <= 0;
+
+  const section = document.getElementById('impactSection');
+  section.classList.add('visible');
+  section.scrollIntoView({behavior:'smooth', block:'start'});
+
+  document.getElementById('statNew').textContent = newTotal.toLocaleString();
+  document.getElementById('statPct').textContent = (parseFloat(pct) >= 0 ? '+' : '') + pct + '%';
+
+  const numEl = document.getElementById('impactNum');
+  numEl.className = `impact-num ${isGood ? 'good' : 'bad'}`;
+
+  const dur = 2000, t0 = performance.now();
+  (function tick(now) {
+    const p   = Math.min((now - t0) / dur, 1);
+    const cur = Math.round(delta * easeOutQuart(p));
+    numEl.textContent = (cur >= 0 ? '+' : '') + cur.toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
+    else numEl.textContent = (delta >= 0 ? '+' : '') + delta.toLocaleString();
+  })(performance.now());
+}
+
+/* ════════════════════════════════════════════════════
+   BOOT
+════════════════════════════════════════════════════ */
+render();
+</script>
+</body>
+</html>
