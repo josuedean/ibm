@@ -179,4 +179,5 @@ export function assignZone(state, zoneId, dcId) {
   return { ...state, assignments: { ...state.assignments, [zoneId]: dcId } };
 }
 
-export { DCS, ZONES, OUTBOUND, TRANSIT, GAME_CONFIG, getCurrentEvent, getEffectiveData as getEffective };
+export { DCS, ZONES, OUTBOUND, TRANSIT, GAME_CONFIG };
+// Note: getCurrentEvent and getEffectiveData are already exported above as named exports.

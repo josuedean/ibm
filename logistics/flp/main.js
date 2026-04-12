@@ -4,9 +4,9 @@
 // ============================================================
 
 import {
-  createInitialState, getCurrentEvent, getEffective,
+  createInitialState, getCurrentEvent, getEffectiveData,
   toggleDC, assignZone, validateNetwork, validateAssignments,
-  finaliseQuarter, advanceQuarter, calcCosts, getEffectiveData,
+  finaliseQuarter, advanceQuarter,
   GAME_CONFIG,
 } from './engine.js';
 
