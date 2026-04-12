@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linear Equation Solver</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --danger: #f87171;
+      --border: #334155;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #0b1220 0%, #111827 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.9rem;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: rgba(17, 24, 39, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.22);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+    }
+
+    .row, .var-row {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .row.two { grid-template-columns: 1fr 1fr; }
+    .row.three { grid-template-columns: 1.2fr 1fr 1fr; }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    input, select, button, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      transform: scale(1.15);
+      margin-right: 8px;
+    }
+
+    .checkbox {
+      display: flex;
+      align-items: center;
+      color: var(--text);
+      font-size: 0.95rem;
+      margin: 8px 0 14px;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: bold;
+      background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+      border: none;
+    }
+
+    button.secondary {
+      background: linear-gradient(180deg, #374151 0%, #1f2937 100%);
+      border: 1px solid var(--border);
+    }
+
+    button:hover { filter: brightness(1.08); }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .vars {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .var-row {
+      grid-template-columns: 1.1fr 1fr 1fr;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .equation-box, .result-box {
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 14px;
+      overflow-x: auto;
+    }
+
+    .equation {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 1rem;
+      color: #dbeafe;
+      white-space: nowrap;
+    }
+
+    .message {
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      line-height: 1.45;
+    }
+
+    .ok { background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); }
+    .warn { background: rgba(248, 113, 113, 0.12); border: 1px solid rgba(248, 113, 113, 0.35); }
+    .info { background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th { color: #cbd5e1; }
+    td { color: #e2e8f0; }
+
+    .muted { color: var(--muted); }
+    .small { font-size: 0.88rem; }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.16);
+      color: #bae6fd;
+      font-size: 0.8rem;
+      margin-left: 6px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 650px) {
+      .row.two, .row.three, .var-row, .button-row {
+        grid-template-columns: 1fr;
+      }
+      .equation { white-space: normal; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Simple Linear Equation Solver</h1>
+    <p>
+      Define an equation of the form <strong>z = C1x1 + C2x2 + ...</strong>, leave unknown values blank,
+      and solve what is missing. You may leave <strong>z</strong> blank as well. If all variable values are known,
+      the page will calculate <strong>z</strong>. If there is only one unknown variable, the page gives the direct answer.
+      If there are multiple unknowns, the page can list <strong>integer solutions</strong> within the bounds you set.
+    </p>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Inputs</h2>
+
+        <div class="row two">
+          <div>
+            <label for="target">Target value (z) — leave blank if unknown</label>
+            <input id="target" type="number" step="any" value="495000" />
+          </div>
+          <div>
+            <label for="varCount">Number of variables</label>
+            <select id="varCount">
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="checkbox">
+          <input id="integerOnly" type="checkbox" checked />
+          Restrict unknown variables to integers
+        </label>
+
+        <div class="row three">
+          <div>
+            <label for="minBound">Min bound for unknowns</label>
+            <input id="minBound" type="number" step="1" value="0" />
+          </div>
+          <div>
+            <label for="maxBound">Max bound for unknowns</label>
+            <input id="maxBound" type="number" step="1" value="2000" />
+          </div>
+          <div>
+            <label for="maxResults">Max results shown</label>
+            <input id="maxResults" type="number" step="1" value="25" />
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="buildBtn">Update Variables</button>
+          <button id="exampleBtn" class="secondary">Load Example</button>
+        </div>
+
+        <div class="vars" id="vars"></div>
+
+        <div class="button-row">
+          <button id="solveBtn">Solve</button>
+          <button id="clearBtn" class="secondary">Clear Values</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Output</h2>
+        <div class="equation-box">
+          <div class="muted small">Current equation</div>
+          <div class="equation" id="equationText">495000 = 450x1 + 550x2</div>
+        </div>
+
+        <div class="result-box" id="results">
+          <div class="message info">
+            Enter coefficients and optional known values, then press <strong>Solve</strong>. You can also leave <strong>z</strong> blank.
+          </div>
+          <div class="small muted">
+            Notes: One equation with several unknowns usually does not have a single unique answer.
+            When that happens, this tool either shows all bounded integer solutions or explains why
+            the result is not unique.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const varsEl = document.getElementById('vars');
+    const equationText = document.getElementById('equationText');
+    const resultsEl = document.getElementById('results');
+    const targetEl = document.getElementById('target');
+    const varCountEl = document.getElementById('varCount');
+    const integerOnlyEl = document.getElementById('integerOnly');
+    const minBoundEl = document.getElementById('minBound');
+    const maxBoundEl = document.getElementById('maxBound');
+    const maxResultsEl = document.getElementById('maxResults');
+
+    function formatNumber(n) {
+      if (!Number.isFinite(n)) return String(n);
+      const rounded = Math.abs(n) < 1e-10 ? 0 : n;
+      if (Number.isInteger(rounded)) return rounded.toLocaleString();
+      return Number(rounded.toFixed(6)).toLocaleString();
+    }
+
+    function buildVariableInputs(count) {
+      varsEl.innerHTML = '';
+      for (let i = 1; i <= count; i++) {
+        const row = document.createElement('div');
+        row.className = 'var-row';
+        row.innerHTML = `
+          <div>
+            <label>Variable name</label>
+            <input class="var-name" value="x${i}" />
+          </div>
+          <div>
+            <label>Coefficient</label>
+            <input class="var-coeff" type="number" step="any" value="${i === 1 ? 450 : (i === 2 ? 550 : 0)}" />
+          </div>
+          <div>
+            <label>Known value (leave blank if unknown)</label>
+            <input class="var-value" type="number" step="any" value="" />
+          </div>
+        `;
+        varsEl.appendChild(row);
+      }
+      updateEquationPreview();
+    }
+
+    function getVariables() {
+      const rows = [...document.querySelectorAll('.var-row')];
+      return rows.map((row, idx) => {
+        const name = row.querySelector('.var-name').value.trim() || `x${idx + 1}`;
+        const coeffRaw = row.querySelector('.var-coeff').value;
+        const valueRaw = row.querySelector('.var-value').value;
+        const coeff = Number(coeffRaw);
+        const value = valueRaw === '' ? null : Number(valueRaw);
+        return { name, coeff, value };
+      });
+    }
+
+    function updateEquationPreview() {
+      const targetRaw = targetEl.value.trim();
+      const target = targetRaw === '' ? null : Number(targetRaw);
+      const vars = getVariables();
+      const parts = vars.map((v, idx) => {
+        const c = Number.isFinite(v.coeff) ? v.coeff : 0;
+        const sign = idx === 0 ? '' : (c >= 0 ? ' + ' : ' - ');
+        const absCoeff = Math.abs(c);
+        return `${sign}${formatNumber(absCoeff)}${v.name}`;
+      });
+      equationText.textContent = `${target === null ? '?' : formatNumber(target)} = ${parts.join('')}`;
+    }
+
+    function showMessage(type, html) {
+      resultsEl.innerHTML = `<div class="message ${type}">${html}</div>`;
+    }
+
+    function validateInputs(vars, target, minBound, maxBound, maxResults) {
+      if (target !== null && !Number.isFinite(target)) return 'Target z must be a valid number when entered.';
+      if (!Number.isFinite(minBound) || !Number.isFinite(maxBound)) return 'Bounds must be valid numbers.';
+      if (minBound > maxBound) return 'Min bound cannot be greater than max bound.';
+      if (!Number.isInteger(maxResults) || maxResults < 1) return 'Max results must be a positive integer.';
+      for (const v of vars) {
+        if (!Number.isFinite(v.coeff)) return `Coefficient for ${v.name} must be a valid number.`;
+        if (v.value !== null && !Number.isFinite(v.value)) return `Known value for ${v.name} must be a valid number.`;
+      }
+      return null;
+    }
+
+    function appendHtml(html) {
+      resultsEl.insertAdjacentHTML('beforeend', html);
+    }
+
+    function isWithinBounds(value, minBound, maxBound) {
+      return value >= minBound - 1e-9 && value <= maxBound + 1e-9;
+    }
+
+    function solve() {
+      updateEquationPreview();
+
+      const targetRaw = targetEl.value.trim();
+      const target = targetRaw === '' ? null : Number(targetRaw);
+      const vars = getVariables();
+      const integerOnly = integerOnlyEl.checked;
+      const minBound = Number(minBoundEl.value);
+      const maxBound = Number(maxBoundEl.value);
+      const maxResults = Number(maxResultsEl.value);
+
+      const validationError = validateInputs(vars, target, minBound, maxBound, maxResults);
+      if (validationError) {
+        showMessage('warn', validationError);
+        return;
+      }
+
+      const known = vars.filter(v => v.value !== null);
+      const unknown = vars.filter(v => v.value === null);
+      const knownContribution = known.reduce((sum, v) => sum + v.coeff * v.value, 0);
+
+      resultsEl.innerHTML = '';
+
+      if (target === null) {
+        if (unknown.length === 0) {
+          appendHtml(`
+            <div class="message ok">
+              <strong>Computed target:</strong> z = ${formatNumber(knownContribution)}<br>
+              <span class="small">All variable values are known, so z is the total of the right-hand side.</span>
+            </div>
+          `);
+          return;
+        }
+
+        appendHtml(`
+          <div class="message warn">
+            <strong>z is unknown</strong>, but ${unknown.length} variable value(s) are also unknown.<br>
+            <span class="small">This page needs z to be known before it can solve missing variables. If z is blank, then all variable values must be known so the page can calculate z.</span>
+          </div>
+        `);
+        return;
+      }
+
+      const remaining = target - knownContribution;
+
+      appendHtml(`
+        <div class="message info">
+          <strong>Reduced equation:</strong> remaining target = ${formatNumber(remaining)}<br>
+          <span class="small">Known contribution = ${formatNumber(knownContribution)} from ${known.length} known variable(s).</span>
+        </div>
+      `);
+
+      if (unknown.length === 0) {
+        const diff = target - knownContribution;
+        if (Math.abs(diff) < 1e-9) {
+          appendHtml(`<div class="message ok">All variables are known, and the equation is satisfied exactly.</div>`);
+        } else {
+          appendHtml(`<div class="message warn">All variables are known, but the equation is not satisfied. Difference: ${formatNumber(diff)}.</div>`);
+        }
+        return;
+      }
+
+      if (unknown.length === 1) {
+        const v = unknown[0];
+        if (Math.abs(v.coeff) < 1e-12) {
+          if (Math.abs(remaining) < 1e-9) {
+            appendHtml(`<div class="message ok">${v.name} has coefficient 0, so any value within your bounds will work.</div>`);
+          } else {
+            appendHtml(`<div class="message warn">${v.name} has coefficient 0, so the remaining target cannot be reached.</div>`);
+          }
+          return;
+        }
+
+        const value = remaining / v.coeff;
+        const withinBounds = isWithinBounds(value, minBound, maxBound);
+        const integerValid = !integerOnly || Math.abs(value - Math.round(value)) < 1e-9;
+
+        appendHtml(`
+          <div class="message ${withinBounds && integerValid ? 'ok' : 'warn'}">
+            <strong>Direct solution:</strong> ${v.name} = ${formatNumber(value)}
+            ${integerOnly ? `<br><span class="small">Integer check: ${integerValid ? 'passed' : 'failed'}</span>` : ''}
+            <br><span class="small">Bounds check: ${withinBounds ? 'passed' : 'failed'} (${formatNumber(minBound)} to ${formatNumber(maxBound)})</span>
+          </div>
+        `);
+        return;
+      }
+
+      if (!integerOnly) {
+        if (unknown.length === 2) {
+          const [a, b] = unknown;
+          if (Math.abs(b.coeff) < 1e-12) {
+            appendHtml(`<div class="message warn">There is not enough information for a unique continuous solution.</div>`);
+            return;
+          }
+          appendHtml(`
+            <div class="message info">
+              There are infinitely many continuous solutions within the allowed range unless you add more information.<br>
+              One relationship is:<br>
+              <strong>${b.name} = (${formatNumber(remaining)} - ${formatNumber(a.coeff)}${a.name}) / ${formatNumber(b.coeff)}</strong>
+            </div>
+          `);
+        } else {
+          appendHtml(`
+            <div class="message info">
+              You have ${unknown.length} unknown variables but only one equation, so there are infinitely many continuous solutions.
+              To get a unique answer, provide more known values or switch to integer mode and bounded search.
+            </div>
+          `);
+        }
+        return;
+      }
+
+      const badCoeff = unknown.some(v => !Number.isInteger(v.coeff) || v.coeff < 0);
+      if (badCoeff) {
+        appendHtml(`
+          <div class="message warn">
+            Integer search in this simple version assumes unknown-variable coefficients are nonnegative integers.
+            For the current setup, please use integer coefficients greater than or equal to 0, or leave only one unknown.
+          </div>
+        `);
+        return;
+      }
+
+      const solutions = [];
+      let checked = 0;
+      const unknownCount = unknown.length;
+
+      function recurse(index, chosen, partialSum) {
+        if (solutions.length >= maxResults) return;
+
+        if (index === unknownCount - 1) {
+          const last = unknown[index];
+          if (last.coeff === 0) return;
+          const remainingForLast = remaining - partialSum;
+          const value = remainingForLast / last.coeff;
+          checked++;
+          if (Math.abs(value - Math.round(value)) < 1e-9 && isWithinBounds(value, minBound, maxBound)) {
+            solutions.push([...chosen, Math.round(value)]);
+          }
+          return;
+        }
+
+        const current = unknown[index];
+        for (let val = minBound; val <= maxBound; val++) {
+          if (!Number.isInteger(val)) continue;
+          const newSum = partialSum + current.coeff * val;
+          if (newSum > remaining && unknown.every(v => v.coeff >= 0) && remaining >= 0) break;
+          recurse(index + 1, [...chosen, val], newSum);
+          if (solutions.length >= maxResults) return;
+        }
+      }
+
+      recurse(0, [], 0);
+
+      const coeffGcd = unknown.reduce((acc, v) => gcd(acc, Math.abs(v.coeff)), 0);
+      const reachableByGcd = coeffGcd === 0 ? remaining === 0 : Number.isInteger(remaining) && Math.abs(remaining % coeffGcd) < 1e-9;
+
+      appendHtml(`
+        <div class="message ${solutions.length ? 'ok' : 'warn'}">
+          <strong>Integer search completed.</strong>
+          <span class="badge">unknowns: ${unknown.length}</span>
+          <span class="badge">shown: ${solutions.length}</span>
+          <br><span class="small">Search bounds: ${formatNumber(minBound)} to ${formatNumber(maxBound)} for each unknown variable.</span>
+        </div>
+      `);
+
+      if (!reachableByGcd) {
+        appendHtml(`
+          <div class="message warn small">
+            A quick divisibility check suggests no integer solution exists: the remaining target ${formatNumber(remaining)} is not compatible with the gcd of the unknown coefficients.
+          </div>
+        `);
+      }
+
+      if (!solutions.length) {
+        appendHtml(`<div class="small muted">No integer solutions were found within the current bounds.</div>`);
+        return;
+      }
+
+      let table = '<table><thead><tr>';
+      unknown.forEach(v => table += `<th>${escapeHtml(v.name)}</th>`);
+      table += '</tr></thead><tbody>';
+
+      solutions.forEach(sol => {
+        table += '<tr>';
+        sol.forEach(value => table += `<td>${formatNumber(value)}</td>`);
+        table += '</tr>';
+      });
+
+      table += '</tbody></table>';
+      appendHtml(table);
+
+      if (solutions.length >= maxResults) {
+        appendHtml(`<div class="small muted" style="margin-top:10px;">Only the first ${maxResults} solution(s) are shown. Increase “Max results shown” to display more.</div>`);
+      }
+    }
+
+    function gcd(a, b) {
+      a = Math.abs(Math.round(a));
+      b = Math.abs(Math.round(b));
+      while (b !== 0) {
+        const t = b;
+        b = a % b;
+        a = t;
+      }
+      return a;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function loadExample() {
+      targetEl.value = 495000;
+      varCountEl.value = 2;
+      integerOnlyEl.checked = true;
+      minBoundEl.value = 0;
+      maxBoundEl.value = 2000;
+      maxResultsEl.value = 25;
+      buildVariableInputs(2);
+      const rows = [...document.querySelectorAll('.var-row')];
+      rows[0].querySelector('.var-name').value = 'x1';
+      rows[0].querySelector('.var-coeff').value = 450;
+      rows[0].querySelector('.var-value').value = '';
+      rows[1].querySelector('.var-name').value = 'x2';
+      rows[1].querySelector('.var-coeff').value = 550;
+      rows[1].querySelector('.var-value').value = '';
+      updateEquationPreview();
+      showMessage('info', 'Example loaded. Press <strong>Solve</strong> to list integer solutions for <strong>495000 = 450x1 + 550x2</strong>.');
+    }
+
+    function clearValues() {
+      document.querySelectorAll('.var-value').forEach(input => input.value = '');
+      updateEquationPreview();
+      showMessage('info', 'Known values cleared.');
+    }
+
+    document.getElementById('buildBtn').addEventListener('click', () => {
+      buildVariableInputs(Number(varCountEl.value));
+      showMessage('info', 'Variable inputs updated.');
+    });
+    document.getElementById('solveBtn').addEventListener('click', solve);
+    document.getElementById('exampleBtn').addEventListener('click', loadExample);
+    document.getElementById('clearBtn').addEventListener('click', clearValues);
+    targetEl.addEventListener('input', updateEquationPreview);
+    varCountEl.addEventListener('change', () => buildVariableInputs(Number(varCountEl.value)));
+    varsEl.addEventListener('input', updateEquationPreview);
+
+    buildVariableInputs(Number(varCountEl.value));
+    loadExample();
+  </script>
+</body>
+</html>
