@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logistics Network Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- Header -->
+  <header class="game-header">
+    <div>
+      <div class="game-title">Supply Chain Strategy · Ch. 9–10</div>
+      <div class="game-subtitle">Logistics Network Design</div>
+    </div>
+    <div class="score-display">
+      <div class="score-label">Total score</div>
+      <div class="score-value" id="header-score">0</div>
+    </div>
+  </header>
+
+  <!-- HUD -->
+  <div class="hud" id="hud"></div>
+
+  <!-- Phase stepper -->
+  <div class="phase-stepper" id="stepper"></div>
+
+  <!-- Main content area -->
+  <main id="main"></main>
+
+</div>
+
+<script type="module" src="main.js"></script>
+<script>
+  // Keep header score in sync (re-reads from HUD after each render)
+  const obs = new MutationObserver(() => {
+    const v = document.querySelector('#hud .hud-val.green');
+    if (v) document.getElementById('header-score').textContent = v.textContent;
+  });
+  obs.observe(document.getElementById('hud') || document.body, { childList: true, subtree: true });
+</script>
+
+</body>
+</html>
