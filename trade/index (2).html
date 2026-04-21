@@ -1,0 +1,3025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Magic Box Tariff Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --bg2: #0f1318;
+    --bg3: #151b24;
+    --panel: #111620;
+    --border: #1e2d40;
+    --border2: #2a3f58;
+    --blue: #3a8fd4;
+    --blue-light: #5ab4ff;
+    --blue-glow: rgba(58,143,212,0.25);
+    --red: #d43a3a;
+    --red-light: #ff6b6b;
+    --red-glow: rgba(212,58,58,0.25);
+    --gold: #e8c547;
+    --gold-glow: rgba(232,197,71,0.3);
+    --green: #3dd68c;
+    --green-glow: rgba(61,214,140,0.25);
+    --text: #c8d8e8;
+    --text-dim: #6a8aa0;
+    --text-bright: #eaf4ff;
+    --sungrain: #f5c842;
+    --stormiron: #7eb8d4;
+    --mono: 'Share Tech Mono', monospace;
+    --display: 'Bebas Neue', sans-serif;
+    --cond: 'Barlow Condensed', sans-serif;
+    --body: 'Barlow', sans-serif;
+    --purple: #a855f7;
+    --purple-light: #c084fc;
+    --purple-glow: rgba(168,85,247,0.2);
+    --orange: #f97316;
+    --orange-light: #fb923c;
+    --orange-glow: rgba(249,115,22,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(58,143,212,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(212,58,58,0.05) 0%, transparent 60%);
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.15) 2px,
+      rgba(0,0,0,0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    background: var(--panel);
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--blue), var(--gold), var(--red), transparent);
+  }
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .logo-block {
+    display: flex;
+    flex-direction: column;
+  }
+  .logo-eyebrow {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .logo-title {
+    font-family: var(--display);
+    font-size: 2.2rem;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--blue-light) 0%, var(--gold) 50%, var(--red-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-status {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+  .status-chip {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+  .status-chip.active {
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 10px var(--gold-glow);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 10px var(--gold-glow); }
+    50% { box-shadow: 0 0 20px var(--gold-glow); }
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem 4rem;
+  }
+
+  /* ── ROUND NAV ── */
+  .round-nav {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .round-tab {
+    font-family: var(--cond);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.5rem 1.2rem;
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .round-tab:hover:not(.locked) {
+    border-color: var(--text-dim);
+    color: var(--text);
+  }
+  .round-tab.active {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(232,197,71,0.07);
+    box-shadow: 0 0 15px var(--gold-glow);
+  }
+  .round-tab.locked {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .round-tab .lock-icon { font-size: 0.7rem; margin-left: 0.3rem; }
+  .round-tab.completed { border-color: var(--green); color: var(--green); }
+
+  /* ── SCOREBOARD BAR ── */
+  .scoreboard {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+  }
+  .score-card {
+    border: 1px solid var(--border2);
+    background: var(--panel);
+    padding: 1rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .score-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .score-card.blue::before { background: linear-gradient(90deg, transparent, var(--blue), transparent); }
+  .score-card.red::before { background: linear-gradient(90deg, transparent, var(--red), transparent); }
+  .score-card-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+  .score-card.blue .score-card-label { color: var(--blue); }
+  .score-card.red .score-card-label { color: var(--red); }
+  .score-card-name {
+    font-family: var(--cond);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 0.5rem;
+  }
+  .score-values {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .score-val { font-family: var(--mono); font-size: 0.85rem; }
+  .score-val .label { color: var(--text-dim); font-size: 0.7rem; display: block; }
+  .score-val .num { font-size: 1.8rem; font-family: var(--display); }
+  .score-card.blue .score-val .num { color: var(--blue-light); }
+  .score-card.red .score-val .num { color: var(--red-light); }
+  .score-welfare { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+  .score-welfare .label { font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.1em; }
+  .welfare-badge {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    padding: 0.1rem 0.6rem;
+    border: 1px solid;
+    line-height: 1.2;
+  }
+  .blue .welfare-badge { border-color: var(--blue); color: var(--blue-light); background: var(--blue-glow); }
+  .red .welfare-badge { border-color: var(--red); color: var(--red-light); background: var(--red-glow); }
+
+  .scoreboard-center {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .vs-text {
+    font-family: var(--display);
+    font-size: 1.8rem;
+    color: var(--text-dim);
+    line-height: 1;
+  }
+  .round-label-center {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* Round history dots */
+  .round-history { display: flex; gap: 0.4rem; margin-top: 0.3rem; }
+  .hist-dot {
+    width: 28px; height: 28px;
+    border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display);
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+  .hist-dot.scored { border-color: var(--green); color: var(--green); background: var(--green-glow); }
+
+  /* ── GAME GRID ── */
+  .game-grid {
+    display: grid;
+    grid-template-columns: 1fr 280px 1fr;
+    gap: 1rem;
+    align-items: start;
+  }
+
+  /* Country panel */
+  .country-panel {
+    border: 1px solid var(--border2);
+    background: var(--panel);
+    position: relative;
+    overflow: hidden;
+  }
+  .country-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 2px;
+  }
+  .country-panel.blue::before { background: linear-gradient(180deg, var(--blue), transparent); }
+  .country-panel.red::before { background: linear-gradient(180deg, var(--red), transparent); }
+
+  .cp-header {
+    padding: 1rem 1.2rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cp-flag {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    letter-spacing: 0.05em;
+  }
+  .cp-flag.blue { color: var(--blue-light); }
+  .cp-flag.red { color: var(--red-light); }
+  .cp-subtitle {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    margin-top: 0.1rem;
+  }
+  .cp-tokens {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .token-icon { font-size: 1rem; }
+
+  .cp-body { padding: 1rem 1.2rem; }
+
+  /* Production rates */
+  .rates-section {
+    margin-bottom: 1rem;
+  }
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .rate-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+  }
+  .rate-token { color: var(--gold); }
+  .rate-arrow { color: var(--text-dim); }
+  .rate-sungrain { color: var(--sungrain); font-weight: bold; }
+  .rate-stormiron { color: var(--stormiron); font-weight: bold; }
+
+  /* Allocation sliders */
+  .alloc-section { margin-bottom: 1rem; }
+  .alloc-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.7rem;
+  }
+  .alloc-label {
+    font-family: var(--cond);
+    font-size: 0.85rem;
+    font-weight: 600;
+    width: 90px;
+    flex-shrink: 0;
+  }
+  .alloc-label.sungrain { color: var(--sungrain); }
+  .alloc-label.stormiron { color: var(--stormiron); }
+  .alloc-control {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+  }
+  .alloc-btn {
+    width: 26px; height: 26px;
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .alloc-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .alloc-btn:active { transform: scale(0.92); }
+  .alloc-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .alloc-slider.sungrain {
+    background: linear-gradient(90deg, var(--sungrain) var(--pct, 50%), var(--bg3) var(--pct, 50%));
+  }
+  .alloc-slider.stormiron {
+    background: linear-gradient(90deg, var(--stormiron) var(--pct, 50%), var(--bg3) var(--pct, 50%));
+  }
+  .alloc-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 0;
+    border: 2px solid currentColor;
+    background: var(--bg);
+    cursor: pointer;
+  }
+  .alloc-slider.sungrain::-webkit-slider-thumb { border-color: var(--sungrain); }
+  .alloc-slider.stormiron::-webkit-slider-thumb { border-color: var(--stormiron); }
+  .alloc-num {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    width: 14px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .alloc-num.sungrain { color: var(--sungrain); }
+  .alloc-num.stormiron { color: var(--stormiron); }
+
+  .tokens-bar {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .tokens-used {
+    flex: 1;
+    height: 3px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .tokens-fill {
+    height: 100%;
+    transition: width 0.3s;
+  }
+  .tokens-fill.ok { background: var(--green); }
+  .tokens-fill.over { background: var(--red); }
+  .tokens-fill.warn { background: var(--gold); }
+
+  /* Production output */
+  .production-out {
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .prod-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.3rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+  }
+  .prod-row:last-child { margin-bottom: 0; }
+  .prod-label { color: var(--text-dim); font-size: 0.7rem; }
+  .prod-val.sungrain { color: var(--sungrain); font-size: 1.1rem; font-family: var(--display); }
+  .prod-val.stormiron { color: var(--stormiron); font-size: 1.1rem; font-family: var(--display); }
+
+  /* Trade section */
+  .trade-section {
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  .trade-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .trade-label {
+    font-family: var(--cond);
+    font-size: 0.8rem;
+    font-weight: 600;
+    width: 80px;
+    flex-shrink: 0;
+  }
+  .trade-label.export { color: var(--text-dim); }
+  .trade-label.import { color: var(--green); }
+  .trade-input {
+    width: 60px;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--text-bright);
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    padding: 0.3rem 0.5rem;
+    text-align: center;
+    outline: none;
+  }
+  .trade-input:focus { border-color: var(--gold); }
+  .trade-input:disabled { opacity: 0.4; cursor: not-allowed; }
+  .trade-result {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    flex: 1;
+  }
+
+  /* Final state */
+  .final-state {
+    border: 1px solid var(--border2);
+    background: var(--bg);
+    padding: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  .final-state .section-label { margin-bottom: 0.5rem; }
+  .final-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+  }
+  .welfare-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .welfare-label {
+    font-family: var(--cond);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+  .welfare-score {
+    font-family: var(--display);
+    font-size: 2rem;
+  }
+  .blue .welfare-score { color: var(--blue-light); }
+  .red .welfare-score { color: var(--red-light); }
+
+  /* ── MAGIC BOX CENTER ── */
+  .magic-box-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .magic-box {
+    width: 100%;
+    border: 2px solid var(--gold);
+    background: var(--panel);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s;
+  }
+  .magic-box.closed {
+    border-color: var(--border2);
+    opacity: 0.5;
+  }
+  .magic-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, var(--gold-glow), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .magic-box.open::before { opacity: 1; }
+  .magic-box.tariff-mode {
+    border-color: var(--red);
+  }
+  .magic-box.tariff-mode::before {
+    background: radial-gradient(ellipse at center, var(--red-glow), transparent 70%);
+    opacity: 1;
+  }
+
+  .mb-header {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+  .mb-title {
+    font-family: var(--display);
+    font-size: 1.4rem;
+    letter-spacing: 0.1em;
+    line-height: 1;
+  }
+  .magic-box.open .mb-title { color: var(--gold); }
+  .magic-box.tariff-mode .mb-title { color: var(--red-light); }
+  .magic-box.closed .mb-title { color: var(--text-dim); }
+  .mb-status {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    margin-top: 0.2rem;
+  }
+  .magic-box.open .mb-status { color: var(--gold); }
+  .magic-box.tariff-mode .mb-status { color: var(--red); }
+  .magic-box.closed .mb-status { color: var(--text-dim); }
+
+  .mb-body { padding: 0.75rem; }
+
+  .mb-rate-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+  }
+  .mb-rate-row.tariff { border-color: var(--red); background: rgba(212,58,58,0.05); }
+
+  .mb-icon { font-size: 1.1rem; }
+  .mb-eq { color: var(--text-dim); }
+  .tariff-notice {
+    background: rgba(212,58,58,0.1);
+    border: 1px solid var(--red);
+    padding: 0.5rem 0.6rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--red-light);
+    text-align: center;
+    letter-spacing: 0.05em;
+    line-height: 1.4;
+  }
+
+  /* Comparison box */
+  .comparison-box {
+    width: 100%;
+    border: 1px solid var(--border2);
+    background: var(--panel);
+    padding: 0.75rem;
+  }
+  .comp-title {
+    font-family: var(--cond);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  .comp-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    margin-bottom: 0.4rem;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+  }
+  .comp-row.highlight {
+    border-color: var(--green);
+    background: var(--green-glow);
+  }
+  .comp-row.highlight-best {
+    border-color: var(--gold);
+    background: var(--gold-glow);
+  }
+  .comp-label { color: var(--text-dim); }
+  .comp-val { font-size: 1rem; font-family: var(--display); }
+  .comp-row .comp-val.autarky { color: var(--text); }
+  .comp-row .comp-val.trade { color: var(--green); }
+  .comp-row .comp-val.tariff { color: var(--red-light); }
+
+  /* ── ROUND INSTRUCTION ── */
+  .round-instruction {
+    border-left: 3px solid var(--gold);
+    background: rgba(232,197,71,0.04);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    font-family: var(--body);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .instruction-title {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+  }
+
+  /* ── ACTION BUTTON ── */
+  .action-area {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .btn-main {
+    font-family: var(--cond);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.75rem 2.5rem;
+    border: 2px solid var(--gold);
+    background: var(--gold-glow);
+    color: var(--gold);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-main::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gold);
+    transform: translateX(-100%);
+    transition: transform 0.2s;
+  }
+  .btn-main:hover::before { transform: translateX(0); }
+  .btn-main:hover { color: var(--bg); }
+  .btn-main span { position: relative; z-index: 1; }
+  .btn-main:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-main:disabled::before { display: none; }
+
+  .btn-secondary {
+    font-family: var(--cond);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.6rem 1.5rem;
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--text-dim); color: var(--text); }
+
+  /* ── DEBRIEF ── */
+  .debrief-section {
+    margin-top: 2rem;
+    border: 1px solid var(--border2);
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .debrief-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .debrief-title {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    letter-spacing: 0.08em;
+    color: var(--text-bright);
+  }
+  .debrief-body {
+    padding: 1.5rem;
+  }
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .concept-card {
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    padding: 1rem;
+    position: relative;
+  }
+  .concept-num {
+    font-family: var(--display);
+    font-size: 3rem;
+    opacity: 0.07;
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    line-height: 1;
+    color: var(--gold);
+  }
+  .concept-title {
+    font-family: var(--cond);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .concept-body {
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .concept-formula {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 0.4rem 0.6rem;
+    margin-top: 0.5rem;
+    color: var(--green);
+  }
+
+  /* ── QUIZ ── */
+  .quiz-section {
+    margin-top: 1.5rem;
+    border: 1px solid var(--border2);
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .quiz-header {
+    padding: 0.75rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .quiz-title {
+    font-family: var(--display);
+    font-size: 1.3rem;
+    letter-spacing: 0.08em;
+    color: var(--text-bright);
+  }
+  .quiz-score-badge {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--green);
+    color: var(--green);
+    background: var(--green-glow);
+  }
+  .quiz-body { padding: 1.2rem; }
+  .quiz-q {
+    margin-bottom: 1.2rem;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .quiz-q.correct { border-color: var(--green); }
+  .quiz-q.wrong { border-color: var(--red); }
+  .quiz-q-header {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+    color: var(--text-bright);
+  }
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .quiz-opt {
+    padding: 0.6rem 1rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-dim);
+  }
+  .quiz-opt:last-child { border-bottom: none; }
+  .quiz-opt:hover:not(.answered) { background: var(--bg2); color: var(--text); }
+  .quiz-opt.selected-correct { background: var(--green-glow); color: var(--green); }
+  .quiz-opt.selected-wrong { background: var(--red-glow); color: var(--red-light); }
+  .quiz-opt.show-correct { background: var(--green-glow); color: var(--green); }
+  .quiz-opt-key {
+    width: 20px; height: 20px;
+    border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem;
+    flex-shrink: 0;
+  }
+  .quiz-feedback {
+    padding: 0.6rem 1rem;
+    font-size: 0.82rem;
+    font-family: var(--body);
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct-fb { color: var(--green); background: var(--green-glow); }
+  .quiz-feedback.wrong-fb { color: var(--red-light); background: var(--red-glow); }
+
+  /* ── ANIMATED PARTICLES ── */
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-60px) scale(0.5); opacity: 0; }
+  }
+  .particle {
+    position: absolute;
+    pointer-events: none;
+    font-size: 1.2rem;
+    animation: floatUp 0.8s ease-out forwards;
+    z-index: 100;
+  }
+
+  /* ── INTRO SCREEN ── */
+  #intro-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    background-image:
+      radial-gradient(ellipse at 30% 30%, rgba(58,143,212,0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 70%, rgba(212,58,58,0.1) 0%, transparent 50%);
+  }
+  .intro-eyebrow {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .intro-title {
+    font-family: var(--display);
+    font-size: clamp(3rem, 8vw, 7rem);
+    line-height: 1;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, var(--blue-light) 0%, var(--gold) 40%, var(--red-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1.5rem;
+  }
+  .intro-sub {
+    font-family: var(--cond);
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--text-dim);
+    max-width: 500px;
+    line-height: 1.5;
+    margin-bottom: 2.5rem;
+  }
+  .intro-countries {
+    display: flex;
+    gap: 3rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .intro-country {
+    border: 1px solid var(--border2);
+    background: var(--panel);
+    padding: 1.2rem 1.8rem;
+    min-width: 180px;
+  }
+  .intro-country.blue { border-top: 2px solid var(--blue); }
+  .intro-country.red { border-top: 2px solid var(--red); }
+  .intro-country-name {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .intro-country.blue .intro-country-name { color: var(--blue-light); }
+  .intro-country.red .intro-country-name { color: var(--red-light); }
+  .intro-country-rates {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    line-height: 1.8;
+    text-align: left;
+  }
+  .intro-country-rates span.sg { color: var(--sungrain); }
+  .intro-country-rates span.si { color: var(--stormiron); }
+  .btn-start {
+    font-family: var(--cond);
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 1rem 3rem;
+    border: 2px solid var(--gold);
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-start::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s;
+  }
+  .btn-start:hover::before { transform: scaleX(1); }
+  .btn-start:hover { color: var(--bg); }
+  .btn-start span { position: relative; z-index: 1; }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--panel);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    padding: 0.75rem 1.5rem;
+    letter-spacing: 0.08em;
+    z-index: 999;
+    transition: transform 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 0 30px var(--gold-glow);
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.error { border-color: var(--red); color: var(--red-light); box-shadow: 0 0 30px var(--red-glow); }
+
+  /* Error highlight */
+  .error-flash {
+    animation: errorFlash 0.4s ease;
+  }
+  @keyframes errorFlash {
+    0%,100% { border-color: var(--border2); }
+    50% { border-color: var(--red); box-shadow: 0 0 15px var(--red-glow); }
+  }
+
+  /* ── ROUND 4: RELATIVE WAGE ── */
+
+  .rw-panel {
+    display: none;
+  }
+  .rw-panel.active {
+    display: block;
+  }
+
+  .rw-intro {
+    border-left: 3px solid var(--purple-light);
+    background: rgba(168,85,247,0.04);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .rw-intro .instruction-title { color: var(--purple-light); }
+
+  .rw-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 800px) { .rw-grid { grid-template-columns: 1fr; } }
+
+  .rw-card {
+    border: 1px solid var(--border2);
+    background: var(--panel);
+    overflow: hidden;
+    position: relative;
+  }
+  .rw-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .rw-card.blue::before { background: linear-gradient(90deg, transparent, var(--blue), transparent); }
+  .rw-card.red::before  { background: linear-gradient(90deg, transparent, var(--red),  transparent); }
+  .rw-card-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .rw-card-name {
+    font-family: var(--display);
+    font-size: 1.3rem;
+    letter-spacing: 0.05em;
+  }
+  .rw-card.blue .rw-card-name { color: var(--blue-light); }
+  .rw-card.red  .rw-card-name { color: var(--red-light); }
+  .rw-card-sub {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+  .rw-card-body { padding: 1rem; }
+
+  /* Wage slider row */
+  .wage-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .wage-label {
+    font-family: var(--cond);
+    font-size: 0.85rem;
+    font-weight: 700;
+    width: 60px;
+    flex-shrink: 0;
+    color: var(--gold);
+  }
+  .wage-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 5px;
+    background: linear-gradient(90deg, var(--gold) var(--pct,50%), var(--bg3) var(--pct,50%));
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .wage-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 0;
+    border: 2px solid var(--gold);
+    background: var(--bg);
+    cursor: pointer;
+  }
+  .wage-display {
+    font-family: var(--display);
+    font-size: 1.6rem;
+    color: var(--gold);
+    width: 60px;
+    text-align: right;
+  }
+  .wage-unit {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-dim);
+  }
+
+  /* Cost table */
+  .cost-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    margin-bottom: 0.75rem;
+  }
+  .cost-table th {
+    padding: 0.35rem 0.5rem;
+    background: var(--bg3);
+    color: var(--text-dim);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+  .cost-table td {
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .cost-table tr.winner td { background: rgba(61,214,140,0.06); }
+  .cost-table .cell-cheap { color: var(--green); font-weight: bold; }
+  .cost-table .cell-dear  { color: var(--red-light); }
+  .cost-table .cell-sg    { color: var(--sungrain); }
+  .cost-table .cell-si    { color: var(--stormiron); }
+
+  /* Specialization outcome badge */
+  .spec-badge {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid;
+    font-family: var(--cond);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-align: center;
+    margin-top: 0.5rem;
+    transition: all 0.3s;
+  }
+  .spec-badge.produces { border-color: var(--green); color: var(--green); background: var(--green-glow); }
+  .spec-badge.idle     { border-color: var(--red);   color: var(--red-light); background: var(--red-glow); }
+  .spec-badge.tied     { border-color: var(--gold);  color: var(--gold);      background: var(--gold-glow); }
+
+  /* ── RELATIVE WAGE MASTER PANEL ── */
+  .rw-master {
+    border: 1px solid var(--border2);
+    background: var(--panel);
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .rw-master-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .rw-master-title {
+    font-family: var(--display);
+    font-size: 1.2rem;
+    letter-spacing: 0.08em;
+    color: var(--text-bright);
+  }
+  .rw-master-body { padding: 1rem; }
+
+  /* Big ratio display */
+  .ratio-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    flex-wrap: wrap;
+  }
+  .ratio-num {
+    font-family: var(--display);
+    font-size: 3rem;
+    line-height: 1;
+  }
+  .ratio-num.blue { color: var(--blue-light); }
+  .ratio-num.red  { color: var(--red-light); }
+  .ratio-divider {
+    font-family: var(--display);
+    font-size: 2rem;
+    color: var(--text-dim);
+  }
+  .ratio-result {
+    font-family: var(--display);
+    font-size: 2.5rem;
+    color: var(--gold);
+  }
+  .ratio-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-align: center;
+    margin-top: 0.2rem;
+  }
+  .ratio-col { display: flex; flex-direction: column; align-items: center; }
+
+  /* Feasibility zone indicator */
+  .zone-bar-wrap {
+    margin-bottom: 0.75rem;
+  }
+  .zone-bar-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.35rem;
+    display: flex;
+    justify-content: space-between;
+  }
+  .zone-bar {
+    position: relative;
+    height: 28px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    overflow: visible;
+  }
+  .zone-fill {
+    position: absolute;
+    top: 0; bottom: 0;
+    background: rgba(61,214,140,0.15);
+    border-left: 2px solid var(--green);
+    border-right: 2px solid var(--green);
+    transition: all 0.3s;
+  }
+  .zone-needle {
+    position: absolute;
+    top: -4px; bottom: -4px;
+    width: 3px;
+    background: var(--gold);
+    box-shadow: 0 0 8px var(--gold-glow);
+    transition: left 0.3s;
+    z-index: 2;
+  }
+  .zone-needle::after {
+    content: '▼';
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    color: var(--gold);
+  }
+  .zone-end-label {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  /* World outcome row */
+  .outcome-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  @media (max-width: 600px) { .outcome-grid { grid-template-columns: 1fr; } }
+  .outcome-cell {
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    padding: 0.6rem 0.75rem;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .outcome-cell.active { border-color: var(--green); background: var(--green-glow); }
+  .outcome-cell.inactive { opacity: 0.4; }
+  .outcome-cell-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+  .outcome-cell-val {
+    font-family: var(--cond);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+
+  /* Insight callout */
+  .insight-box {
+    border: 1px solid var(--purple-light);
+    background: rgba(168,85,247,0.06);
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+  .insight-box .insight-title {
+    font-family: var(--cond);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--purple-light);
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+
+  /* Explore mode toggle */
+  .explore-toggle {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .explore-btn {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text-dim);
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    transition: all 0.15s;
+  }
+  .explore-btn:hover { border-color: var(--purple-light); color: var(--purple-light); }
+  .explore-btn.active { border-color: var(--purple-light); color: var(--purple-light); background: var(--purple-glow); }
+
+  /* ── UTIL ── */
+  .hidden { display: none !important; }
+  .text-gold { color: var(--gold); }
+  .text-green { color: var(--green); }
+  .text-red { color: var(--red-light); }
+  .text-dim { color: var(--text-dim); }
+
+  /* scroll */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg3); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .game-grid { grid-template-columns: 1fr; }
+    .magic-box-col { flex-direction: row; flex-wrap: wrap; }
+    .magic-box { flex: 1; min-width: 200px; }
+    .scoreboard { grid-template-columns: 1fr 1fr; }
+    .scoreboard-center { display: none; }
+  }
+  @media (max-width: 600px) {
+    .main { padding: 1rem; }
+    .header-inner { flex-direction: column; align-items: flex-start; }
+    .scoreboard { grid-template-columns: 1fr; }
+    .game-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- INTRO SCREEN -->
+<div id="intro-screen">
+  <div class="intro-eyebrow">Global Economics &amp; Trade · Interactive Lab</div>
+  <div class="intro-title">The Magic Box<br>Tariff Lab</div>
+  <div class="intro-sub">Discover how trade acts as indirect production — and how tariffs make it less efficient.</div>
+  <div class="intro-countries">
+    <div class="intro-country blue">
+      <div class="intro-country-name">Blue Country</div>
+      <div class="intro-country-rates">
+        1 labor → <span class="sg">3 Sungrain</span><br>
+        1 labor → <span class="si">1 Storm-Iron</span><br>
+        <br>
+        <em>Advantage: Sungrain</em>
+      </div>
+    </div>
+    <div class="intro-country red">
+      <div class="intro-country-name">Red Country</div>
+      <div class="intro-country-rates">
+        1 labor → <span class="sg">1 Sungrain</span><br>
+        1 labor → <span class="si">3 Storm-Iron</span><br>
+        <br>
+        <em>Advantage: Storm-Iron</em>
+      </div>
+    </div>
+  </div>
+  <button class="btn-start" onclick="startGame()"><span>▶ Begin Lab</span></button>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo-block">
+      <div class="logo-eyebrow">Econ Lab · Trade &amp; Tariff Simulation</div>
+      <div class="logo-title">Magic Box Tariff Lab</div>
+    </div>
+    <div class="header-status">
+      <div class="status-chip" id="round-chip">ROUND 1 — AUTARKY</div>
+      <div class="status-chip active" id="status-chip">● ACTIVE</div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- Round navigation -->
+  <div class="round-nav">
+    <div class="round-tab active" id="tab-1" onclick="goToRound(1)">
+      Round 1 · Autarky
+    </div>
+    <div class="round-tab locked" id="tab-2" onclick="goToRound(2)">
+      Round 2 · Free Trade <span class="lock-icon" id="lock-2">🔒</span>
+    </div>
+    <div class="round-tab locked" id="tab-3" onclick="goToRound(3)">
+      Round 3 · Tariff <span class="lock-icon" id="lock-3">🔒</span>
+    </div>
+    <div class="round-tab locked" id="tab-4" onclick="goToRound(4)">
+      Round 4 · Relative Wage <span class="lock-icon" id="lock-4">🔒</span>
+    </div>
+    <div class="round-tab locked" id="tab-debrief" onclick="goToDebrief()">
+      Debrief &amp; Quiz <span class="lock-icon" id="lock-d">🔒</span>
+    </div>
+  </div>
+
+  <!-- Scoreboard -->
+  <div class="scoreboard">
+    <div class="score-card blue">
+      <div class="score-card-label">Blue Country</div>
+      <div class="score-card-name">Azuria</div>
+      <div class="score-values">
+        <div class="score-val">
+          <span class="label">SUNGRAIN</span>
+          <span class="num" id="sb-blue-sg">—</span>
+        </div>
+        <div class="score-val">
+          <span class="label">STORM-IRON</span>
+          <span class="num" id="sb-blue-si">—</span>
+        </div>
+      </div>
+      <div class="score-welfare">
+        <span class="label">WELFARE POINTS</span>
+        <span class="welfare-badge blue" id="sb-blue-wp">—</span>
+      </div>
+    </div>
+
+    <div class="scoreboard-center">
+      <div class="vs-text">VS</div>
+      <div class="round-label-center" id="sb-round-label">ROUND 1</div>
+      <div class="round-history">
+        <div class="hist-dot" id="hist-1">1</div>
+        <div class="hist-dot" id="hist-2">2</div>
+        <div class="hist-dot" id="hist-3">3</div>
+        <div class="hist-dot" id="hist-4">4</div>
+      </div>
+    </div>
+
+    <div class="score-card red">
+      <div class="score-card-label">Red Country</div>
+      <div class="score-card-name">Krasnovia</div>
+      <div class="score-values">
+        <div class="score-val">
+          <span class="label">SUNGRAIN</span>
+          <span class="num" id="sb-red-sg">—</span>
+        </div>
+        <div class="score-val">
+          <span class="label">STORM-IRON</span>
+          <span class="num" id="sb-red-si">—</span>
+        </div>
+      </div>
+      <div class="score-welfare">
+        <span class="label">WELFARE POINTS</span>
+        <span class="welfare-badge red" id="sb-red-wp">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Round instruction -->
+  <div class="round-instruction" id="round-instruction">
+    <div class="instruction-title" id="inst-title">Round 1 · Autarky</div>
+    <div id="inst-body">Each country must produce both goods on its own — the Magic Box is closed. Allocate your 8 labor tokens between Sungrain and Storm-Iron. Find the allocation that maximizes welfare points (matched pairs of 1 Sungrain + 1 Storm-Iron).</div>
+  </div>
+
+  <!-- Game grid -->
+  <div class="game-grid" id="game-grid">
+
+    <!-- BLUE COUNTRY -->
+    <div class="country-panel blue" id="blue-panel">
+      <div class="cp-header">
+        <div>
+          <div class="cp-flag blue">AZURIA · Blue</div>
+          <div class="cp-subtitle">1 labor → 3 Sungrain | 1 labor → 1 Storm-Iron</div>
+        </div>
+        <div class="cp-tokens">
+          <span class="token-icon">⚙</span>
+          <span id="blue-tokens-left">8</span>/8 labor
+        </div>
+      </div>
+      <div class="cp-body">
+        <div class="rates-section">
+          <div class="section-label">Production Rates</div>
+          <div class="rate-row">
+            <span class="rate-token">1⚙</span>
+            <span class="rate-arrow">→</span>
+            <span class="rate-sungrain">3 🌾 Sungrain</span>
+          </div>
+          <div class="rate-row">
+            <span class="rate-token">1⚙</span>
+            <span class="rate-arrow">→</span>
+            <span class="rate-stormiron">1 ⚡ Storm-Iron</span>
+          </div>
+        </div>
+
+        <div class="alloc-section">
+          <div class="section-label">Labor Allocation</div>
+          <div class="alloc-row">
+            <span class="alloc-label sungrain">🌾 Sungrain</span>
+            <div class="alloc-control">
+              <button class="alloc-btn" onclick="adjustLabor('blue','sg',-1)">−</button>
+              <input type="range" class="alloc-slider sungrain" id="blue-sg-slider" min="0" max="8" value="4"
+                oninput="onSlider('blue','sg',this.value)">
+              <span class="alloc-num sungrain" id="blue-sg-labor">4</span>
+            </div>
+          </div>
+          <div class="alloc-row">
+            <span class="alloc-label stormiron">⚡ Storm-Iron</span>
+            <div class="alloc-control">
+              <button class="alloc-btn" onclick="adjustLabor('blue','si',-1)">−</button>
+              <input type="range" class="alloc-slider stormiron" id="blue-si-slider" min="0" max="8" value="4"
+                oninput="onSlider('blue','si',this.value)">
+              <span class="alloc-num stormiron" id="blue-si-labor">4</span>
+            </div>
+          </div>
+          <div class="tokens-bar">
+            <span id="blue-tok-label">4+4=8 ✓</span>
+            <div class="tokens-used">
+              <div class="tokens-fill ok" id="blue-tok-bar" style="width:100%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="production-out">
+          <div class="section-label">Production Output</div>
+          <div class="prod-row">
+            <span class="prod-label">🌾 Sungrain produced</span>
+            <span class="prod-val sungrain" id="blue-prod-sg">12</span>
+          </div>
+          <div class="prod-row">
+            <span class="prod-label">⚡ Storm-Iron produced</span>
+            <span class="prod-val stormiron" id="blue-prod-si">4</span>
+          </div>
+        </div>
+
+        <!-- Trade (hidden in R1) -->
+        <div class="trade-section" id="blue-trade-section" style="display:none">
+          <div class="section-label">Trade via Magic Box</div>
+          <div class="trade-row">
+            <span class="trade-label export">Export 🌾</span>
+            <input type="number" class="trade-input" id="blue-export-sg" min="0" value="0"
+              oninput="recalcTrade('blue')" placeholder="0">
+            <span class="trade-result text-dim" id="blue-export-sg-result"></span>
+          </div>
+          <div class="trade-row">
+            <span class="trade-label import">Receive ⚡</span>
+            <span class="trade-result" id="blue-import-si-result" style="font-family:var(--display);font-size:1.1rem;color:var(--green)">0</span>
+            <span style="font-size:0.7rem;font-family:var(--mono);color:var(--text-dim)" id="blue-tariff-note"></span>
+          </div>
+        </div>
+
+        <div class="final-state" id="blue-final">
+          <div class="section-label">Final Holdings</div>
+          <div class="final-row">
+            <span class="text-dim">🌾 Sungrain</span>
+            <span class="rate-sungrain" id="blue-final-sg">12</span>
+          </div>
+          <div class="final-row">
+            <span class="text-dim">⚡ Storm-Iron</span>
+            <span class="rate-stormiron" id="blue-final-si">4</span>
+          </div>
+          <div class="welfare-line blue">
+            <span class="welfare-label">Welfare Points</span>
+            <span class="welfare-score" id="blue-welfare">4</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAGIC BOX CENTER -->
+    <div class="magic-box-col">
+      <div class="magic-box closed" id="magic-box">
+        <div class="mb-header">
+          <div class="mb-title" id="mb-title">MAGIC BOX</div>
+          <div class="mb-status" id="mb-status">● CLOSED — AUTARKY</div>
+        </div>
+        <div class="mb-body">
+          <div class="section-label" style="margin-bottom:0.5rem">World Trade Rate</div>
+          <div class="mb-rate-row" id="mb-rate-1">
+            <span class="mb-icon">🌾</span>
+            <span class="mb-eq">→</span>
+            <span class="mb-icon">⚡</span>
+            <span style="font-family:var(--mono);font-size:0.7rem;color:var(--text-dim)">1:1</span>
+          </div>
+          <div class="mb-rate-row" id="mb-rate-2">
+            <span class="mb-icon">⚡</span>
+            <span class="mb-eq">→</span>
+            <span class="mb-icon">🌾</span>
+            <span style="font-family:var(--mono);font-size:0.7rem;color:var(--text-dim)">1:1</span>
+          </div>
+          <div class="tariff-notice hidden" id="tariff-notice">
+            ⚠ TARIFF ACTIVE<br>
+            Per 4 units imported → 1 kept by customs<br>
+            You receive only 3 of every 4
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison -->
+      <div class="comparison-box" id="comparison-box">
+        <div class="comp-title">Score Comparison</div>
+        <div class="comp-row" id="comp-autarky">
+          <span class="comp-label">Round 1 · Autarky</span>
+          <span class="comp-val autarky" id="comp-r1">—</span>
+        </div>
+        <div class="comp-row" id="comp-trade">
+          <span class="comp-label">Round 2 · Free Trade</span>
+          <span class="comp-val trade" id="comp-r2">—</span>
+        </div>
+        <div class="comp-row" id="comp-tariff-row">
+          <span class="comp-label">Round 3 · Tariff</span>
+          <span class="comp-val tariff" id="comp-r3">—</span>
+        </div>
+
+        <div style="margin-top:0.75rem;border-top:1px solid var(--border);padding-top:0.75rem">
+          <div class="section-label">Key Question — Azuria (Blue)</div>
+          <div style="font-family:var(--mono);font-size:0.7rem;line-height:1.7;color:var(--text-dim)" id="key-question">
+            Direct: 1 labor → ? Storm-Iron<br>
+            Indirect (trade): 1 labor → 3 Sungrain → ? Storm-Iron
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RED COUNTRY -->
+    <div class="country-panel red" id="red-panel">
+      <div class="cp-header">
+        <div>
+          <div class="cp-flag red">KRASNOVIA · Red</div>
+          <div class="cp-subtitle">1 labor → 1 Sungrain | 1 labor → 3 Storm-Iron</div>
+        </div>
+        <div class="cp-tokens">
+          <span class="token-icon">⚙</span>
+          <span id="red-tokens-left">8</span>/8 labor
+        </div>
+      </div>
+      <div class="cp-body">
+        <div class="rates-section">
+          <div class="section-label">Production Rates</div>
+          <div class="rate-row">
+            <span class="rate-token">1⚙</span>
+            <span class="rate-arrow">→</span>
+            <span class="rate-sungrain">1 🌾 Sungrain</span>
+          </div>
+          <div class="rate-row">
+            <span class="rate-token">1⚙</span>
+            <span class="rate-arrow">→</span>
+            <span class="rate-stormiron">3 ⚡ Storm-Iron</span>
+          </div>
+        </div>
+
+        <div class="alloc-section">
+          <div class="section-label">Labor Allocation</div>
+          <div class="alloc-row">
+            <span class="alloc-label sungrain">🌾 Sungrain</span>
+            <div class="alloc-control">
+              <button class="alloc-btn" onclick="adjustLabor('red','sg',-1)">−</button>
+              <input type="range" class="alloc-slider sungrain" id="red-sg-slider" min="0" max="8" value="4"
+                oninput="onSlider('red','sg',this.value)">
+              <span class="alloc-num sungrain" id="red-sg-labor">4</span>
+            </div>
+          </div>
+          <div class="alloc-row">
+            <span class="alloc-label stormiron">⚡ Storm-Iron</span>
+            <div class="alloc-control">
+              <button class="alloc-btn" onclick="adjustLabor('red','si',-1)">−</button>
+              <input type="range" class="alloc-slider stormiron" id="red-si-slider" min="0" max="8" value="4"
+                oninput="onSlider('red','si',this.value)">
+              <span class="alloc-num stormiron" id="red-si-labor">4</span>
+            </div>
+          </div>
+          <div class="tokens-bar">
+            <span id="red-tok-label">4+4=8 ✓</span>
+            <div class="tokens-used">
+              <div class="tokens-fill ok" id="red-tok-bar" style="width:100%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="production-out">
+          <div class="section-label">Production Output</div>
+          <div class="prod-row">
+            <span class="prod-label">🌾 Sungrain produced</span>
+            <span class="prod-val sungrain" id="red-prod-sg">4</span>
+          </div>
+          <div class="prod-row">
+            <span class="prod-label">⚡ Storm-Iron produced</span>
+            <span class="prod-val stormiron" id="red-prod-si">12</span>
+          </div>
+        </div>
+
+        <div class="trade-section" id="red-trade-section" style="display:none">
+          <div class="section-label">Trade via Magic Box</div>
+          <div class="trade-row">
+            <span class="trade-label export">Export ⚡</span>
+            <input type="number" class="trade-input" id="red-export-si" min="0" value="0"
+              oninput="recalcTrade('red')" placeholder="0">
+            <span class="trade-result text-dim" id="red-export-si-result"></span>
+          </div>
+          <div class="trade-row">
+            <span class="trade-label import">Receive 🌾</span>
+            <span class="trade-result" id="red-import-sg-result" style="font-family:var(--display);font-size:1.1rem;color:var(--green)">0</span>
+            <span style="font-size:0.7rem;font-family:var(--mono);color:var(--text-dim)" id="red-tariff-note"></span>
+          </div>
+        </div>
+
+        <div class="final-state" id="red-final">
+          <div class="section-label">Final Holdings</div>
+          <div class="final-row">
+            <span class="text-dim">🌾 Sungrain</span>
+            <span class="rate-sungrain" id="red-final-sg">4</span>
+          </div>
+          <div class="final-row">
+            <span class="text-dim">⚡ Storm-Iron</span>
+            <span class="rate-stormiron" id="red-final-si">12</span>
+          </div>
+          <div class="welfare-line red">
+            <span class="welfare-label">Welfare Points</span>
+            <span class="welfare-score" id="red-welfare">4</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /game-grid -->
+
+  <!-- Action area -->
+  <div class="action-area" id="action-area">
+    <button class="btn-secondary" onclick="resetRound()"><span>↺ Reset Round</span></button>
+    <button class="btn-main" id="submit-btn" onclick="submitRound()"><span id="submit-label">Record Round 1 Score</span></button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       ROUND 4: RELATIVE WAGE PANEL
+  ══════════════════════════════════════════ -->
+  <div class="rw-panel" id="rw-panel">
+
+    <!-- Instruction banner -->
+    <div class="round-instruction rw-intro">
+      <div class="instruction-title">Round 4 · Relative Wage &amp; Trade Viability</div>
+      <div>So far the world price has been fixed at 1:1. But <em>who actually trades in equilibrium</em> depends on the wages paid to workers in each country. Use the sliders below to set hourly wages in each country, then watch how unit costs determine which country produces which good — and whether trade remains mutually beneficial.</div>
+    </div>
+
+    <!-- Per-country wage + cost cards -->
+    <div class="rw-grid">
+
+      <!-- Azuria card -->
+      <div class="rw-card blue">
+        <div class="rw-card-header">
+          <div>
+            <div class="rw-card-name">Azuria</div>
+            <div class="rw-card-sub">BLUE COUNTRY · SUNGRAIN ADVANTAGE</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:0.65rem;color:var(--blue-light)">
+            Productivity: 3 SG / 1 SI per worker
+          </div>
+        </div>
+        <div class="rw-card-body">
+          <div class="wage-row">
+            <span class="wage-label">Wage</span>
+            <input type="range" class="wage-slider" id="blue-wage-slider" min="1" max="30" value="10"
+              oninput="onWageSlider('blue', this.value)">
+            <div>
+              <div class="wage-display" id="blue-wage-display">10</div>
+              <div class="wage-unit">⊕/hr</div>
+            </div>
+          </div>
+
+          <div class="section-label">Unit Cost of Production</div>
+          <table class="cost-table" id="blue-cost-table">
+            <thead>
+              <tr>
+                <th>Good</th>
+                <th>Workers needed per unit</th>
+                <th>Unit cost (wage ÷ productivity)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="blue-sg-row">
+                <td class="cell-sg">🌾 Sungrain</td>
+                <td id="blue-sg-workers">1/3 hr</td>
+                <td id="blue-sg-cost">—</td>
+                <td id="blue-sg-status">—</td>
+              </tr>
+              <tr id="blue-si-row">
+                <td class="cell-si">⚡ Storm-Iron</td>
+                <td id="blue-si-workers">1 hr</td>
+                <td id="blue-si-cost">—</td>
+                <td id="blue-si-status">—</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="spec-badge" id="blue-spec-badge">—</div>
+        </div>
+      </div>
+
+      <!-- Krasnovia card -->
+      <div class="rw-card red">
+        <div class="rw-card-header">
+          <div>
+            <div class="rw-card-name">Krasnovia</div>
+            <div class="rw-card-sub">RED COUNTRY · STORM-IRON ADVANTAGE</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:0.65rem;color:var(--red-light)">
+            Productivity: 1 SG / 3 SI per worker
+          </div>
+        </div>
+        <div class="rw-card-body">
+          <div class="wage-row">
+            <span class="wage-label">Wage</span>
+            <input type="range" class="wage-slider" id="red-wage-slider" min="1" max="30" value="4"
+              oninput="onWageSlider('red', this.value)">
+            <div>
+              <div class="wage-display" id="red-wage-display">4</div>
+              <div class="wage-unit">⊕/hr</div>
+            </div>
+          </div>
+
+          <div class="section-label">Unit Cost of Production</div>
+          <table class="cost-table" id="red-cost-table">
+            <thead>
+              <tr>
+                <th>Good</th>
+                <th>Workers needed per unit</th>
+                <th>Unit cost (wage ÷ productivity)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="red-sg-row">
+                <td class="cell-sg">🌾 Sungrain</td>
+                <td id="red-sg-workers">1 hr</td>
+                <td id="red-sg-cost">—</td>
+                <td id="red-sg-status">—</td>
+              </tr>
+              <tr id="red-si-row">
+                <td class="cell-si">⚡ Storm-Iron</td>
+                <td id="red-si-workers">1/3 hr</td>
+                <td id="red-si-cost">—</td>
+                <td id="red-si-status">—</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="spec-badge" id="red-spec-badge">—</div>
+        </div>
+      </div>
+
+    </div><!-- /rw-grid -->
+
+    <!-- Master analysis panel -->
+    <div class="rw-master">
+      <div class="rw-master-header">
+        <div class="rw-master-title">⚖ Relative Wage Analysis</div>
+        <div class="explore-toggle">
+          <button class="explore-btn active" id="preset-btn-balanced" onclick="setPreset('balanced')">Balanced</button>
+          <button class="explore-btn" id="preset-btn-high" onclick="setPreset('high')">Azuria High Wage</button>
+          <button class="explore-btn" id="preset-btn-parity" onclick="setPreset('parity')">Wage Parity</button>
+          <button class="explore-btn" id="preset-btn-extreme" onclick="setPreset('extreme')">Extreme Gap</button>
+        </div>
+      </div>
+      <div class="rw-master-body">
+
+        <!-- Ratio display -->
+        <div class="ratio-display">
+          <div class="ratio-col">
+            <div class="ratio-num blue" id="rw-blue-wage">10</div>
+            <div class="ratio-label">Azuria Wage</div>
+          </div>
+          <div class="ratio-divider">÷</div>
+          <div class="ratio-col">
+            <div class="ratio-num red" id="rw-red-wage">4</div>
+            <div class="ratio-label">Krasnovia Wage</div>
+          </div>
+          <div class="ratio-divider">=</div>
+          <div class="ratio-col">
+            <div class="ratio-result" id="rw-ratio">2.5×</div>
+            <div class="ratio-label">Relative Wage</div>
+          </div>
+        </div>
+
+        <!-- Feasibility zone bar -->
+        <div class="zone-bar-wrap">
+          <div class="zone-bar-label">
+            <span>Relative wage range where <em>both</em> trade</span>
+            <span id="rw-zone-status" style="color:var(--gold)">—</span>
+          </div>
+          <div class="zone-bar" id="rw-zone-bar">
+            <div class="zone-fill" id="rw-zone-fill"></div>
+            <div class="zone-needle" id="rw-zone-needle"></div>
+            <span class="zone-end-label" style="left:2px;" id="rw-lo-label">—</span>
+            <span class="zone-end-label" style="right:2px; text-align:right;" id="rw-hi-label">—</span>
+          </div>
+        </div>
+
+        <!-- World outcome grid -->
+        <div class="section-label" style="margin-bottom:0.5rem">Trade Equilibrium Outcome</div>
+        <div class="outcome-grid">
+          <div class="outcome-cell" id="oc-azuria-sg">
+            <div class="outcome-cell-label">Azuria Produces</div>
+            <div class="outcome-cell-val" id="oc-azuria-sg-val">—</div>
+          </div>
+          <div class="outcome-cell" id="oc-trade">
+            <div class="outcome-cell-label">Trade Occurs?</div>
+            <div class="outcome-cell-val" id="oc-trade-val">—</div>
+          </div>
+          <div class="outcome-cell" id="oc-krasn-si">
+            <div class="outcome-cell-label">Krasnovia Produces</div>
+            <div class="outcome-cell-val" id="oc-krasn-si-val">—</div>
+          </div>
+        </div>
+
+        <!-- Insight callout -->
+        <div class="insight-box">
+          <div class="insight-title">💡 Economic Insight</div>
+          <div id="rw-insight-text">Adjust wages to explore how relative wages determine trade patterns.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Complete round button -->
+    <div class="action-area">
+      <button class="btn-main" onclick="completeRound4()"><span>✓ Complete Lab &amp; View Debrief</span></button>
+    </div>
+
+  </div><!-- /rw-panel -->
+
+  <!-- DEBRIEF (hidden until unlocked) -->
+  <div id="debrief-area" class="hidden">
+    <div class="debrief-section">
+      <div class="debrief-header">
+        <div class="debrief-title">📊 Results &amp; Analysis</div>
+      </div>
+      <div class="debrief-body">
+        <div style="font-family:var(--mono);font-size:0.8rem;margin-bottom:1rem;line-height:2">
+          <span style="color:var(--text-dim)">AZURIA SCORES →</span>
+          R1: <span class="text-gold" id="db-b1">—</span>
+          &nbsp;|&nbsp; R2: <span class="text-green" id="db-b2">—</span>
+          &nbsp;|&nbsp; R3: <span class="text-red" id="db-b3">—</span>
+          &nbsp;&nbsp;&nbsp;
+          <span style="color:var(--text-dim)">KRASNOVIA SCORES →</span>
+          R1: <span class="text-gold" id="db-r1">—</span>
+          &nbsp;|&nbsp; R2: <span class="text-green" id="db-r2">—</span>
+          &nbsp;|&nbsp; R3: <span class="text-red" id="db-r3">—</span>
+        </div>
+
+        <div class="concept-grid">
+          <div class="concept-card">
+            <div class="concept-num">01</div>
+            <div class="concept-title">Trade as Indirect Production</div>
+            <div class="concept-body">When Azuria specializes in Sungrain and trades, it is effectively <em>producing</em> Storm-Iron through an indirect route. The Magic Box is just the market — the real production happens via comparative advantage.</div>
+            <div class="concept-formula">1 labor → 3 Sungrain → 3 Storm-Iron (via trade)<br>vs. 1 labor → 1 Storm-Iron (directly)</div>
+          </div>
+          <div class="concept-card">
+            <div class="concept-num">02</div>
+            <div class="concept-title">Comparative Advantage</div>
+            <div class="concept-body">Even if Azuria were better at producing both goods, it would still benefit from specializing in the good with the <em>lower opportunity cost</em> and trading for the rest.</div>
+            <div class="concept-formula">Blue OC of Storm-Iron: 3 Sungrain<br>Red OC of Storm-Iron: 1/3 Sungrain<br>→ Red has comparative advantage in Storm-Iron</div>
+          </div>
+          <div class="concept-card">
+            <div class="concept-num">03</div>
+            <div class="concept-title">Tariff Effect</div>
+            <div class="concept-body">A 25% tariff doesn't eliminate trade but raises its cost. The "indirect production" route becomes less efficient — you get fewer goods per unit of labor invested in export production.</div>
+            <div class="concept-formula">Free trade: 3 Sungrain → 3 Storm-Iron<br>With 25% tariff: 4 Sungrain → 3 Storm-Iron<br>Effective rate falls; welfare drops</div>
+          </div>
+          <div class="concept-card">
+            <div class="concept-num">04</div>
+            <div class="concept-title">Who Wins the Tariff?</div>
+            <div class="concept-body">Domestic import-competing producers gain from the tariff (less foreign competition). But consumers and export producers lose — typically more than producers gain. The tariff creates a net welfare loss.</div>
+            <div class="concept-formula">Autarky: 6 pts → Free Trade: 12 pts → Tariff: 9 pts<br>Tariff recovers some gain, but not all</div>
+          </div>
+          <div class="concept-card" style="border-color:var(--purple-light)">
+            <div class="concept-num" style="color:var(--purple-light)">05</div>
+            <div class="concept-title" style="color:var(--purple-light)">Relative Wage &amp; Trade Viability</div>
+            <div class="concept-body">Comparative advantage tells us <em>what</em> to produce; relative wages determine <em>whether</em> trade is actually profitable. A country with high wages but high productivity can still export competitively — what matters is the <strong>ratio</strong> of wages to productivity, not wages alone.</div>
+            <div class="concept-formula" style="color:var(--purple-light)">Trade viable when:<br>1/3 &lt; w_Blue/w_Red &lt; 3<br>(= ratio of Sungrain productivities)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quiz -->
+    <div class="quiz-section">
+      <div class="quiz-header">
+        <div class="quiz-title">Knowledge Check</div>
+        <div class="quiz-score-badge" id="quiz-score-badge">0 / 8 correct</div>
+      </div>
+      <div class="quiz-body" id="quiz-body"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+const STATE = {
+  round: 1,
+  unlockedRound: 1,
+  tariffMode: false,
+
+  blue: { sgLabor: 4, siLabor: 4, exportSg: 0 },
+  red:  { sgLabor: 4, siLabor: 4, exportSi: 0 },
+
+  // Round 4 wages
+  wages: { blue: 10, red: 4 },
+
+  scores: {
+    r1: { blue: null, red: null },
+    r2: { blue: null, red: null },
+    r3: { blue: null, red: null },
+  },
+
+  quizAnswers: {},
+  quizScore: 0,
+};
+
+// Production rates
+const RATES = {
+  blue: { sg: 3, si: 1 },
+  red:  { sg: 1, si: 3 },
+};
+
+const TARIFF_RATE = 0.75; // keep 75% of imports
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+function startGame() {
+  document.getElementById('intro-screen').style.opacity = '0';
+  document.getElementById('intro-screen').style.transition = 'opacity 0.6s';
+  setTimeout(() => {
+    document.getElementById('intro-screen').style.display = 'none';
+  }, 600);
+  recalc('blue');
+  recalc('red');
+  updateScoreboard();
+}
+
+// ══════════════════════════════════════════════
+// CALCULATIONS
+// ══════════════════════════════════════════════
+function calcProduction(country) {
+  const s = STATE[country];
+  const r = RATES[country];
+  return {
+    sg: s.sgLabor * r.sg,
+    si: s.siLabor * r.si,
+  };
+}
+
+function calcTrade(country) {
+  const prod = calcProduction(country);
+  const isTariff = STATE.tariffMode;
+
+  if (country === 'blue') {
+    const exportSg = Math.max(0, Math.min(STATE.blue.exportSg, prod.sg));
+    const rawImport = exportSg;
+    const actualImport = isTariff ? Math.floor(rawImport * TARIFF_RATE) : rawImport;
+    return {
+      exportSg,
+      importSi: actualImport,
+      finalSg: prod.sg - exportSg,
+      finalSi: prod.si + actualImport,
+    };
+  } else {
+    const exportSi = Math.max(0, Math.min(STATE.red.exportSi, prod.si));
+    const rawImport = exportSi;
+    const actualImport = isTariff ? Math.floor(rawImport * TARIFF_RATE) : rawImport;
+    return {
+      exportSi,
+      importSg: actualImport,
+      finalSg: prod.sg + actualImport,
+      finalSi: prod.si - exportSi,
+    };
+  }
+}
+
+function welfare(sg, si) {
+  return Math.min(sg, si);
+}
+
+// ══════════════════════════════════════════════
+// RECALC UI
+// ══════════════════════════════════════════════
+function recalc(country) {
+  const s = STATE[country];
+  const used = s.sgLabor + s.siLabor;
+  const over = used > 8;
+  const exact = used === 8;
+
+  // Update labor display
+  document.getElementById(`${country}-sg-labor`).textContent = s.sgLabor;
+  document.getElementById(`${country}-si-labor`).textContent = s.siLabor;
+  document.getElementById(`${country}-tokens-left`).textContent = 8 - used < 0 ? 0 : 8 - used;
+
+  // Token bar
+  const tokLabel = document.getElementById(`${country}-tok-label`);
+  const tokBar = document.getElementById(`${country}-tok-bar`);
+  const pct = Math.min(100, (used / 8) * 100);
+  tokBar.style.width = pct + '%';
+  if (over) {
+    tokBar.className = 'tokens-fill over';
+    tokLabel.textContent = `${s.sgLabor}+${s.siLabor}=${used} ✗ OVER`;
+    tokLabel.style.color = 'var(--red-light)';
+  } else if (exact) {
+    tokBar.className = 'tokens-fill ok';
+    tokLabel.textContent = `${s.sgLabor}+${s.siLabor}=8 ✓`;
+    tokLabel.style.color = 'var(--green)';
+  } else {
+    tokBar.className = 'tokens-fill warn';
+    tokLabel.textContent = `${s.sgLabor}+${s.siLabor}=${used} (${8-used} unused)`;
+    tokLabel.style.color = 'var(--gold)';
+  }
+
+  // Update slider visuals
+  const sgSlider = document.getElementById(`${country}-sg-slider`);
+  const siSlider = document.getElementById(`${country}-si-slider`);
+  sgSlider.value = s.sgLabor;
+  siSlider.value = s.siLabor;
+  sgSlider.style.setProperty('--pct', (s.sgLabor / 8 * 100) + '%');
+  siSlider.style.setProperty('--pct', (s.siLabor / 8 * 100) + '%');
+
+  // Production
+  const prod = calcProduction(country);
+  document.getElementById(`${country}-prod-sg`).textContent = prod.sg;
+  document.getElementById(`${country}-prod-si`).textContent = prod.si;
+
+  // Trade & final
+  if (STATE.round > 1) {
+    recalcTrade(country);
+  } else {
+    // Round 1: no trade
+    document.getElementById(`${country}-final-sg`).textContent = prod.sg;
+    document.getElementById(`${country}-final-si`).textContent = prod.si;
+    const wp = welfare(prod.sg, prod.si);
+    document.getElementById(`${country}-welfare`).textContent = wp;
+    updateScoreboard(country, prod.sg, prod.si, wp);
+  }
+}
+
+function recalcTrade(country) {
+  const prod = calcProduction(country);
+
+  if (country === 'blue') {
+    const raw = parseInt(document.getElementById('blue-export-sg').value) || 0;
+    STATE.blue.exportSg = Math.max(0, Math.min(raw, prod.sg));
+    const t = calcTrade('blue');
+
+    document.getElementById('blue-export-sg').value = t.exportSg;
+    document.getElementById('blue-export-sg-result').textContent = `of ${prod.sg} available`;
+    document.getElementById('blue-import-si-result').textContent = t.importSi;
+
+    if (STATE.tariffMode && t.exportSg > 0) {
+      const kept = t.exportSg - t.importSi;
+      document.getElementById('blue-tariff-note').textContent = `(${kept} kept by customs)`;
+    } else {
+      document.getElementById('blue-tariff-note').textContent = '';
+    }
+
+    document.getElementById('blue-final-sg').textContent = t.finalSg;
+    document.getElementById('blue-final-si').textContent = t.finalSi;
+    const wp = welfare(t.finalSg, t.finalSi);
+    document.getElementById('blue-welfare').textContent = wp;
+    updateScoreboard('blue', t.finalSg, t.finalSi, wp);
+
+  } else {
+    const raw = parseInt(document.getElementById('red-export-si').value) || 0;
+    STATE.red.exportSi = Math.max(0, Math.min(raw, prod.si));
+    const t = calcTrade('red');
+
+    document.getElementById('red-export-si').value = t.exportSi;
+    document.getElementById('red-export-si-result').textContent = `of ${prod.si} available`;
+    document.getElementById('red-import-sg-result').textContent = t.importSg;
+
+    if (STATE.tariffMode && t.exportSi > 0) {
+      const kept = t.exportSi - t.importSg;
+      document.getElementById('red-tariff-note').textContent = `(${kept} kept by customs)`;
+    } else {
+      document.getElementById('red-tariff-note').textContent = '';
+    }
+
+    document.getElementById('red-final-sg').textContent = t.finalSg;
+    document.getElementById('red-final-si').textContent = t.finalSi;
+    const wp = welfare(t.finalSg, t.finalSi);
+    document.getElementById('red-welfare').textContent = wp;
+    updateScoreboard('red', t.finalSg, t.finalSi, wp);
+  }
+
+  updateKeyQuestion();
+}
+
+function updateScoreboard(country, sg, si, wp) {
+  if (country === 'blue') {
+    document.getElementById('sb-blue-sg').textContent = sg ?? '—';
+    document.getElementById('sb-blue-si').textContent = si ?? '—';
+    document.getElementById('sb-blue-wp').textContent = wp ?? '—';
+  } else if (country === 'red') {
+    document.getElementById('sb-red-sg').textContent = sg ?? '—';
+    document.getElementById('sb-red-si').textContent = si ?? '—';
+    document.getElementById('sb-red-wp').textContent = wp ?? '—';
+  }
+  updateComparison();
+}
+
+function updateKeyQuestion() {
+  const blueExport = STATE.blue.exportSg;
+  const prod = calcProduction('blue');
+  const labor = STATE.blue.sgLabor;
+  const t = calcTrade('blue');
+  const el = document.getElementById('key-question');
+
+  let directSI = '1 Storm-Iron (direct rate)';
+  let indirectSI;
+  if (blueExport > 0 && labor > 0) {
+    const importPerLabor = (t.importSi / labor).toFixed(1);
+    indirectSI = `${prod.sg} Sungrain → ${t.importSi} Storm-Iron`;
+  } else {
+    indirectSI = '?';
+  }
+
+  el.innerHTML = `<span style="color:var(--text-bright)">Direct:</span> 1 labor → <span style="color:var(--stormiron)">1</span> Storm-Iron<br>
+<span style="color:var(--text-bright)">Indirect (trade):</span> 1 labor → <span style="color:var(--sungrain)">${prod.sg > 0 ? RATES.blue.sg : '?'} Sungrain</span> → <span style="color:var(--stormiron)">${blueExport > 0 ? t.importSi + ' Storm-Iron' : '?'}</span>`;
+}
+
+function updateComparison() {
+  const sc = STATE.scores;
+
+  // Avg both countries for display
+  const r1b = sc.r1.blue, r1r = sc.r1.red;
+  const r2b = sc.r2.blue, r2r = sc.r2.red;
+  const r3b = sc.r3.blue, r3r = sc.r3.red;
+
+  document.getElementById('comp-r1').textContent = r1b !== null ? `Azuria: ${r1b} | Krasn: ${r1r}` : '—';
+  document.getElementById('comp-r2').textContent = r2b !== null ? `Azuria: ${r2b} | Krasn: ${r2r}` : '—';
+  document.getElementById('comp-r3').textContent = r3b !== null ? `Azuria: ${r3b} | Krasn: ${r3r}` : '—';
+
+  // Highlight best
+  document.getElementById('comp-autarky').className = 'comp-row' + (r1b !== null ? '' : '');
+  document.getElementById('comp-trade').className = 'comp-row' + (r2b !== null ? ' highlight' : '');
+  document.getElementById('comp-tariff-row').className = 'comp-row' + (r3b !== null ? ' highlight-best' : '');
+}
+
+// ══════════════════════════════════════════════
+// INPUT HANDLERS
+// ══════════════════════════════════════════════
+function adjustLabor(country, good, delta) {
+  const s = STATE[country];
+  const otherGood = good === 'sg' ? 'si' : 'sg';
+  const currentVal = s[good + 'Labor'];
+  const otherVal = s[otherGood + 'Labor'];
+  const newVal = currentVal + delta;
+
+  if (newVal < 0 || newVal > 8) return;
+  // Keep total ≤ 8 when adding
+  if (delta > 0 && currentVal + otherVal >= 8) return;
+
+  s[good + 'Labor'] = newVal;
+  recalc(country);
+}
+
+function onSlider(country, good, val) {
+  val = parseInt(val);
+  const s = STATE[country];
+  const otherGood = good === 'sg' ? 'si' : 'sg';
+  const otherVal = s[otherGood + 'Labor'];
+  // Clamp so total ≤ 8
+  val = Math.min(val, 8 - otherVal);
+  s[good + 'Labor'] = val;
+  recalc(country);
+}
+
+// ══════════════════════════════════════════════
+// ROUND MANAGEMENT
+// ══════════════════════════════════════════════
+function submitRound() {
+  const r = STATE.round;
+
+  // Validate labor
+  for (const c of ['blue', 'red']) {
+    const used = STATE[c].sgLabor + STATE[c].siLabor;
+    if (used > 8) {
+      showToast(`${c === 'blue' ? 'Azuria' : 'Krasnovia'} has too many labor tokens allocated!`, true);
+      return;
+    }
+  }
+
+  // Compute final welfare
+  let blueWP, redWP;
+
+  if (r === 1) {
+    const bp = calcProduction('blue');
+    const rp = calcProduction('red');
+    blueWP = welfare(bp.sg, bp.si);
+    redWP = welfare(rp.sg, rp.si);
+    STATE.scores.r1 = { blue: blueWP, red: redWP };
+  } else if (r === 2 || r === 3) {
+    const bt = calcTrade('blue');
+    const rt = calcTrade('red');
+    blueWP = welfare(bt.finalSg, bt.finalSi);
+    redWP = welfare(rt.finalSg, rt.finalSi);
+    if (r === 2) STATE.scores.r2 = { blue: blueWP, red: redWP };
+    else STATE.scores.r3 = { blue: blueWP, red: redWP };
+  }
+
+  // Mark hist dot
+  document.getElementById(`hist-${r}`).classList.add('scored');
+  document.getElementById(`hist-${r}`).textContent = r === 1 ? blueWP + '/' + redWP : '✓';
+
+  // Toast
+  showToast(`Round ${r} recorded! Blue: ${blueWP} pts | Red: ${redWP} pts`);
+
+  // Celebrate if improved
+  if (r === 2 && blueWP > (STATE.scores.r1.blue || 0)) {
+    spawnParticles();
+  }
+
+  updateComparison();
+
+  // Unlock next
+  if (r === 1) {
+    unlockRound(2);
+    setTimeout(() => goToRound(2), 600);
+  } else if (r === 2) {
+    unlockRound(3);
+    setTimeout(() => goToRound(3), 600);
+  } else if (r === 3) {
+    unlockRound(4);
+    setTimeout(() => goToRound(4), 600);
+  }
+}
+
+function unlockRound(n) {
+  STATE.unlockedRound = Math.max(STATE.unlockedRound, n);
+  const tab = document.getElementById(`tab-${n}`);
+  tab.classList.remove('locked');
+  const lock = document.getElementById(`lock-${n}`);
+  if (lock) lock.remove();
+}
+
+function unlockDebrief() {
+  const tab = document.getElementById('tab-debrief');
+  tab.classList.remove('locked');
+  const lock = document.getElementById('lock-d');
+  if (lock) lock.remove();
+  document.getElementById('debrief-area').classList.remove('hidden');
+  // Fill debrief scores
+  const sc = STATE.scores;
+  document.getElementById('db-b1').textContent = sc.r1.blue ?? '—';
+  document.getElementById('db-b2').textContent = sc.r2.blue ?? '—';
+  document.getElementById('db-b3').textContent = sc.r3.blue ?? '—';
+  document.getElementById('db-r1').textContent = sc.r1.red ?? '—';
+  document.getElementById('db-r2').textContent = sc.r2.red ?? '—';
+  document.getElementById('db-r3').textContent = sc.r3.red ?? '—';
+  buildQuiz();
+}
+
+function goToRound(n) {
+  if (n > STATE.unlockedRound) {
+    showToast('Complete the current round first.', true);
+    return;
+  }
+  STATE.round = n;
+  STATE.tariffMode = (n === 3);
+
+  // Update tabs (rounds 1-4 + debrief)
+  ['1','2','3','4'].forEach(i => {
+    const t = document.getElementById(`tab-${i}`);
+    if (!t) return;
+    t.classList.toggle('active', parseInt(i) === n);
+    if (parseInt(i) < n) t.classList.add('completed');
+  });
+  document.getElementById('tab-debrief').classList.remove('active');
+
+  // Show/hide game grid vs rw-panel
+  const gameGrid = document.getElementById('game-grid') || document.querySelector('.game-grid');
+  const rwPanel = document.getElementById('rw-panel');
+  const actionArea = document.getElementById('action-area');
+  const roundInst = document.getElementById('round-instruction');
+
+  if (n === 4) {
+    if (gameGrid) gameGrid.style.display = 'none';
+    if (actionArea) actionArea.style.display = 'none';
+    if (roundInst) roundInst.style.display = 'none';
+    rwPanel.classList.add('active');
+    document.getElementById('round-chip').textContent = 'ROUND 4 — RELATIVE WAGE';
+    document.getElementById('sb-round-label').textContent = 'ROUND 4';
+    recalcWages();
+    return;
+  }
+
+  // Rounds 1–3: show game grid, hide rw-panel
+  if (gameGrid) gameGrid.style.display = '';
+  if (actionArea) actionArea.style.display = '';
+  if (roundInst) roundInst.style.display = '';
+  rwPanel.classList.remove('active');
+
+  // Instructions
+  const titles = ['Round 1 · Autarky', 'Round 2 · Free Trade', 'Round 3 · Tariff (25%)'];
+  const bodies = [
+    'The Magic Box is closed. Each country must produce both goods on its own with 8 labor tokens. Find the allocation that maximizes your welfare points (matched pairs of Sungrain + Storm-Iron).',
+    'The Magic Box is now open! You can trade at a 1:1 rate. Discover the strategy that maximizes welfare — hint: try specializing in your country\'s advantage good, then trading.',
+    'The Magic Box now acts as a customs box. For every 4 imported units, customs keeps 1 — you only receive 3. How does this 25% tariff change your strategy and welfare?'
+  ];
+  document.getElementById('inst-title').textContent = titles[n-1];
+  document.getElementById('inst-body').textContent = bodies[n-1];
+
+  // Round chip
+  const chipLabels = ['ROUND 1 — AUTARKY', 'ROUND 2 — FREE TRADE', 'ROUND 3 — TARIFF'];
+  document.getElementById('round-chip').textContent = chipLabels[n-1];
+  document.getElementById('sb-round-label').textContent = `ROUND ${n}`;
+
+  // Submit label
+  document.getElementById('submit-label').textContent = `Record Round ${n} Score`;
+
+  // Magic box state
+  const mb = document.getElementById('magic-box');
+  const mbTitle = document.getElementById('mb-title');
+  const mbStatus = document.getElementById('mb-status');
+  const tariffNotice = document.getElementById('tariff-notice');
+
+  if (n === 1) {
+    mb.className = 'magic-box closed';
+    mbTitle.textContent = 'MAGIC BOX';
+    mbStatus.textContent = '● CLOSED — AUTARKY';
+    tariffNotice.classList.add('hidden');
+  } else if (n === 2) {
+    mb.className = 'magic-box open';
+    mbTitle.textContent = 'MAGIC BOX';
+    mbStatus.textContent = '● OPEN — FREE TRADE';
+    tariffNotice.classList.add('hidden');
+  } else {
+    mb.className = 'magic-box tariff-mode';
+    mbTitle.textContent = 'CUSTOMS BOX';
+    mbStatus.textContent = '● TARIFF ACTIVE — 25%';
+    tariffNotice.classList.remove('hidden');
+  }
+
+  // Show/hide trade sections
+  const showTrade = n > 1;
+  document.getElementById('blue-trade-section').style.display = showTrade ? 'block' : 'none';
+  document.getElementById('red-trade-section').style.display = showTrade ? 'block' : 'none';
+
+  // Reset exports when switching rounds
+  STATE.blue.exportSg = 0;
+  STATE.red.exportSi = 0;
+  if (showTrade) {
+    document.getElementById('blue-export-sg').value = 0;
+    document.getElementById('red-export-si').value = 0;
+  }
+
+  recalc('blue');
+  recalc('red');
+}
+
+function goToDebrief() {
+  if (!document.getElementById('tab-debrief').classList.contains('active') && 
+      document.getElementById('debrief-area').classList.contains('hidden')) {
+    showToast('Complete all rounds first.', true);
+    return;
+  }
+  ['1','2','3','4'].forEach(i => {
+    const t = document.getElementById(`tab-${i}`);
+    if (t) t.classList.remove('active');
+  });
+  document.getElementById('tab-debrief').classList.add('active');
+  document.getElementById('debrief-area').scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetRound() {
+  // Reset labor to balanced 4/4
+  STATE.blue.sgLabor = 4; STATE.blue.siLabor = 4;
+  STATE.red.sgLabor = 4; STATE.red.siLabor = 4;
+  STATE.blue.exportSg = 0; STATE.red.exportSi = 0;
+  if (STATE.round > 1) {
+    document.getElementById('blue-export-sg').value = 0;
+    document.getElementById('red-export-si').value = 0;
+  }
+  recalc('blue');
+  recalc('red');
+  showToast('Round reset.');
+}
+
+// ══════════════════════════════════════════════
+// QUIZ
+// ══════════════════════════════════════════════
+const QUESTIONS = [
+  {
+    q: "In Round 1 (Autarky), why is Azuria's welfare score lower than in Round 2?",
+    opts: [
+      "Azuria has fewer labor tokens in autarky",
+      "Without trade, Azuria must split labor between both goods, producing less of each",
+      "Autarky always produces more than trade",
+      "Krasnovia steals resources in autarky",
+    ],
+    correct: 1,
+    fb: {
+      right: "Correct! In autarky, Azuria must devote labor to producing both Sungrain and Storm-Iron directly, limiting total output. Trade allows specialization and indirect production.",
+      wrong: "Not quite. The key issue is that autarky forces each country to be self-sufficient, preventing specialization. When Azuria splits its 8 labor tokens, it can't maximize production of its advantage good.",
+    }
+  },
+  {
+    q: "Azuria produces 3 Sungrain per labor token but only 1 Storm-Iron. If Azuria uses 1 labor token to make Sungrain and then trades at 1:1, how much Storm-Iron does it effectively produce?",
+    opts: ["1 Storm-Iron", "2 Storm-Iron", "3 Storm-Iron", "0.33 Storm-Iron"],
+    correct: 2,
+    fb: {
+      right: "Exactly! 1 labor → 3 Sungrain → 3 Storm-Iron via trade. This is three times what direct production gives — the 'magic' of comparative advantage through trade.",
+      wrong: "Think it through: 1 labor → 3 Sungrain. Then 3 Sungrain trades for 3 Storm-Iron at the 1:1 rate. So 1 labor effectively produces 3 Storm-Iron via the indirect route.",
+    }
+  },
+  {
+    q: "After a 25% tariff, Blue sends 12 Sungrain into the customs box. How many Storm-Iron units does Azuria actually receive?",
+    opts: ["12", "9", "8", "3"],
+    correct: 1,
+    fb: {
+      right: "Correct! 12 units → customs keeps 3 (25%) → Azuria receives 9. The tariff reduces the efficiency of trade as indirect production.",
+      wrong: "With a 25% tariff, for every 4 units imported, 1 is kept by customs. So 12 × 0.75 = 9. Customs keeps 3 units.",
+    }
+  },
+  {
+    q: "Which group in Azuria would likely SUPPORT the tariff in Round 3?",
+    opts: [
+      "Consumers who import Storm-Iron",
+      "Sungrain exporters who trade through the Magic Box",
+      "Domestic Storm-Iron producers who compete with imports",
+      "The customs minister (they lose revenue from less trade)",
+    ],
+    correct: 2,
+    fb: {
+      right: "Correct! Domestic Storm-Iron producers face less foreign competition when imports are taxed — they can sell more at higher prices. This is exactly why import-competing industries lobby for tariffs.",
+      wrong: "Think about who benefits from fewer imports. Domestic Storm-Iron producers face less competition when foreign Storm-Iron becomes more expensive — making them the natural tariff supporters.",
+    }
+  },
+  {
+    q: "Looking at all three rounds, which statement best describes the tariff's effect?",
+    opts: [
+      "The tariff completely eliminates the gains from trade",
+      "The tariff raises welfare above the autarky level but below free trade",
+      "The tariff has no effect on welfare since trade still occurs",
+      "The tariff always maximizes total welfare",
+    ],
+    correct: 1,
+    fb: {
+      right: "Precisely! The scores show: Autarky (6) < Tariff trade (9) < Free trade (12). The tariff reduces but doesn't eliminate trade's gains. This is the classic result: tariffs create deadweight loss, but some gains from trade may persist.",
+      wrong: "Look at the numbers: Autarky = 6 pts, Tariff round = 9 pts, Free trade = 12 pts. The tariff reduces but doesn't eliminate welfare gains. Trade still helps, just less efficiently.",
+    }
+  },
+  {
+    q: "In Round 4, Azuria's wage is 10⊕/hr and Krasnovia's is 4⊕/hr. What is the relative wage (Azuria ÷ Krasnovia)?",
+    opts: ["0.4×", "2.5×", "14×", "40×"],
+    correct: 1,
+    fb: {
+      right: "Correct! 10 ÷ 4 = 2.5. This relative wage sits within the viable trade range (between 1/3× and 3×), so both countries gain from specialization and trade.",
+      wrong: "Relative wage = Azuria wage ÷ Krasnovia wage = 10 ÷ 4 = 2.5×. This ratio — not the absolute wages — is what determines whether trade is mutually beneficial.",
+    }
+  },
+  {
+    q: "The viable trade zone for these two countries runs from 1/3× to 3×. If the relative wage rises to 4×, what happens?",
+    opts: [
+      "Both countries still trade profitably",
+      "Azuria's labor costs are so high it can no longer competitively export Sungrain",
+      "Krasnovia stops producing Storm-Iron",
+      "The tariff automatically disappears",
+    ],
+    correct: 1,
+    fb: {
+      right: "Exactly right! Above 3×, Azuria's unit cost for Sungrain exceeds Krasnovia's despite Azuria's productivity advantage — Krasnovia can produce Sungrain cheaper too. Trade breaks down because Azuria has lost its cost competitiveness.",
+      wrong: "When the relative wage exceeds 3×, Azuria's high wages outweigh its productivity advantage in Sungrain. Krasnovia can produce both goods more cheaply, so there is no trade equilibrium where Azuria exports.",
+    }
+  },
+  {
+    q: "A country has very high productivity but also very high wages. Can it still export competitively?",
+    opts: [
+      "No — high wages always make exports too expensive",
+      "Yes — what matters is whether wage/productivity (unit cost) is lower than the trading partner's",
+      "Only if it imposes a tariff to protect its exporters",
+      "Only if both countries have the same wage",
+    ],
+    correct: 1,
+    fb: {
+      right: "Correct! This is the key insight of the relative wage model. High wages don't prevent trade — high unit costs do. Unit cost = wage ÷ productivity. A high-wage, high-productivity country can have lower unit costs than a low-wage, low-productivity country.",
+      wrong: "This is a common misconception! High wages alone don't destroy competitiveness. What matters is unit cost: wage divided by productivity. Rich countries with very productive workers can still export profitably.",
+    }
+  }
+];
+
+function buildQuiz() {
+  const body = document.getElementById('quiz-body');
+  body.innerHTML = '';
+  QUESTIONS.forEach((q, qi) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-q';
+    div.id = `qq-${qi}`;
+
+    const header = document.createElement('div');
+    header.className = 'quiz-q-header';
+    header.textContent = `${qi + 1}. ${q.q}`;
+    div.appendChild(header);
+
+    const opts = document.createElement('div');
+    opts.className = 'quiz-options';
+    q.opts.forEach((opt, oi) => {
+      const btn = document.createElement('div');
+      btn.className = 'quiz-opt';
+      btn.id = `qo-${qi}-${oi}`;
+      btn.innerHTML = `<span class="quiz-opt-key">${'ABCD'[oi]}</span>${opt}`;
+      btn.onclick = () => answerQuiz(qi, oi);
+      opts.appendChild(btn);
+    });
+    div.appendChild(opts);
+
+    const fb = document.createElement('div');
+    fb.className = 'quiz-feedback';
+    fb.id = `qf-${qi}`;
+    div.appendChild(fb);
+
+    body.appendChild(div);
+  });
+}
+
+function answerQuiz(qi, chosen) {
+  if (STATE.quizAnswers[qi] !== undefined) return; // already answered
+  const q = QUESTIONS[qi];
+  STATE.quizAnswers[qi] = chosen;
+  const correct = chosen === q.correct;
+  if (correct) STATE.quizScore++;
+
+  // Update option styles
+  q.opts.forEach((_, oi) => {
+    const el = document.getElementById(`qo-${qi}-${oi}`);
+    el.classList.add('answered');
+    if (oi === chosen && correct) el.classList.add('selected-correct');
+    else if (oi === chosen && !correct) el.classList.add('selected-wrong');
+    else if (oi === q.correct) el.classList.add('show-correct');
+  });
+
+  // Question border
+  const qEl = document.getElementById(`qq-${qi}`);
+  qEl.classList.add(correct ? 'correct' : 'wrong');
+
+  // Feedback
+  const fb = document.getElementById(`qf-${qi}`);
+  fb.textContent = correct ? q.fb.right : q.fb.wrong;
+  fb.className = `quiz-feedback show ${correct ? 'correct-fb' : 'wrong-fb'}`;
+
+  // Update score badge
+  document.getElementById('quiz-score-badge').textContent = 
+    `${STATE.quizScore} / 8 correct`;
+
+  if (correct) showToast(`✓ Correct! +1 point`);
+  else showToast(`✗ Incorrect — review the feedback below.`, true);
+}
+
+// ══════════════════════════════════════════════
+// PARTICLES
+// ══════════════════════════════════════════════
+function spawnParticles() {
+  const icons = ['🌾','⚡','✨','📈','💹'];
+  for (let i = 0; i < 8; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.textContent = icons[Math.floor(Math.random() * icons.length)];
+      p.style.left = (20 + Math.random() * 60) + '%';
+      p.style.top = (30 + Math.random() * 40) + '%';
+      p.style.position = 'fixed';
+      p.style.animationDuration = (0.6 + Math.random() * 0.6) + 's';
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 1200);
+    }, i * 80);
+  }
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, isError = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (isError ? ' error' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 2800);
+}
+
+// ══════════════════════════════════════════════
+// ROUND 4: RELATIVE WAGE ENGINE
+// ══════════════════════════════════════════════
+
+// Productivity: units per 1 hr of labor
+// Blue: 3 SG/hr, 1 SI/hr  |  Red: 1 SG/hr, 3 SI/hr
+// Unit cost = wage / productivity
+// Trade viable when: (1/3) < w_Blue/w_Red < 3
+//   Lower bound: w_Blue/w_Red = prod_Blue_SG / prod_Red_SG = 3/1 = 3  → Blue just-competitive in SG
+//     Actually the bounds are set by when one country's costs undercut both goods:
+//     Blue cheaper in SG when: w_B/3 < w_R/1  →  w_B/w_R < 3
+//     Red cheaper in SI when:  w_R/3 < w_B/1  →  w_B/w_R > 1/3
+//  So viable zone: 1/3 < ratio < 3
+
+const RW = {
+  // productivity[country][good] = units per 1hr labor
+  prod: {
+    blue: { sg: 3, si: 1 },
+    red:  { sg: 1, si: 3 },
+  },
+  // Viable range bounds (relative wage Blue/Red)
+  lo: 1/3,   // = prod_Red_SI / prod_Blue_SI = 3/1 ... wait, recalc properly:
+             // Blue competitive in SG: w_B/prod_B_SG < w_R/prod_R_SG → w_B/w_R < prod_B_SG/prod_R_SG = 3
+             // Red competitive in SI: w_R/prod_R_SI < w_B/prod_B_SI → w_B/w_R > prod_B_SI/prod_R_SI = 1/3
+  hi: 3,
+};
+
+function unitCost(country, good) {
+  const w = STATE.wages[country];
+  const p = RW.prod[country][good];
+  return w / p;
+}
+
+function onWageSlider(country, val) {
+  STATE.wages[country] = parseInt(val);
+  document.getElementById(`${country}-wage-display`).textContent = val;
+  const slider = document.getElementById(`${country}-wage-slider`);
+  slider.style.setProperty('--pct', ((val - 1) / 29 * 100) + '%');
+  recalcWages();
+  // clear preset highlights
+  ['balanced','high','parity','extreme'].forEach(p =>
+    document.getElementById(`preset-btn-${p}`).classList.remove('active')
+  );
+}
+
+function recalcWages() {
+  const wB = STATE.wages.blue;
+  const wR = STATE.wages.red;
+
+  // ── Per-country cost tables ──
+  for (const country of ['blue', 'red']) {
+    const w = STATE.wages[country];
+    const costSG = unitCost(country, 'sg');
+    const costSI = unitCost(country, 'si');
+
+    document.getElementById(`${country}-wage-display`).textContent = w;
+    const slider = document.getElementById(`${country}-wage-slider`);
+    slider.value = w;
+    slider.style.setProperty('--pct', ((w - 1) / 29 * 100) + '%');
+
+    document.getElementById(`${country}-sg-cost`).textContent = costSG.toFixed(2) + ' ⊕';
+    document.getElementById(`${country}-si-cost`).textContent = costSI.toFixed(2) + ' ⊕';
+  }
+
+  // ── Ratio ──
+  const ratio = wB / wR;
+  document.getElementById('rw-blue-wage').textContent = wB;
+  document.getElementById('rw-red-wage').textContent = wR;
+  document.getElementById('rw-ratio').textContent = ratio.toFixed(2) + '×';
+
+  // ── Who is cheapest in each good? ──
+  const bCostSG = unitCost('blue', 'sg');
+  const rCostSG = unitCost('red', 'sg');
+  const bCostSI = unitCost('blue', 'si');
+  const rCostSI = unitCost('red', 'si');
+
+  const blueWinsSG = bCostSG < rCostSG;
+  const blueWinsSI = bCostSI < rCostSI;
+  const redWinsSG  = rCostSG < bCostSG;
+  const redWinsSI  = rCostSI < bCostSI;
+  const tiedSG = bCostSG === rCostSG;
+  const tiedSI = bCostSI === rCostSI;
+
+  // Status labels in tables
+  function setStatus(id, cheap) {
+    const el = document.getElementById(id);
+    el.textContent = cheap ? '✓ Cheapest' : '✗ More Expensive';
+    el.className = cheap ? 'cell-cheap' : 'cell-dear';
+  }
+  setStatus('blue-sg-status', blueWinsSG);
+  setStatus('blue-si-status', blueWinsSI);
+  setStatus('red-sg-status',  redWinsSG);
+  setStatus('red-si-status',  redWinsSI);
+
+  // Row highlighting
+  document.getElementById('blue-sg-row').className = blueWinsSG ? 'winner' : '';
+  document.getElementById('blue-si-row').className = blueWinsSI ? 'winner' : '';
+  document.getElementById('red-sg-row').className  = redWinsSG  ? 'winner' : '';
+  document.getElementById('red-si-row').className  = redWinsSI  ? 'winner' : '';
+
+  // ── Feasibility zone bar ──
+  // Display range 0.1× to 10× on a log scale
+  const logMin = Math.log10(0.1), logMax = Math.log10(10);
+  const logLo = Math.log10(RW.lo), logHi = Math.log10(RW.hi);
+  const logRatio = Math.log10(Math.max(0.1, Math.min(10, ratio)));
+
+  function logPct(v) { return ((v - logMin) / (logMax - logMin) * 100).toFixed(1) + '%'; }
+
+  document.getElementById('rw-zone-fill').style.left  = logPct(logLo);
+  document.getElementById('rw-zone-fill').style.width = ((logHi - logLo) / (logMax - logMin) * 100).toFixed(1) + '%';
+  document.getElementById('rw-zone-needle').style.left = logPct(logRatio);
+  document.getElementById('rw-lo-label').textContent = '1/3× (lower bound)';
+  document.getElementById('rw-hi-label').textContent = '3× (upper bound)';
+
+  const inZone = ratio > RW.lo && ratio < RW.hi;
+  const atLo   = Math.abs(ratio - RW.lo) < 0.01;
+  const atHi   = Math.abs(ratio - RW.hi) < 0.01;
+
+  // ── Specialization badges ──
+  let blueSpec, redSpec, tradeOccurs, blueOutcome, redOutcome;
+
+  if (inZone) {
+    // Classic comparative advantage trade
+    blueSpec = '✓ SPECIALIZES IN 🌾 SUNGRAIN';
+    redSpec  = '✓ SPECIALIZES IN ⚡ STORM-IRON';
+    tradeOccurs = true;
+    blueOutcome = '🌾 Sungrain (exports to Red)';
+    redOutcome  = '⚡ Storm-Iron (exports to Blue)';
+  } else if (ratio <= RW.lo) {
+    // Blue wages too LOW — Blue can produce both goods more cheaply
+    blueSpec = '✓ PRODUCES BOTH GOODS';
+    redSpec  = '✗ PRICED OUT OF BOTH MARKETS';
+    tradeOccurs = false;
+    blueOutcome = '🌾 + ⚡ Both goods';
+    redOutcome  = '— No exports';
+  } else {
+    // ratio >= RW.hi: Blue wages too HIGH — Red produces both goods more cheaply
+    blueSpec = '✗ PRICED OUT OF BOTH MARKETS';
+    redSpec  = '✓ PRODUCES BOTH GOODS';
+    tradeOccurs = false;
+    blueOutcome = '— No exports';
+    redOutcome  = '🌾 + ⚡ Both goods';
+  }
+
+  // Set badges
+  const bbadge = document.getElementById('blue-spec-badge');
+  bbadge.textContent = blueSpec;
+  bbadge.className = 'spec-badge ' + (blueSpec.startsWith('✓') ? (inZone ? 'produces' : 'tied') : 'idle');
+
+  const rbadge = document.getElementById('red-spec-badge');
+  rbadge.textContent = redSpec;
+  rbadge.className = 'spec-badge ' + (redSpec.startsWith('✓') ? (inZone ? 'produces' : 'tied') : 'idle');
+
+  // Zone status text
+  document.getElementById('rw-zone-status').textContent =
+    inZone ? '✓ IN ZONE — TRADE VIABLE' :
+    (ratio <= RW.lo ? '✗ BELOW ZONE' : '✗ ABOVE ZONE');
+  document.getElementById('rw-zone-status').style.color =
+    inZone ? 'var(--green)' : 'var(--red-light)';
+
+  // ── Outcome cells ──
+  const ocAzuria = document.getElementById('oc-azuria-sg');
+  const ocTrade  = document.getElementById('oc-trade');
+  const ocKrasn  = document.getElementById('oc-krasn-si');
+
+  document.getElementById('oc-azuria-sg-val').textContent = blueOutcome;
+  document.getElementById('oc-trade-val').textContent = tradeOccurs ? '✓ YES' : '✗ NO';
+  document.getElementById('oc-krasn-si-val').textContent = redOutcome;
+
+  ocAzuria.className = 'outcome-cell ' + (tradeOccurs ? 'active' : 'inactive');
+  ocTrade.className  = 'outcome-cell ' + (tradeOccurs ? 'active' : 'inactive');
+  ocKrasn.className  = 'outcome-cell ' + (tradeOccurs ? 'active' : 'inactive');
+
+  // ── Insight text ──
+  let insight;
+  if (inZone) {
+    insight = `At a relative wage of ${ratio.toFixed(2)}×, Azuria's unit cost advantage in Sungrain (${bCostSG.toFixed(2)}⊕ vs ${rCostSG.toFixed(2)}⊕) and Krasnovia's unit cost advantage in Storm-Iron (${rCostSI.toFixed(2)}⊕ vs ${bCostSI.toFixed(2)}⊕) make specialization and trade profitable for both. Higher wages don't block trade — high unit costs do.`;
+  } else if (ratio <= RW.lo) {
+    insight = `At ${ratio.toFixed(2)}×, Azuria's wages are so low relative to Krasnovia's that Azuria can produce both Sungrain and Storm-Iron more cheaply. Krasnovia is priced out. Trade breaks down — Krasnovia has no competitive export to offer. This shows that wage levels must be consistent with a country's productivity for bilateral trade to work.`;
+  } else {
+    insight = `At ${ratio.toFixed(2)}×, Azuria's wages are so high that Krasnovia can now produce both goods more cheaply. Even Sungrain — Azuria's "advantage" good — costs more from Azuria (${bCostSG.toFixed(2)}⊕) than from Krasnovia (${rCostSG.toFixed(2)}⊕). This is a wage competitiveness crisis. Note: in the real world, exchange rates and nominal wages adjust to restore competitiveness.`;
+  }
+  document.getElementById('rw-insight-text').textContent = insight;
+}
+
+function completeRound4() {
+  document.getElementById('hist-4').classList.add('scored');
+  document.getElementById('hist-4').textContent = '✓';
+  unlockDebrief();
+  showToast('Lab complete! Reviewing all rounds in debrief…');
+  spawnParticles();
+  setTimeout(() => goToDebrief(), 700);
+}
+
+// Preset scenarios
+const PRESETS = {
+  balanced:  { blue: 10, red: 4,  label: 'balanced' },
+  high:      { blue: 28, red: 4,  label: 'high' },
+  parity:    { blue: 10, red: 10, label: 'parity' },
+  extreme:   { blue: 1,  red: 20, label: 'extreme' },
+};
+
+function setPreset(name) {
+  const p = PRESETS[name];
+  STATE.wages.blue = p.blue;
+  STATE.wages.red  = p.red;
+  ['balanced','high','parity','extreme'].forEach(k =>
+    document.getElementById(`preset-btn-${k}`).classList.remove('active')
+  );
+  document.getElementById(`preset-btn-${name}`).classList.add('active');
+  recalcWages();
+  showToast(`Preset: ${name.charAt(0).toUpperCase() + name.slice(1)} wages loaded`);
+}
+
+// ══════════════════════════════════════════════
+// STARTUP
+// ══════════════════════════════════════════════
+// Initialize slider positions on load
+window.addEventListener('DOMContentLoaded', () => {
+  recalc('blue');
+  recalc('red');
+});
+</script>
+</body>
+</html>
