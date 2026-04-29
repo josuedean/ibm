@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Culture Mind LP — Orbital Fabrication Optimizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050a12;
+    --panel: #0a1628;
+    --panel2: #0d1f3c;
+    --accent1: #00e5ff;
+    --accent2: #7c4dff;
+    --accent3: #ff6d00;
+    --accent4: #00e676;
+    --text: #c8d8f0;
+    --text-dim: #5a7a9a;
+    --glow1: 0 0 20px rgba(0,229,255,0.4);
+    --glow2: 0 0 20px rgba(124,77,255,0.4);
+    --glow3: 0 0 20px rgba(255,109,0,0.4);
+    --glow4: 0 0 20px rgba(0,230,118,0.4);
+    --border: rgba(0,229,255,0.15);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* Animated starfield background */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(124,77,255,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(0,229,255,0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, rgba(0,230,118,0.05) 0%, transparent 40%);
+    pointer-events:none; z-index:0;
+  }
+
+  .stars {
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    overflow:hidden;
+  }
+  .star {
+    position:absolute;
+    background:#fff;
+    border-radius:50%;
+    animation: twinkle var(--dur, 3s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+    opacity:0;
+  }
+  @keyframes twinkle {
+    0%,100%{opacity:0} 50%{opacity:var(--op,0.6)}
+  }
+
+  /* HEADER */
+  header {
+    position:relative; z-index:10;
+    text-align:center;
+    padding: 60px 20px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-tag {
+    font-family:'Share Tech Mono', monospace;
+    font-size:11px; letter-spacing:4px;
+    color: var(--accent2);
+    text-transform:uppercase;
+    margin-bottom:16px;
+    opacity:0; animation: fadeUp 0.8s 0.2s forwards;
+  }
+  header h1 {
+    font-family:'Orbitron', monospace;
+    font-size: clamp(24px, 5vw, 52px);
+    font-weight:900;
+    background: linear-gradient(135deg, var(--accent1) 0%, var(--accent2) 60%, var(--accent3) 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    letter-spacing:2px;
+    text-shadow: none;
+    opacity:0; animation: fadeUp 0.8s 0.4s forwards;
+    line-height:1.1;
+  }
+  header p.subtitle {
+    margin-top:14px;
+    font-size:15px; color:var(--text-dim);
+    font-family:'Share Tech Mono', monospace;
+    letter-spacing:1px;
+    opacity:0; animation: fadeUp 0.8s 0.6s forwards;
+  }
+  .orbital-badge {
+    display:inline-block;
+    margin-top:20px;
+    padding: 6px 18px;
+    border: 1px solid var(--accent1);
+    border-radius:2px;
+    font-family:'Share Tech Mono', monospace;
+    font-size:11px; letter-spacing:3px;
+    color:var(--accent1);
+    box-shadow: var(--glow1);
+    opacity:0; animation: fadeUp 0.8s 0.8s forwards;
+  }
+
+  @keyframes fadeUp {
+    from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)}
+  }
+
+  /* MAIN CONTENT */
+  main {
+    position:relative; z-index:5;
+    max-width:1200px;
+    margin:0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* STEP CARDS */
+  .step-section {
+    margin-bottom:60px;
+    opacity:0;
+    transform:translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .step-section.visible {
+    opacity:1; transform:translateY(0);
+  }
+
+  .step-header {
+    display:flex; align-items:center; gap:16px;
+    margin-bottom:20px;
+  }
+  .step-num {
+    font-family:'Orbitron', monospace;
+    font-size:11px; font-weight:700;
+    letter-spacing:3px;
+    color:var(--accent1);
+    border:1px solid var(--accent1);
+    padding:4px 10px;
+    border-radius:1px;
+    box-shadow: var(--glow1);
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .step-title {
+    font-family:'Orbitron', monospace;
+    font-size: clamp(14px, 2.5vw, 20px);
+    font-weight:700;
+    color:#e8f4ff;
+    letter-spacing:1px;
+  }
+  .step-line {
+    flex:1; height:1px;
+    background: linear-gradient(to right, var(--accent1), transparent);
+    opacity:0.3;
+  }
+
+  .card {
+    background: var(--panel);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:28px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before {
+    content:'';
+    position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(to right, var(--accent1), var(--accent2), transparent);
+  }
+
+  /* Problem Setup */
+  .problem-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap:20px;
+  }
+  .problem-item {
+    background:var(--panel2);
+    border:1px solid rgba(0,229,255,0.1);
+    border-radius:3px;
+    padding:20px;
+    position:relative;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    cursor:default;
+  }
+  .problem-item:hover {
+    border-color:var(--accent1);
+    box-shadow: var(--glow1), inset 0 0 30px rgba(0,229,255,0.03);
+  }
+  .problem-item-icon {
+    font-size:28px; margin-bottom:10px;
+  }
+  .problem-item h3 {
+    font-family:'Orbitron', monospace;
+    font-size:12px; letter-spacing:2px;
+    color:var(--accent1); margin-bottom:8px;
+  }
+  .problem-item p {
+    font-size:14px; color:var(--text-dim); line-height:1.6;
+  }
+  .stat-row {
+    display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;
+  }
+  .stat-chip {
+    background:rgba(0,229,255,0.08);
+    border:1px solid rgba(0,229,255,0.2);
+    border-radius:2px;
+    padding:3px 10px;
+    font-family:'Share Tech Mono', monospace;
+    font-size:12px;
+    color:var(--accent1);
+  }
+  .stat-chip.purple { background:rgba(124,77,255,0.08); border-color:rgba(124,77,255,0.3); color:var(--accent2); }
+  .stat-chip.orange { background:rgba(255,109,0,0.08); border-color:rgba(255,109,0,0.3); color:var(--accent3); }
+  .stat-chip.green  { background:rgba(0,230,118,0.08); border-color:rgba(0,230,118,0.3); color:var(--accent4); }
+
+  /* Formulation */
+  .formula-block {
+    background:rgba(0,0,0,0.3);
+    border-left:3px solid var(--accent2);
+    padding:16px 20px;
+    margin:12px 0;
+    font-family:'Share Tech Mono', monospace;
+    font-size:14px;
+    color:#d0e8ff;
+    border-radius:0 3px 3px 0;
+  }
+  .formula-block .label {
+    font-size:10px; letter-spacing:3px; color:var(--accent2);
+    margin-bottom:8px; text-transform:uppercase;
+  }
+  .formula-block .math {
+    font-size:16px; line-height:2;
+  }
+  .formula-block .math .var-x { color:var(--accent1); font-weight:bold; }
+  .formula-block .math .var-y { color:var(--accent3); font-weight:bold; }
+  .formula-block .math .coef  { color:#a0c8ff; }
+  .formula-block .math .ineq  { color:var(--accent4); }
+
+  .constraints-table {
+    width:100%; border-collapse:collapse; margin-top:16px;
+    font-family:'Share Tech Mono', monospace; font-size:13px;
+  }
+  .constraints-table th {
+    text-align:left; padding:10px 14px;
+    background:rgba(0,229,255,0.06);
+    color:var(--accent1); font-weight:normal;
+    letter-spacing:2px; font-size:11px;
+    border-bottom:1px solid rgba(0,229,255,0.15);
+  }
+  .constraints-table td {
+    padding:10px 14px;
+    border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text);
+  }
+  .constraints-table tr:hover td { background:rgba(0,229,255,0.03); }
+  .constraints-table .math-cell { color:#a0c8ff; }
+
+  /* Tooltip */
+  [data-tip] {
+    position:relative;
+    cursor:help;
+    border-bottom:1px dashed rgba(0,229,255,0.4);
+  }
+  [data-tip]::after {
+    content: attr(data-tip);
+    position:absolute;
+    bottom:calc(100% + 10px);
+    left:50%; transform:translateX(-50%);
+    background:var(--panel2);
+    border:1px solid var(--accent1);
+    border-radius:3px;
+    padding:10px 14px;
+    font-family:'Rajdhani', sans-serif;
+    font-size:13px;
+    color:var(--text);
+    white-space:nowrap;
+    max-width:280px;
+    white-space:normal;
+    line-height:1.5;
+    z-index:100;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity 0.25s;
+    box-shadow: var(--glow1), 0 8px 24px rgba(0,0,0,0.5);
+    letter-spacing:0;
+    font-weight:400;
+  }
+  [data-tip]:hover::after { opacity:1; }
+
+  /* GRAPH */
+  .graph-container {
+    display:grid;
+    grid-template-columns: 1fr 280px;
+    gap:24px;
+    align-items:start;
+  }
+  @media(max-width:768px){
+    .graph-container { grid-template-columns:1fr; }
+  }
+
+  #lpCanvas {
+    width:100%; border-radius:3px;
+    background:#020810;
+    border:1px solid rgba(0,229,255,0.12);
+    display:block;
+  }
+
+  .graph-legend {
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:3px;
+    padding:20px;
+  }
+  .graph-legend h4 {
+    font-family:'Orbitron', monospace;
+    font-size:11px; letter-spacing:2px;
+    color:var(--accent1); margin-bottom:16px;
+  }
+  .legend-item {
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:14px; font-size:13px; color:var(--text-dim);
+    cursor:default;
+    padding:8px; border-radius:2px;
+    transition:background 0.2s;
+  }
+  .legend-item:hover { background:rgba(255,255,255,0.03); }
+  .legend-dot {
+    width:12px; height:12px; border-radius:50%; flex-shrink:0;
+    box-shadow: 0 0 8px currentColor;
+  }
+  .legend-line {
+    width:24px; height:3px; flex-shrink:0; border-radius:2px;
+  }
+  .legend-area {
+    width:24px; height:14px; flex-shrink:0; border-radius:2px; border:1px solid;
+    opacity:0.6;
+  }
+  .corner-point-list {
+    margin-top:20px; border-top:1px solid var(--border); padding-top:16px;
+  }
+  .corner-point-list h4 {
+    font-family:'Orbitron', monospace; font-size:11px; letter-spacing:2px;
+    color:var(--accent3); margin-bottom:12px;
+  }
+  .corner-pt {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.04);
+    font-family:'Share Tech Mono', monospace; font-size:12px;
+  }
+  .corner-pt .coords { color:var(--text-dim); }
+  .corner-pt .utility { color:var(--accent4); }
+  .corner-pt.optimal { background:rgba(0,230,118,0.06); padding:7px 8px; border-radius:2px; border-color:rgba(0,230,118,0.2); }
+  .corner-pt.optimal .coords { color:var(--accent4); }
+  .corner-pt.optimal .utility { color:#fff; font-weight:bold; }
+
+  /* Animation controls */
+  .anim-controls {
+    display:flex; gap:12px; flex-wrap:wrap; margin-top:16px;
+  }
+  .btn {
+    font-family:'Orbitron', monospace;
+    font-size:11px; letter-spacing:2px;
+    padding:9px 18px;
+    border:1px solid var(--accent1);
+    background:rgba(0,229,255,0.05);
+    color:var(--accent1);
+    border-radius:2px;
+    cursor:pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { background:rgba(0,229,255,0.15); box-shadow:var(--glow1); }
+  .btn.active { background:rgba(0,229,255,0.2); box-shadow:var(--glow1); }
+  .btn.purple { border-color:var(--accent2); background:rgba(124,77,255,0.05); color:var(--accent2); }
+  .btn.purple:hover { background:rgba(124,77,255,0.15); box-shadow:var(--glow2); }
+
+  /* Corners evaluation */
+  .eval-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap:16px; margin-top:12px;
+  }
+  .eval-card {
+    background:var(--panel2);
+    border:1px solid rgba(255,255,255,0.07);
+    border-radius:3px;
+    padding:18px;
+    transition:all 0.3s;
+    position:relative;
+    overflow:hidden;
+  }
+  .eval-card.optimal {
+    border-color:var(--accent4);
+    box-shadow:var(--glow4);
+  }
+  .eval-card.optimal::before {
+    content:'★ OPTIMAL';
+    position:absolute; top:0; right:0;
+    background:var(--accent4);
+    color:#000;
+    font-family:'Orbitron', monospace;
+    font-size:9px; letter-spacing:1px;
+    padding:3px 8px;
+    font-weight:700;
+  }
+  .eval-card h4 {
+    font-family:'Share Tech Mono', monospace;
+    font-size:13px; color:var(--text-dim);
+    margin-bottom:12px;
+  }
+  .eval-card .point {
+    font-family:'Orbitron', monospace;
+    font-size:18px; font-weight:700;
+    color:var(--accent1); margin-bottom:10px;
+  }
+  .eval-card .eval-row {
+    display:flex; justify-content:space-between;
+    font-family:'Share Tech Mono', monospace;
+    font-size:12px; color:var(--text-dim);
+    padding:3px 0;
+  }
+  .eval-card .eval-row .val { color:var(--text); }
+  .eval-card .utility-total {
+    margin-top:12px; padding-top:12px;
+    border-top:1px solid rgba(255,255,255,0.1);
+    text-align:center;
+    font-family:'Orbitron', monospace;
+    font-size:20px; font-weight:900;
+  }
+  .eval-card.optimal .utility-total { color:var(--accent4); }
+  .eval-card:not(.optimal) .utility-total { color:var(--text-dim); }
+
+  /* Feasibility checks */
+  .feasibility-check {
+    display:flex; align-items:center; gap:8px;
+    font-family:'Share Tech Mono', monospace;
+    font-size:12px;
+    padding:4px 0;
+    color:var(--text-dim);
+  }
+  .feasibility-check .check-icon {
+    font-size:14px; flex-shrink:0;
+  }
+  .feasibility-check.pass .check-icon { color:var(--accent4); }
+  .feasibility-check.fail .check-icon { color:#f44336; }
+  .feasibility-check.pass .check-text { color:var(--accent4); }
+  .feasibility-check.fail .check-text { color:#f44336; }
+
+  /* Final answer */
+  .answer-display {
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap:16px; margin-bottom:24px;
+  }
+  .answer-block {
+    text-align:center;
+    background:var(--panel2);
+    border:1px solid rgba(0,229,255,0.15);
+    border-radius:3px; padding:24px 16px;
+    position:relative;
+  }
+  .answer-block.highlight {
+    border-color:var(--accent4);
+    box-shadow:var(--glow4);
+  }
+  .answer-block .label {
+    font-family:'Orbitron', monospace;
+    font-size:10px; letter-spacing:3px;
+    color:var(--text-dim); margin-bottom:10px;
+  }
+  .answer-block .value {
+    font-family:'Orbitron', monospace;
+    font-size:40px; font-weight:900;
+    background:linear-gradient(135deg, var(--accent1), var(--accent4));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .answer-block.highlight .value {
+    background:linear-gradient(135deg, var(--accent4), var(--accent1));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    font-size:52px;
+  }
+  .answer-block .unit {
+    font-family:'Share Tech Mono', monospace;
+    font-size:11px; color:var(--text-dim); margin-top:6px;
+  }
+
+  .verify-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;
+  }
+  .verify-row {
+    background:rgba(0,0,0,0.2);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:3px; padding:12px 16px;
+  }
+  .verify-row h5 {
+    font-family:'Orbitron', monospace;
+    font-size:10px; letter-spacing:2px;
+    color:var(--accent1); margin-bottom:8px;
+  }
+  .verify-row .constraint-line {
+    font-family:'Share Tech Mono', monospace;
+    font-size:12px; color:var(--text-dim);
+    line-height:1.8;
+  }
+  .verify-row .constraint-line .ok { color:var(--accent4); }
+
+  /* Sensitivity */
+  .sensitivity-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+    gap:16px;
+  }
+  .sens-card {
+    background:var(--panel2);
+    border:1px solid rgba(124,77,255,0.2);
+    border-radius:3px; padding:20px;
+  }
+  .sens-card h4 {
+    font-family:'Orbitron', monospace;
+    font-size:11px; letter-spacing:2px;
+    color:var(--accent2); margin-bottom:12px;
+  }
+  .sens-card p { font-size:14px; color:var(--text-dim); line-height:1.7; }
+  .sens-card .highlight-text { color:var(--accent1); }
+
+  /* Progress bar for resources */
+  .resource-bar {
+    margin:8px 0;
+  }
+  .resource-bar .bar-label {
+    display:flex; justify-content:space-between;
+    font-family:'Share Tech Mono', monospace;
+    font-size:11px; color:var(--text-dim); margin-bottom:4px;
+  }
+  .bar-track {
+    height:6px; background:rgba(255,255,255,0.06);
+    border-radius:3px; overflow:hidden;
+  }
+  .bar-fill {
+    height:100%; border-radius:3px;
+    transition:width 1.5s cubic-bezier(0.16,1,0.3,1);
+    width:0;
+  }
+  .bar-fill.cyan { background:linear-gradient(to right, var(--accent1), #00b8d4); box-shadow:0 0 8px rgba(0,229,255,0.5); }
+  .bar-fill.orange { background:linear-gradient(to right, var(--accent3), #ff9100); box-shadow:0 0 8px rgba(255,109,0,0.5); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:rgba(0,229,255,0.2); border-radius:3px; }
+
+  /* Step connector */
+  .step-connector {
+    display:flex; justify-content:center;
+    margin:10px 0 30px;
+    opacity:0.3;
+  }
+  .step-connector::before {
+    content:'';
+    width:1px; height:40px;
+    background:linear-gradient(to bottom, var(--accent1), transparent);
+  }
+
+  .info-box {
+    background:rgba(0,229,255,0.04);
+    border:1px solid rgba(0,229,255,0.12);
+    border-radius:3px;
+    padding:16px 20px;
+    margin-top:16px;
+    font-size:14px;
+    color:var(--text-dim);
+    line-height:1.7;
+  }
+  .info-box strong { color:var(--accent1); }
+
+  footer {
+    position:relative; z-index:5;
+    text-align:center;
+    padding:40px 20px;
+    border-top:1px solid var(--border);
+    font-family:'Share Tech Mono', monospace;
+    font-size:11px;
+    color:var(--text-dim);
+    letter-spacing:2px;
+  }
+
+  /* CANVAS TOOLTIP */
+  #canvasTooltip {
+    position:fixed;
+    background:var(--panel2);
+    border:1px solid var(--accent1);
+    border-radius:3px;
+    padding:10px 14px;
+    font-family:'Rajdhani', sans-serif;
+    font-size:13px; line-height:1.6;
+    color:var(--text);
+    pointer-events:none;
+    z-index:200;
+    opacity:0;
+    transition:opacity 0.2s;
+    box-shadow:var(--glow1), 0 8px 24px rgba(0,0,0,0.6);
+    max-width:220px;
+  }
+
+  /* Slide-in for eval cards */
+  .eval-card {
+    opacity:0; transform:translateY(20px);
+    transition: opacity 0.5s, transform 0.5s, border-color 0.3s, box-shadow 0.3s;
+  }
+  .eval-card.show { opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div id="canvasTooltip"></div>
+
+<header>
+  <div class="header-tag">▸ Linear Programming Education Module ◂</div>
+  <h1>Culture Mind Orbital<br>Fabrication Optimizer</h1>
+  <p class="subtitle">// LINEAR PROGRAMMING SOLUTION WALKTHROUGH //</p>
+  <div class="orbital-badge">GS-ORBITAL-7 · CYCLE 2847</div>
+</header>
+
+<main>
+
+  <!-- STEP 1: Problem Setup -->
+  <section class="step-section" id="s1">
+    <div class="step-header">
+      <div class="step-num">STEP 01</div>
+      <div class="step-title">PROBLEM DEFINITION</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="card">
+      <div class="problem-grid">
+        <div class="problem-item">
+          <div class="problem-item-icon">🤖</div>
+          <h3>DRONE BODY</h3>
+          <p>Autonomous fabricated unit for orbital maintenance and expansion tasks.</p>
+          <div class="stat-row">
+            <span class="stat-chip" data-tip="Each drone body earns 8 utility points toward the Mind's optimization objective.">⚡ 8 utility pts</span>
+            <span class="stat-chip" data-tip="Fabrication hours consumed per drone: 2 out of the 120 total available.">⏱ 2 fab-hrs</span>
+            <span class="stat-chip orange" data-tip="Rare substrate units consumed per drone: 1 out of 70 total available.">◈ 1 substrate</span>
+          </div>
+        </div>
+        <div class="problem-item">
+          <div class="problem-item-icon">🏗️</div>
+          <h3>HABITAT MODULE</h3>
+          <p>Pressurized living section for population expansion aboard the Orbital.</p>
+          <div class="stat-row">
+            <span class="stat-chip" data-tip="Each habitat module earns 12 utility points — 50% more than a drone body.">⚡ 12 utility pts</span>
+            <span class="stat-chip" data-tip="Fabrication hours consumed per habitat: 3 out of the 120 total available.">⏱ 3 fab-hrs</span>
+            <span class="stat-chip orange" data-tip="Rare substrate units consumed per habitat: 2 out of 70 total available.">◈ 2 substrate</span>
+          </div>
+        </div>
+        <div class="problem-item">
+          <div class="problem-item-icon">🏭</div>
+          <h3>ORBITAL RESOURCES</h3>
+          <p>Total capacity available this production cycle.</p>
+          <div class="stat-row">
+            <span class="stat-chip" data-tip="The total fabrication time budget across all units this cycle.">⏱ 120 fab-hrs</span>
+            <span class="stat-chip orange" data-tip="Rare substrate is the scarce mineral used for structural components.">◈ 70 substrate</span>
+          </div>
+          <div style="margin-top:14px">
+            <div class="resource-bar" id="fabBar">
+              <div class="bar-label"><span>Fabrication Hours</span><span>120 available</span></div>
+              <div class="bar-track"><div class="bar-fill cyan" id="fabFill" style="width:0%"></div></div>
+            </div>
+            <div class="resource-bar" id="subBar">
+              <div class="bar-label"><span>Rare Substrate</span><span>70 available</span></div>
+              <div class="bar-track"><div class="bar-fill orange" id="subFill" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="problem-item">
+          <div class="problem-item-icon">📋</div>
+          <h3>MANDATE</h3>
+          <p>Population expansion requires a minimum quota of habitat modules.</p>
+          <div class="stat-row">
+            <span class="stat-chip green" data-tip="The population expansion directive enforces this lower bound on habitat modules — a minimum constraint.">≥ 20 habitats min</span>
+          </div>
+          <p style="margin-top:12px; font-size:13px; color:var(--text-dim);">
+            Objective: <strong style="color:var(--accent4)">MAXIMIZE total utility</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="step-connector"></div>
+
+  <!-- STEP 2: Mathematical Formulation -->
+  <section class="step-section" id="s2">
+    <div class="step-header">
+      <div class="step-num">STEP 02</div>
+      <div class="step-title">MATHEMATICAL FORMULATION</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="card">
+      <p style="color:var(--text-dim); margin-bottom:20px; font-size:14px;">
+        Translate the scenario into a formal LP model. We define <span data-tip="x = number of drone bodies to fabricate. A continuous variable ≥ 0." style="color:var(--accent1)">x = drone bodies</span> and <span data-tip="y = number of habitat modules to fabricate. A continuous variable ≥ 0." style="color:var(--accent3)">y = habitat modules</span>.
+      </p>
+
+      <div class="formula-block">
+        <div class="label">OBJECTIVE FUNCTION — maximize</div>
+        <div class="math">
+          Z = <span class="coef">8</span><span class="var-x">x</span> + <span class="coef">12</span><span class="var-y">y</span>
+        </div>
+      </div>
+
+      <table class="constraints-table" style="margin-top:20px">
+        <thead>
+          <tr>
+            <th>CONSTRAINT</th>
+            <th>EXPRESSION</th>
+            <th>REASON</th>
+            <th>TYPE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-tip="Fabrication hours used by all units cannot exceed what the Orbital has available.">Fabrication capacity</td>
+            <td class="math-cell"><span style="color:var(--accent1)">2x</span> + <span style="color:var(--accent3)">3y</span> ≤ 120</td>
+            <td style="color:var(--text-dim)">2 hrs/drone + 3 hrs/habitat ≤ 120 hrs total</td>
+            <td><span class="stat-chip" style="font-size:11px">UPPER BOUND</span></td>
+          </tr>
+          <tr>
+            <td data-tip="Rare substrate consumed by all units cannot exceed the Orbital's stockpile.">Substrate supply</td>
+            <td class="math-cell"><span style="color:var(--accent1)">x</span> + <span style="color:var(--accent3)">2y</span> ≤ 70</td>
+            <td style="color:var(--text-dim)">1 unit/drone + 2 units/habitat ≤ 70 units total</td>
+            <td><span class="stat-chip" style="font-size:11px">UPPER BOUND</span></td>
+          </tr>
+          <tr>
+            <td data-tip="Population expansion mandate requires at least 20 habitat modules this cycle.">Habitat minimum</td>
+            <td class="math-cell"><span style="color:var(--accent3)">y</span> ≥ 20</td>
+            <td style="color:var(--text-dim)">Population expansion directive</td>
+            <td><span class="stat-chip green" style="font-size:11px">LOWER BOUND</span></td>
+          </tr>
+          <tr>
+            <td data-tip="Non-negativity: you cannot fabricate a negative number of units.">Non-negativity</td>
+            <td class="math-cell"><span style="color:var(--accent1)">x</span> ≥ 0, <span style="color:var(--accent3)">y</span> ≥ 0</td>
+            <td style="color:var(--text-dim)">Physical production constraint</td>
+            <td><span class="stat-chip purple" style="font-size:11px">IMPLICIT</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-box">
+        <strong>LP Standard Form:</strong> This is a standard linear program — the objective and all constraints are linear (no squares, products, or nonlinear terms). The feasible region will be a <span data-tip="A convex polygon (in 2D) defined by the intersection of all constraints. The optimal solution always lies at one of its corner vertices.">convex polytope</span>, and the optimal solution must occur at a <strong>corner vertex</strong> of that region.
+      </div>
+    </div>
+  </section>
+
+  <div class="step-connector"></div>
+
+  <!-- STEP 3: Graphical Solution -->
+  <section class="step-section" id="s3">
+    <div class="step-header">
+      <div class="step-num">STEP 03</div>
+      <div class="step-title">GRAPHICAL SOLUTION — FEASIBLE REGION</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="card">
+      <p style="color:var(--text-dim); margin-bottom:16px; font-size:14px;">
+        Plot all constraints in the <span data-tip="The 2D space where x (drone bodies) is the horizontal axis and y (habitat modules) is the vertical axis. Every point (x,y) is a possible production mix.">decision variable space</span>. The <span data-tip="The set of all (x,y) points that satisfy every constraint simultaneously. Any feasible production plan lives here.">feasible region</span> is the shaded area satisfying all constraints simultaneously. Use the buttons to reveal each constraint layer.
+      </p>
+
+      <div class="anim-controls">
+        <button class="btn" id="btnAll" onclick="drawAll()">SHOW ALL</button>
+        <button class="btn" id="btnFab" onclick="animateStep('fab')">FABRICATION</button>
+        <button class="btn" id="btnSub" onclick="animateStep('sub')">SUBSTRATE</button>
+        <button class="btn" id="btnMin" onclick="animateStep('min')">HABITAT MIN</button>
+        <button class="btn purple" id="btnObj" onclick="animateStep('obj')">OBJECTIVE LINE</button>
+        <button class="btn" id="btnPts" onclick="animateStep('pts')">CORNER POINTS</button>
+        <button class="btn" id="btnSweep" onclick="sweepZ()" style="border-color:#ff6d00;color:#ff6d00;background:rgba(255,109,0,0.05)">▶ SWEEP Z</button>
+        <button class="btn" id="btnReset" onclick="resetCanvas()" style="border-color:rgba(255,255,255,0.2);color:var(--text-dim)">RESET</button>
+      </div>
+
+      <div class="graph-container" style="margin-top:16px">
+        <div>
+          <canvas id="lpCanvas" width="640" height="480"></canvas>
+        </div>
+        <div class="graph-legend">
+          <h4>▸ LEGEND</h4>
+          <div class="legend-item" data-tip="2x + 3y = 120 — fabrication capacity boundary. Points above-right of this line are infeasible.">
+            <div class="legend-line" style="background:#00e5ff; box-shadow:0 0 6px #00e5ff"></div>
+            <span>Fabrication limit (2x+3y=120)</span>
+          </div>
+          <div class="legend-item" data-tip="x + 2y = 70 — substrate supply boundary. Points above-right are infeasible.">
+            <div class="legend-line" style="background:#ff6d00; box-shadow:0 0 6px #ff6d00"></div>
+            <span>Substrate limit (x+2y=70)</span>
+          </div>
+          <div class="legend-item" data-tip="y = 20 — habitat minimum. Points below this line are infeasible due to the expansion mandate.">
+            <div class="legend-line" style="background:#00e676; box-shadow:0 0 6px #00e676"></div>
+            <span>Habitat minimum (y=20)</span>
+          </div>
+          <div class="legend-item" data-tip="The feasible region: all production plans that satisfy every constraint.">
+            <div class="legend-area" style="background:rgba(124,77,255,0.3); border-color:rgba(124,77,255,0.5)"></div>
+            <span>Feasible region</span>
+          </div>
+          <div class="legend-item" data-tip="The objective function Z = 8x + 12y drawn as an iso-profit line — sliding this line maximizes Z.">
+            <div class="legend-line" style="background:#7c4dff; box-shadow:0 0 6px #7c4dff; background: repeating-linear-gradient(to right, #7c4dff 0, #7c4dff 4px, transparent 4px, transparent 8px)"></div>
+            <span>Objective line (Z=8x+12y)</span>
+          </div>
+          <div class="legend-item" data-tip="Corner vertices of the feasible region — the LP Theorem guarantees the optimum is here.">
+            <div class="legend-dot" style="background:var(--accent3); color:var(--accent3)"></div>
+            <span>Corner points</span>
+          </div>
+          <div class="legend-item" data-tip="The corner vertex that yields the maximum value of Z = 8x + 12y.">
+            <div class="legend-dot" style="background:#00e676; color:#00e676; width:14px; height:14px"></div>
+            <span>Optimal solution ★</span>
+          </div>
+
+          <div class="corner-point-list">
+            <h4>▸ CORNER VERTICES</h4>
+            <div class="corner-pt optimal">
+              <span class="coords">★ (30, 20)</span>
+              <span class="utility">Z = 480</span>
+            </div>
+            <div class="corner-pt">
+              <span class="coords">(0, 35)</span>
+              <span class="utility">Z = 420</span>
+            </div>
+            <div class="corner-pt">
+              <span class="coords">(0, 20)</span>
+              <span class="utility">Z = 240</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="step-connector"></div>
+
+  <!-- STEP 4: Identifying Corner Points -->
+  <section class="step-section" id="s4">
+    <div class="step-header">
+      <div class="step-num">STEP 04</div>
+      <div class="step-title">IDENTIFY FEASIBLE CORNER POINTS</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="card">
+      <p style="color:var(--text-dim); margin-bottom:20px; font-size:14px;">
+        By the <span data-tip="For a linear program, if an optimal solution exists, it occurs at a vertex (corner point) of the feasible region. This means we only need to check finitely many points.">Fundamental Theorem of Linear Programming</span>, we solve for each vertex by finding where pairs of boundary lines intersect, then verifying feasibility.
+      </p>
+
+      <div class="eval-grid" id="evalGrid">
+
+        <div class="eval-card optimal" id="ec1">
+          <h4>Intersection: y=20 ∩ substrate</h4>
+          <div class="point">(30, 20)</div>
+          <div style="font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--text-dim); margin-bottom:12px">
+            y=20 and x+2(20)=70<br>
+            → x = 70−40 = <span style="color:var(--accent1)">30</span>
+          </div>
+          <div class="feasibility-check pass"><span class="check-icon">✓</span><span class="check-text">2(30)+3(20)=120 ≤ 120</span></div>
+          <div class="feasibility-check pass"><span class="check-icon">✓</span><span class="check-text">30+2(20)=70 ≤ 70</span></div>
+          <div class="feasibility-check pass"><span class="check-icon">✓</span><span class="check-text">y=20 ≥ 20</span></div>
+          <div class="utility-total">Z = 8(30)+12(20) = <span style="color:var(--accent4)">480</span></div>
+        </div>
+
+        <div class="eval-card" id="ec2">
+          <h4>Intersection: fab ∩ substrate (no y≥20)</h4>
+          <div class="point" style="color:var(--accent2)">(20, 26.7)</div>
+          <div style="font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--text-dim); margin-bottom:12px">
+            2x+3y=120 and x+2y=70<br>
+            Subtract×2: y = 140−120 = <span style="color:var(--accent2)">20</span> … wait<br>
+            → Eliminate x: y=20, x=30 — same!<br>
+            <span style="color:var(--text-dim); font-size:11px">(Both lines meet exactly at the y=20 line, confirming (30,20) is the unique triple intersection)</span>
+          </div>
+          <div class="feasibility-check pass"><span class="check-icon">✓</span><span class="check-text">All constraints satisfied here</span></div>
+          <div style="margin-top:8px; font-size:12px; color:var(--accent2); font-family:'Share Tech Mono',monospace">
+            <span data-tip="Three constraints binding at one vertex is called degeneracy. It means the optimal point is over-determined — the solution is uniquely pinned by more constraints than the number of variables.">Degenerate vertex:</span> all 3 constraints active at (30, 20)
+          </div>
+          <div class="utility-total">Confirms Z = <span style="color:var(--accent4)">480</span></div>
+        </div>
+
+        <div class="eval-card" id="ec3">
+          <h4>x=0 boundary</h4>
+          <div class="point">(0, 35)</div>
+          <div style="font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--text-dim); margin-bottom:12px">
+            x=0 and substrate: 2y=70 → y=<span style="color:var(--accent3)">35</span><br>
+            Check fab: 3(35)=105 ≤ 120 ✓
+          </div>
+          <div class="feasibility-check pass"><span class="check-icon">✓</span><span class="check-text">3(35)=105 ≤ 120</span></div>
+          <div class="feasibility-check pass"><span class="check-icon">✓</span><span class="check-text">0+2(35)=70 ≤ 70</span></div>
+          <div class="feasibility-check pass"><span class="check-icon">✓</span><span class="check-text">y=35 ≥ 20</span></div>
+          <div class="utility-total">Z = 0+12(35) = <span>420</span></div>
+        </div>
+
+        <div class="eval-card" id="ec4">
+          <h4>x=0 ∩ y=20 corner</h4>
+          <div class="point">(0, 20)</div>
+          <div style="font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--text-dim); margin-bottom:12px">
+            x=0 and y=20 (minimum bound)<br>
+            Least-production feasible point
+          </div>
+          <div class="feasibility-check pass"><span class="check-icon">✓</span><span class="check-text">3(20)=60 ≤ 120</span></div>
+          <div class="feasibility-check pass"><span class="check-icon">✓</span><span class="check-text">2(20)=40 ≤ 70</span></div>
+          <div class="feasibility-check pass"><span class="check-icon">✓</span><span class="check-text">y=20 ≥ 20</span></div>
+          <div class="utility-total">Z = 0+12(20) = <span>240</span></div>
+        </div>
+
+      </div>
+
+      <div class="info-box" style="margin-top:20px">
+        <strong>Key insight — degeneracy:</strong> Solving the system 2x+3y=120 and x+2y=70 simultaneously: multiply the second by 2 to get 2x+4y=140, then subtract the first to get <strong style="color:var(--accent1)">y = 20</strong>, and back-substituting gives <strong style="color:var(--accent1)">x = 30</strong>. This is exactly the same point forced by the habitat minimum y≥20. All three constraints converge on a single vertex — making the LP <span data-tip="An LP is degenerate when more constraints are active at a vertex than the number of decision variables. Here 3 constraints bind at a 2-variable problem's optimum.">degenerate</span> but uniquely solved at <strong style="color:var(--accent4)">(30, 20)</strong>.
+      </div>
+    </div>
+  </section>
+
+  <div class="step-connector"></div>
+
+  <!-- STEP 5: Optimal Solution -->
+  <section class="step-section" id="s5">
+    <div class="step-header">
+      <div class="step-num">STEP 05</div>
+      <div class="step-title">OPTIMAL SOLUTION</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="card">
+      <div class="answer-display">
+        <div class="answer-block">
+          <div class="label">DRONE BODIES (x)</div>
+          <div class="value">30</div>
+          <div class="unit">units fabricated</div>
+        </div>
+        <div class="answer-block">
+          <div class="label">HABITAT MODULES (y)</div>
+          <div class="value">20</div>
+          <div class="unit">units fabricated</div>
+        </div>
+        <div class="answer-block highlight">
+          <div class="label">MAX TOTAL UTILITY (Z)</div>
+          <div class="value">480</div>
+          <div class="unit">utility points</div>
+        </div>
+      </div>
+
+      <div class="verify-grid">
+        <div class="verify-row">
+          <h5>▸ FABRICATION CHECK</h5>
+          <div class="constraint-line">
+            2(30) + 3(20) = 60 + 60 = <span class="ok">120 ≤ 120 ✓</span><br>
+            <span style="color:var(--text-dim)">BINDING — no slack remaining</span>
+          </div>
+        </div>
+        <div class="verify-row">
+          <h5>▸ SUBSTRATE CHECK</h5>
+          <div class="constraint-line">
+            30 + 2(20) = 30 + 40 = <span class="ok">70 ≤ 70 ✓</span><br>
+            <span style="color:var(--text-dim)">BINDING — no slack remaining</span>
+          </div>
+        </div>
+        <div class="verify-row">
+          <h5>▸ HABITAT MINIMUM</h5>
+          <div class="constraint-line">
+            y = 20 <span class="ok">≥ 20 ✓</span><br>
+            <span style="color:var(--text-dim)">BINDING — exactly at mandate</span>
+          </div>
+        </div>
+        <div class="verify-row">
+          <h5>▸ NON-NEGATIVITY</h5>
+          <div class="constraint-line">
+            x = 30 <span class="ok">≥ 0 ✓</span><br>
+            y = 20 <span class="ok">≥ 0 ✓</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top:20px; border-color:rgba(0,230,118,0.25); background:rgba(0,230,118,0.04)">
+        <strong style="color:var(--accent4)">Interpretation:</strong> The Culture Mind should fabricate <strong style="color:var(--accent1)">30 drone bodies</strong> and exactly <strong style="color:var(--accent3)">20 habitat modules</strong> this cycle. Both the fabrication capacity and rare substrate are completely consumed — this is a <span data-tip="A corner point where more constraints are binding (active) than the number of variables. Indicates highly constrained, resource-efficient operation.">degenerate optimum</span> with all three resource constraints binding simultaneously. Total utility achieved: <strong style="color:var(--accent4)">480 points</strong>.
+      </div>
+    </div>
+  </section>
+
+  <div class="step-connector"></div>
+
+  <!-- STEP 6: Sensitivity Analysis -->
+  <section class="step-section" id="s6">
+    <div class="step-header">
+      <div class="step-num">STEP 06</div>
+      <div class="step-title">SENSITIVITY ANALYSIS</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="card">
+      <p style="color:var(--text-dim); margin-bottom:20px; font-size:14px;">
+        How does the optimal solution respond to changes in parameters? <span data-tip="Shadow prices (dual values) tell us how much the objective function improves per additional unit of a scarce resource.">Shadow prices</span> and <span data-tip="The range over which a parameter can change without altering the optimal basis — i.e., without changing which vertex is optimal.">ranging analysis</span> help the Mind decide where to invest.
+      </p>
+
+      <!-- Shadow Price Computation -->
+      <div class="formula-block" style="border-left-color:var(--accent3); margin-bottom:20px;">
+        <div class="label" style="color:var(--accent3)">SHADOW PRICE COMPUTATION — Dual System</div>
+        <div class="math" style="font-size:13px; line-height:2.2; color:var(--text-dim)">
+          At optimum, binding constraints: 2x+3y=120 and x+2y=70<br>
+          Dual variables: λ₁ (fabrication), λ₂ (substrate)<br>
+          Dual conditions: <span style="color:var(--accent1)">2λ₁ + λ₂ = 8</span> (drone obj coef)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--accent3)">3λ₁ + 2λ₂ = 12</span> (habitat obj coef)<br>
+          Solving: λ₂ = 8−2λ₁ → 3λ₁+2(8−2λ₁)=12 → <strong style="color:var(--accent4)">λ₁ = −4</strong> ... → <strong style="color:var(--accent4)">λ₁ = 4, λ₂ = 0</strong><br>
+          <span style="color:var(--text-dim); font-size:11px">Multiply 1st eq×2: 4λ₁+2λ₂=16. Subtract 2nd: λ₁=4. Back-sub: λ₂=8−8=0</span>
+        </div>
+      </div>
+
+      <div class="sensitivity-grid">
+        <div class="sens-card">
+          <h4>▸ SHADOW PRICE: FABRICATION = 4</h4>
+          <p>Each additional fabrication hour is worth <span class="highlight-text">+4 utility points</span>. If the Orbital could secure 1 more fabrication hour (121 total), Z would increase to 484. This resource has the highest marginal value — acquiring more fab capacity directly improves the optimal utility at a rate of 4 per hour.</p>
+        </div>
+        <div class="sens-card">
+          <h4>▸ SHADOW PRICE: SUBSTRATE = 0</h4>
+          <p>The substrate constraint is binding at the optimum, yet its shadow price is <span class="highlight-text">0</span> — a consequence of <span data-tip="When more constraints are binding than variables, one constraint's shadow price can be zero even though it is active. It is 'accidentally' binding due to the degenerate structure.">degeneracy</span>. Adding more substrate would not improve Z unless fabrication capacity also increases simultaneously. Both must be relaxed together to escape the degenerate vertex.</p>
+        </div>
+        <div class="sens-card">
+          <h4>▸ RHS RANGING: FABRICATION</h4>
+          <p>The solution basis remains optimal as long as fabrication hours stay between <span class="highlight-text">60 and ∞</span> (approximately). Below 60 hours, the problem becomes infeasible given y≥20. Above 120, x can grow. The current range is: the basis changes when fab drops to 3(20)=60 (only habitats fill capacity).</p>
+        </div>
+        <div class="sens-card">
+          <h4>▸ OBJECTIVE RANGING: DRONE UTILITY</h4>
+          <p>Currently drones yield 8 utility. The current optimal basis holds while the ratio 8/12 stays between 1/2 and 3/2 — meaning drone utility can range from <span class="highlight-text">6 to 18</span> without changing the optimal vertex. Outside this range, a different corner becomes better (e.g., producing only habitats at (0,35)).</p>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top:20px; border-color:rgba(255,109,0,0.25); background:rgba(255,109,0,0.04)">
+        <strong style="color:var(--accent3)">Managerial insight:</strong> Every additional fabrication hour is worth exactly <strong style="color:var(--accent1)">4 utility points</strong> to the Culture Mind. If the Mind could negotiate with other Orbitals for fabrication time, it should be willing to pay up to 4 utility per hour. Substrate is not the binding constraint in isolation — only fabrication capacity limits further gains.
+      </div>
+    </div>
+  </section>
+
+  <div class="step-connector"></div>
+
+  <!-- STEP 7: Visual Summary & Conclusion -->
+  <section class="step-section" id="s7">
+    <div class="step-header">
+      <div class="step-num">STEP 07</div>
+      <div class="step-title">SOLUTION SUMMARY & PRODUCTION PLAN</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="card">
+
+      <!-- Animated production plan -->
+      <p style="color:var(--text-dim); font-size:14px; margin-bottom:24px;">
+        The optimal production plan for cycle GS-2847. Resources are fully allocated — zero waste, maximum utility.
+      </p>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:28px;" id="prodPlan">
+        <!-- Drone Column -->
+        <div style="background:var(--panel2); border:1px solid rgba(0,229,255,0.2); border-radius:3px; padding:20px; text-align:center;">
+          <div style="font-family:'Orbitron',monospace; font-size:11px; letter-spacing:3px; color:var(--accent1); margin-bottom:12px;">DRONE BODIES</div>
+          <div style="font-family:'Orbitron',monospace; font-size:56px; font-weight:900; color:var(--accent1); text-shadow:0 0 30px rgba(0,229,255,0.4); line-height:1;" id="droneCount">0</div>
+          <div style="font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--text-dim); margin:8px 0 16px;">units</div>
+          <div style="font-size:13px; color:var(--text-dim); line-height:1.8; font-family:'Share Tech Mono',monospace;">
+            <div>Fab used: <span style="color:var(--accent1)" id="droneFab">0</span>/120 hrs</div>
+            <div>Substrate: <span style="color:var(--accent3)" id="droneSub">0</span>/70 units</div>
+            <div>Utility: <span style="color:var(--accent4)" id="droneUtil">0</span> pts</div>
+          </div>
+        </div>
+        <!-- Habitat Column -->
+        <div style="background:var(--panel2); border:1px solid rgba(255,109,0,0.2); border-radius:3px; padding:20px; text-align:center;">
+          <div style="font-family:'Orbitron',monospace; font-size:11px; letter-spacing:3px; color:var(--accent3); margin-bottom:12px;">HABITAT MODULES</div>
+          <div style="font-family:'Orbitron',monospace; font-size:56px; font-weight:900; color:var(--accent3); text-shadow:0 0 30px rgba(255,109,0,0.4); line-height:1;" id="habitatCount">0</div>
+          <div style="font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--text-dim); margin:8px 0 16px;">units</div>
+          <div style="font-size:13px; color:var(--text-dim); line-height:1.8; font-family:'Share Tech Mono',monospace;">
+            <div>Fab used: <span style="color:var(--accent1)" id="habitatFab">0</span>/120 hrs</div>
+            <div>Substrate: <span style="color:var(--accent3)" id="habitatSub">0</span>/70 units</div>
+            <div>Utility: <span style="color:var(--accent4)" id="habitatUtil">0</span> pts</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resource usage bars (optimal) -->
+      <div style="background:var(--panel2); border:1px solid var(--border); border-radius:3px; padding:20px; margin-bottom:20px;">
+        <div style="font-family:'Orbitron',monospace; font-size:11px; letter-spacing:2px; color:var(--accent1); margin-bottom:16px;">▸ RESOURCE ALLOCATION AT OPTIMUM</div>
+        <div class="resource-bar">
+          <div class="bar-label"><span>Fabrication Hours  <span style="color:var(--accent4)">120/120</span></span><span style="color:var(--accent4)">100% utilized</span></div>
+          <div class="bar-track" style="height:10px;"><div class="bar-fill cyan" id="optFabFill" style="width:0%"></div></div>
+        </div>
+        <div class="resource-bar" style="margin-top:12px;">
+          <div class="bar-label"><span>Rare Substrate Units  <span style="color:var(--accent4)">70/70</span></span><span style="color:var(--accent4)">100% utilized</span></div>
+          <div class="bar-track" style="height:10px;"><div class="bar-fill orange" id="optSubFill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <!-- Utility comparison chart -->
+      <div style="background:var(--panel2); border:1px solid var(--border); border-radius:3px; padding:20px; margin-bottom:20px;">
+        <div style="font-family:'Orbitron',monospace; font-size:11px; letter-spacing:2px; color:var(--accent2); margin-bottom:20px;">▸ CORNER POINT UTILITY COMPARISON</div>
+        <canvas id="barChart" width="700" height="200" style="width:100%; border-radius:2px;"></canvas>
+      </div>
+
+      <!-- Final answer box -->
+      <div style="border:2px solid var(--accent4); border-radius:4px; padding:28px; text-align:center; background:rgba(0,230,118,0.04); box-shadow:var(--glow4);">
+        <div style="font-family:'Orbitron',monospace; font-size:11px; letter-spacing:4px; color:var(--accent4); margin-bottom:12px;">✦ OPTIMAL SOLUTION ✦</div>
+        <div style="font-family:'Share Tech Mono',monospace; font-size:16px; color:var(--text); line-height:2.2;">
+          Fabricate <strong style="color:var(--accent1); font-size:22px;">30</strong> drone bodies &nbsp;+&nbsp; <strong style="color:var(--accent3); font-size:22px;">20</strong> habitat modules
+        </div>
+        <div style="font-family:'Orbitron',monospace; font-size:42px; font-weight:900; color:var(--accent4); text-shadow:0 0 40px rgba(0,230,118,0.5); margin:12px 0;">Z = 480</div>
+        <div style="font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--text-dim);">maximum utility points this cycle · all resources fully consumed</div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  CULTURE MIND LP MODULE · GS-ORBITAL-7 · 7-STEP LINEAR PROGRAMMING EDUCATIONAL VISUALIZATION<br>
+  <span style="opacity:0.4; font-size:10px;">Maximize Z = 8x + 12y &nbsp;·&nbsp; Subject to: 2x+3y≤120, x+2y≤70, y≥20, x,y≥0 &nbsp;·&nbsp; Optimal: x=30, y=20, Z=480</span>
+</footer>
+
+<script>
+// ── Stars ─────────────────────────────────────────────────────────────────
+const starsEl = document.getElementById('stars');
+for(let i=0; i<140; i++){
+  const s=document.createElement('div'); s.className='star';
+  const size=Math.random()*2.5+0.5;
+  s.style.cssText=`width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--dur:${2+Math.random()*5}s;--delay:${Math.random()*6}s;--op:${0.2+Math.random()*0.8}`;
+  starsEl.appendChild(s);
+}
+
+// ── Scroll observer ────────────────────────────────────────────────────────
+let s7Animated = false;
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      if(e.target.id==='s1'){
+        setTimeout(()=>{
+          document.getElementById('fabFill').style.width='100%';
+          document.getElementById('subFill').style.width='100%';
+        },400);
+      }
+      if(e.target.id==='s4'){
+        const cards=document.querySelectorAll('.eval-card');
+        cards.forEach((c,i)=>setTimeout(()=>c.classList.add('show'), i*180));
+      }
+      if(e.target.id==='s7' && !s7Animated){
+        s7Animated=true;
+        setTimeout(runStep7Animations, 300);
+      }
+    }
+  });
+},{threshold:0.08});
+document.querySelectorAll('.step-section').forEach(s=>observer.observe(s));
+
+// ── Canvas Drawing ─────────────────────────────────────────────────────────
+const canvas = document.getElementById('lpCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const PAD = {left:56, right:30, top:30, bottom:50};
+const XMAX=80, YMAX=60;
+
+function toPixel(x,y){
+  return [
+    PAD.left + (x/XMAX)*(W-PAD.left-PAD.right),
+    H - PAD.bottom - (y/YMAX)*(H-PAD.top-PAD.bottom)
+  ];
+}
+
+let state = {fab:false,sub:false,min:false,obj:false,pts:false,region:false};
+let sweepRAF=null;
+
+function clearCanvas(){
+  ctx.clearRect(0,0,W,H);
+  // Subtle grid
+  ctx.strokeStyle='rgba(0,229,255,0.05)';
+  ctx.lineWidth=1;
+  for(let x=0;x<=XMAX;x+=10){
+    const [px]=toPixel(x,0);
+    ctx.beginPath(); ctx.moveTo(px,PAD.top); ctx.lineTo(px,H-PAD.bottom); ctx.stroke();
+  }
+  for(let y=0;y<=YMAX;y+=10){
+    const [,py]=toPixel(0,y);
+    ctx.beginPath(); ctx.moveTo(PAD.left,py); ctx.lineTo(W-PAD.right,py); ctx.stroke();
+  }
+  // Axes
+  ctx.strokeStyle='rgba(200,216,240,0.35)'; ctx.lineWidth=1.5;
+  const [ox,oy]=toPixel(0,0);
+  ctx.beginPath(); ctx.moveTo(PAD.left,oy); ctx.lineTo(W-PAD.right+8,oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox,H-PAD.bottom); ctx.lineTo(ox,PAD.top-8); ctx.stroke();
+  // Axis numbers
+  ctx.fillStyle='rgba(200,216,240,0.45)';
+  ctx.font='11px "Share Tech Mono"';
+  ctx.textAlign='center';
+  for(let x=0;x<=XMAX;x+=10){
+    const [px]=toPixel(x,0);
+    ctx.fillText(x,px,H-PAD.bottom+18);
+  }
+  ctx.textAlign='right';
+  for(let y=0;y<=YMAX;y+=10){
+    const [,py]=toPixel(0,y);
+    ctx.fillText(y,PAD.left-8,py+4);
+  }
+  // Axis titles
+  ctx.fillStyle='rgba(0,229,255,0.65)';
+  ctx.font='bold 12px "Share Tech Mono"';
+  ctx.textAlign='center';
+  ctx.fillText('x — Drone Bodies', PAD.left+(W-PAD.left-PAD.right)/2, H-4);
+  ctx.save();
+  ctx.translate(13, PAD.top+(H-PAD.top-PAD.bottom)/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillStyle='rgba(255,109,0,0.65)';
+  ctx.fillText('y — Habitat Modules',0,0);
+  ctx.restore();
+}
+
+function drawFeasibleRegion(){
+  ctx.beginPath();
+  const pts=[[0,20],[30,20],[0,35]];
+  const [x0,y0]=toPixel(...pts[0]); ctx.moveTo(x0,y0);
+  pts.slice(1).forEach(p=>{ const [px,py]=toPixel(...p); ctx.lineTo(px,py); });
+  ctx.closePath();
+  // Gradient fill
+  const [fx,fy]=toPixel(10,28);
+  const grad=ctx.createRadialGradient(fx,fy,0,fx,fy,120);
+  grad.addColorStop(0,'rgba(124,77,255,0.28)');
+  grad.addColorStop(1,'rgba(124,77,255,0.08)');
+  ctx.fillStyle=grad;
+  ctx.fill();
+  ctx.strokeStyle='rgba(124,77,255,0.5)'; ctx.lineWidth=1.5;
+  ctx.stroke();
+  // Label
+  ctx.font='11px "Share Tech Mono"'; ctx.fillStyle='rgba(124,77,255,0.7)'; ctx.textAlign='center';
+  ctx.fillText('FEASIBLE', ...toPixel(8,27));
+  ctx.fillText('REGION', ...toPixel(8,24.5));
+}
+
+function drawGlowLine(x1,y1,x2,y2,color,width=2,dash=[]){
+  const [px1,py1]=toPixel(x1,y1);
+  const [px2,py2]=toPixel(x2,y2);
+  ctx.strokeStyle=color; ctx.lineWidth=width;
+  ctx.setLineDash(dash);
+  ctx.shadowColor=color; ctx.shadowBlur=10;
+  ctx.beginPath(); ctx.moveTo(px1,py1); ctx.lineTo(px2,py2); ctx.stroke();
+  ctx.setLineDash([]); ctx.shadowBlur=0;
+}
+
+function drawLabel(text,x,y,color,align='left'){
+  const [px,py]=toPixel(x,y);
+  // Slight shadow for readability
+  ctx.font='11px "Share Tech Mono"';
+  ctx.fillStyle='rgba(5,10,18,0.7)';
+  ctx.textAlign=align;
+  ctx.fillText(text,px+(align==='left'?5:align==='right'?-5:0)+1,py-5);
+  ctx.fillStyle=color;
+  ctx.fillText(text,px+(align==='left'?5:align==='right'?-5:0),py-6);
+}
+
+function drawPoint(x,y,color,r=6,label='',optimal=false){
+  const [px,py]=toPixel(x,y);
+  if(optimal){
+    // Pulsing ring
+    ctx.beginPath(); ctx.arc(px,py,r+6,0,Math.PI*2);
+    ctx.strokeStyle=color; ctx.lineWidth=1; ctx.globalAlpha=0.3;
+    ctx.shadowColor=color; ctx.shadowBlur=12;
+    ctx.stroke(); ctx.globalAlpha=1; ctx.shadowBlur=0;
+    ctx.beginPath(); ctx.arc(px,py,r+3,0,Math.PI*2);
+    ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.globalAlpha=0.6;
+    ctx.stroke(); ctx.globalAlpha=1;
+  }
+  ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2);
+  ctx.fillStyle=color; ctx.shadowColor=color; ctx.shadowBlur=optimal?20:10;
+  ctx.fill(); ctx.shadowBlur=0;
+  if(label){
+    ctx.font=`${optimal?'bold ':''} 12px "Share Tech Mono"`;
+    ctx.fillStyle='#ffffff'; ctx.textAlign='center';
+    ctx.shadowColor=color; ctx.shadowBlur=8;
+    ctx.fillText(label,px+(optimal?0:14),py+(optimal?-16:-8));
+    ctx.shadowBlur=0;
+  }
+}
+
+function drawObjectiveLine(z, alpha=1, showLabel=true){
+  // 8x+12y=z
+  const y_at_x0 = z/12;
+  const x_at_y0 = z/8;
+  let p1=[0, Math.min(y_at_x0, YMAX)];
+  let p2=[Math.min(x_at_y0, XMAX), 0];
+  if(y_at_x0 > YMAX){ p1=[x_at_y0*(1-YMAX/y_at_x0), YMAX]; }
+  ctx.strokeStyle=`rgba(124,77,255,${alpha})`;
+  ctx.lineWidth=2; ctx.setLineDash([7,4]);
+  ctx.shadowColor='#7c4dff'; ctx.shadowBlur=12*alpha;
+  ctx.beginPath();
+  const [px1,py1]=toPixel(...p1);
+  const [px2,py2]=toPixel(...p2);
+  ctx.moveTo(px1,py1); ctx.lineTo(px2,py2); ctx.stroke();
+  ctx.setLineDash([]); ctx.shadowBlur=0;
+  if(showLabel && alpha>0.5){
+    ctx.font='11px "Share Tech Mono"';
+    ctx.fillStyle=`rgba(180,140,255,${alpha})`;
+    ctx.textAlign='left';
+    const midX=(p1[0]+p2[0])/2, midY=(p1[1]+p2[1])/2;
+    const [mpx,mpy]=toPixel(midX,midY);
+    ctx.fillText(`Z=${Math.round(z)}`,mpx+4,mpy-6);
+  }
+}
+
+function redraw(){
+  clearCanvas();
+  if(state.region) drawFeasibleRegion();
+  if(state.fab){
+    drawGlowLine(0,40,60,0,'#00e5ff',2.5);
+    drawLabel('2x+3y=120',2,38,'#00e5ff');
+  }
+  if(state.sub){
+    drawGlowLine(0,35,70,0,'#ff6d00',2.5);
+    drawLabel('x+2y=70',2,33,'#ff9040');
+  }
+  if(state.min){
+    drawGlowLine(0,20,XMAX,20,'#00e676',2.5);
+    drawLabel('y=20',XMAX-6,22,'#00e676','right');
+  }
+  if(state.obj){
+    drawObjectiveLine(480,0.9,true);
+  }
+  if(state.pts){
+    drawPoint(0,35,'#ff6d00',5,'(0,35)');
+    drawPoint(0,20,'#00e5ff',5,'(0,20)');
+    drawPoint(30,20,'#00e676',9,'★ (30,20)',true);
+  }
+}
+
+// Z-sweep animation
+function sweepZ(){
+  if(sweepRAF) cancelAnimationFrame(sweepRAF);
+  state={fab:true,sub:true,min:true,region:true,pts:false,obj:false};
+  document.querySelectorAll('.anim-controls .btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('btnSweep').classList.add('active');
+
+  let z=0, zTarget=480, speed=3;
+  function frame(){
+    z=Math.min(z+speed, zTarget);
+    clearCanvas();
+    drawFeasibleRegion();
+    drawGlowLine(0,40,60,0,'#00e5ff',2.5);
+    drawLabel('2x+3y=120',2,38,'#00e5ff');
+    drawGlowLine(0,35,70,0,'#ff6d00',2.5);
+    drawLabel('x+2y=70',2,33,'#ff9040');
+    drawGlowLine(0,20,XMAX,20,'#00e676',2.5);
+    drawLabel('y=20',XMAX-6,22,'#00e676','right');
+    drawObjectiveLine(z,0.85,true);
+    if(z>=zTarget){
+      // Show optimal point at the end
+      drawPoint(30,20,'#00e676',9,'★ (30,20)',true);
+      // Z label
+      ctx.font='bold 13px "Share Tech Mono"';
+      ctx.fillStyle='#00e676'; ctx.textAlign='left';
+      ctx.shadowColor='#00e676'; ctx.shadowBlur=10;
+      ctx.fillText('Z=480 MAX!', ...toPixel(2,44));
+      ctx.shadowBlur=0;
+      state.pts=true; state.obj=true;
+      return;
+    }
+    sweepRAF=requestAnimationFrame(frame);
+  }
+  sweepRAF=requestAnimationFrame(frame);
+}
+
+function animateStep(which){
+  if(sweepRAF){ cancelAnimationFrame(sweepRAF); sweepRAF=null; }
+  document.querySelectorAll('.anim-controls .btn').forEach(b=>b.classList.remove('active'));
+  if(which==='fab'){ state.fab=true; state.region=false; document.getElementById('btnFab').classList.add('active'); }
+  if(which==='sub'){ state.sub=true; if(state.fab) state.region=false; document.getElementById('btnSub').classList.add('active'); }
+  if(which==='min'){
+    state.min=true;
+    state.region = state.fab && state.sub && state.min;
+    document.getElementById('btnMin').classList.add('active');
+  }
+  if(which==='obj'){ state.obj=true; document.getElementById('btnObj').classList.add('active'); }
+  if(which==='pts'){
+    state.pts=true;
+    state.region=true;
+    document.getElementById('btnPts').classList.add('active');
+  }
+  redraw();
+}
+
+function drawAll(){
+  if(sweepRAF){ cancelAnimationFrame(sweepRAF); sweepRAF=null; }
+  state={fab:true,sub:true,min:true,obj:true,pts:true,region:true};
+  document.getElementById('btnAll').classList.add('active');
+  redraw();
+}
+
+function resetCanvas(){
+  if(sweepRAF){ cancelAnimationFrame(sweepRAF); sweepRAF=null; }
+  state={fab:false,sub:false,min:false,obj:false,pts:false,region:false};
+  document.querySelectorAll('.anim-controls .btn').forEach(b=>b.classList.remove('active'));
+  clearCanvas();
+}
+
+// Initial draw with staggered reveals
+clearCanvas();
+setTimeout(()=>{
+  animateStep('fab');
+  setTimeout(()=>{ animateStep('sub'); state.fab=true;
+    setTimeout(()=>{ state.min=true; state.region=true; redraw();
+      setTimeout(()=>{ state.obj=true; redraw();
+        setTimeout(()=>{ state.pts=true; redraw();
+          document.getElementById('btnAll').classList.add('active');
+        },600);
+      },600);
+    },600);
+  },600);
+},900);
+
+// ── Canvas Tooltip ─────────────────────────────────────────────────────────
+const tooltip = document.getElementById('canvasTooltip');
+const pointsInfo = [
+  {x:30,y:20,r:16,text:'<strong style="color:#00e676">★ OPTIMAL: (30, 20)</strong><br>x=30 drones · y=20 habitats<br>Z = 8(30)+12(20) = <strong>480</strong><br>─────────────────<br>Fab: 2(30)+3(20) = 120/120<br>Sub: 30+2(20) = 70/70<br>All 3 constraints binding'},
+  {x:0,y:35,r:10,text:'<strong style="color:#ff6d00">(0, 35)</strong><br>x=0 drones · y=35 habitats<br>Z = 12(35) = <strong>420</strong><br>─────────────────<br>Fab: 105/120 used<br>Sub: 70/70 used'},
+  {x:0,y:20,r:10,text:'<strong style="color:#00e5ff">(0, 20)</strong><br>x=0 drones · y=20 habitats<br>Z = 12(20) = <strong>240</strong><br>─────────────────<br>Minimum feasible corner<br>Most resources idle'},
+];
+
+canvas.addEventListener('mousemove',(e)=>{
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/rect.width;
+  const mx=(e.clientX-rect.left)*scaleX;
+  const my=(e.clientY-rect.top)*(canvas.height/rect.height);
+  let hit=null;
+  pointsInfo.forEach(p=>{
+    const [px,py]=toPixel(p.x,p.y);
+    if(Math.hypot(mx-px,my-py)<p.r) hit=p;
+  });
+  if(hit){
+    tooltip.innerHTML=hit.text;
+    tooltip.style.opacity='1';
+    tooltip.style.left=(e.clientX+16)+'px';
+    tooltip.style.top=(e.clientY-10)+'px';
+    canvas.style.cursor='pointer';
+  } else {
+    tooltip.style.opacity='0';
+    canvas.style.cursor='default';
+  }
+});
+canvas.addEventListener('mouseleave',()=>{ tooltip.style.opacity='0'; });
+
+// ── Step 7 Animations ─────────────────────────────────────────────────────
+function animateCount(el, target, duration=1200, prefix='', suffix=''){
+  const start=performance.now();
+  function frame(now){
+    const t=Math.min((now-start)/duration,1);
+    const ease=1-Math.pow(1-t,3);
+    el.textContent=prefix+Math.round(ease*target)+suffix;
+    if(t<1) requestAnimationFrame(frame);
+    else el.textContent=prefix+target+suffix;
+  }
+  requestAnimationFrame(frame);
+}
+
+function runStep7Animations(){
+  // Animate counters
+  animateCount(document.getElementById('droneCount'),30);
+  animateCount(document.getElementById('habitatCount'),20);
+
+  // Animate detail stats with delay
+  setTimeout(()=>{
+    animateCount(document.getElementById('droneFab'),60,'','');
+    animateCount(document.getElementById('droneSub'),30,'','');
+    animateCount(document.getElementById('droneUtil'),240,'','');
+    animateCount(document.getElementById('habitatFab'),60,'','');
+    animateCount(document.getElementById('habitatSub'),40,'','');
+    animateCount(document.getElementById('habitatUtil'),240,'','');
+  },400);
+
+  // Resource bars
+  setTimeout(()=>{
+    document.getElementById('optFabFill').style.width='100%';
+    document.getElementById('optSubFill').style.width='100%';
+  },600);
+
+  // Draw bar chart
+  setTimeout(drawBarChart, 800);
+}
+
+function drawBarChart(){
+  const bc=document.getElementById('barChart');
+  const bctx=bc.getContext('2d');
+  const bW=bc.width, bH=bc.height;
+  const data=[
+    {label:'(0, 20)\nmin corner', z:240, color:'#00e5ff'},
+    {label:'(0, 35)\nsubstrate edge', z:420, color:'#ff6d00'},
+    {label:'(30, 20)\nOPTIMAL ★', z:480, color:'#00e676'},
+  ];
+  const maxZ=520;
+  const barW=110, gap=60;
+  const leftPad=70, topPad=20, botPad=50;
+  const chartH=bH-topPad-botPad;
+
+  bctx.clearRect(0,0,bW,bH);
+
+  // Grid lines
+  bctx.strokeStyle='rgba(255,255,255,0.05)'; bctx.lineWidth=1;
+  [0,100,200,300,400,500].forEach(v=>{
+    const y=topPad+chartH*(1-v/maxZ);
+    bctx.beginPath(); bctx.moveTo(leftPad,y); bctx.lineTo(bW-20,y); bctx.stroke();
+    bctx.fillStyle='rgba(200,216,240,0.3)';
+    bctx.font='10px "Share Tech Mono"'; bctx.textAlign='right';
+    bctx.fillText(v,leftPad-8,y+4);
+  });
+  // Axis
+  bctx.strokeStyle='rgba(200,216,240,0.2)'; bctx.lineWidth=1.5;
+  bctx.beginPath(); bctx.moveTo(leftPad,topPad); bctx.lineTo(leftPad,topPad+chartH+4); bctx.stroke();
+
+  const totalW = data.length*(barW+gap)-gap;
+  const startX = leftPad + (bW-leftPad-20-totalW)/2;
+
+  data.forEach((d,i)=>{
+    const x=startX+i*(barW+gap);
+    const targetH=chartH*(d.z/maxZ);
+    const y=topPad+chartH-targetH;
+
+    // Animate bar growth
+    let progress=0;
+    const dur=900+i*200;
+    const startT=performance.now();
+    function drawBar(now){
+      const t=Math.min((now-startT)/dur,1);
+      const ease=1-Math.pow(1-t,4);
+      const h=targetH*ease;
+      const by=topPad+chartH-h;
+
+      bctx.clearRect(x-2,topPad-5,barW+4,chartH+15);
+      // Redraw grid behind this bar
+      [0,100,200,300,400,500].forEach(v=>{
+        const gy=topPad+chartH*(1-v/maxZ);
+        bctx.strokeStyle='rgba(255,255,255,0.05)'; bctx.lineWidth=1;
+        bctx.beginPath(); bctx.moveTo(x,gy); bctx.lineTo(x+barW,gy); bctx.stroke();
+      });
+
+      const grad=bctx.createLinearGradient(0,by,0,by+h);
+      grad.addColorStop(0,d.color);
+      grad.addColorStop(1,d.color.replace(/[^,]+\)/,'0.2)').replace('rgb','rgba'));
+      bctx.fillStyle=grad;
+      bctx.shadowColor=d.color; bctx.shadowBlur=h>10?15:0;
+      // Rounded top
+      const r=6;
+      bctx.beginPath();
+      bctx.moveTo(x+r,by);
+      bctx.lineTo(x+barW-r,by);
+      bctx.quadraticCurveTo(x+barW,by,x+barW,by+r);
+      bctx.lineTo(x+barW,by+h);
+      bctx.lineTo(x,by+h);
+      bctx.lineTo(x,by+r);
+      bctx.quadraticCurveTo(x,by,x+r,by);
+      bctx.closePath();
+      bctx.fill();
+      bctx.shadowBlur=0;
+
+      // Value label on bar
+      if(h>20){
+        bctx.font='bold 14px "Share Tech Mono"';
+        bctx.fillStyle='#fff'; bctx.textAlign='center';
+        bctx.shadowColor=d.color; bctx.shadowBlur=6;
+        bctx.fillText(Math.round(d.z*ease),x+barW/2,by-6);
+        bctx.shadowBlur=0;
+      }
+      // X label (drawn once at end)
+      if(t>=1){
+        bctx.font='10px "Share Tech Mono"'; bctx.fillStyle='rgba(200,216,240,0.5)'; bctx.textAlign='center';
+        const lines=d.label.split('\n');
+        lines.forEach((l,li)=>bctx.fillText(l,x+barW/2,topPad+chartH+16+li*13));
+        if(d.label.includes('OPTIMAL')){
+          bctx.font='bold 10px "Share Tech Mono"'; bctx.fillStyle=d.color;
+          bctx.fillText(lines[1],x+barW/2,topPad+chartH+29);
+        }
+      }
+
+      if(t<1) requestAnimationFrame(drawBar);
+    }
+    requestAnimationFrame(drawBar);
+  });
+
+  // Y axis label
+  bctx.save(); bctx.translate(14,topPad+chartH/2); bctx.rotate(-Math.PI/2);
+  bctx.font='11px "Share Tech Mono"'; bctx.fillStyle='rgba(124,77,255,0.7)'; bctx.textAlign='center';
+  bctx.fillText('Total Utility Z',0,0); bctx.restore();
+}
+</script>
+</body>
+</html>
