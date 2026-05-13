@@ -109,7 +109,7 @@ function letterFromPercent(p){
   if(p>=75)return"C+";if(p>=70)return"C";if(p>=60)return"D";return"F";}
 function gradeColour(l){if(l==="F")return"#000";
   const i=LADDER.indexOf(l);const hue=220-i*(220/(LADDER.length-2));return`hsl(${hue},80%,55%)`;}
-function pointsToNext(p){const r=(100-Math.floor(p))%5;return r===0?0:r;}
+/*function pointsToNext(p){const r=(100-Math.floor(p))%5;return r===0?0:r;}*/
 function escapeHtml(v){return String(v ?? '').replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch]));}
 
 /* LOGIN */
@@ -130,11 +130,12 @@ function render(d){
 
   const pct     = +d.currentPercent;
   const letter  = d.letterGrade || letterFromPercent(pct);
+  /*
   const need    = pointsToNext(pct);
   const showMsg = letter !== 'A+' && need > 0;           // ⇦ NEW
 
   const nextLetter = showMsg ? letterFromPercent(pct + need) : '';
-
+  */
   const g = $('grades');
   g.innerHTML = `
     <h2>Welcome, ${d.name}</h2>
@@ -143,9 +144,11 @@ function render(d){
        <span class="letter-big" style="color:${gradeColour(letter)}">${letter}</span>
     </p>
 
+    /*
     ${showMsg ? `<p class="points-msg sparkle">
         Need <b>${need}</b> pt to reach <b>${nextLetter}</b>!
       </p>` : ''}
+    */
 
     <p><b>Current Points:</b> ${d.currentAvailablePoints.student}/${d.currentAvailablePoints.max}</p>
     <p><b>Max Possible Points:</b> ${d.maxPossiblePoints}</p>
