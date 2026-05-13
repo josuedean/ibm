@@ -135,6 +135,10 @@ function render(d){
   const showMsg = letter !== 'A+' && need > 0;           // ⇦ NEW
 
   const nextLetter = showMsg ? letterFromPercent(pct + need) : '';
+
+   ${showMsg ? `<p class="points-msg sparkle">
+        Need <b>${need}</b> pt to reach <b>${nextLetter}</b>!
+      </p>` : ''}
   */
   const g = $('grades');
   g.innerHTML = `
@@ -143,12 +147,8 @@ function render(d){
     <p><b>Current %:</b> ${pct.toFixed(1)}%
        <span class="letter-big" style="color:${gradeColour(letter)}">${letter}</span>
     </p>
-
-    /*
-    ${showMsg ? `<p class="points-msg sparkle">
-        Need <b>${need}</b> pt to reach <b>${nextLetter}</b>!
-      </p>` : ''}
-    */
+   
+   
 
     <p><b>Current Points:</b> ${d.currentAvailablePoints.student}/${d.currentAvailablePoints.max}</p>
     <p><b>Max Possible Points:</b> ${d.maxPossiblePoints}</p>
