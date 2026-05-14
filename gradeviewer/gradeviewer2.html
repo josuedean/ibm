@@ -151,10 +151,12 @@ function render(d){
        <span class="letter-big" style="color:${gradeColour(letter)}">${letter}</span>
     </p>
     
-    <p><b>You have completed</b> ${d.currentAvailablePoints.student} <b>out of</b> ${d.maxPossiblePoints} <b>LMS submittable work.</b></p>
-    <p><b>That gives you a completion ratio of</b> ${d.currentAvailablePoints.student}/${d.maxPossiblePoints}<b>.</b></p>
-    <p><b>The current grade calcuation is</b> ${d.currentAvailablePoints.student}/${d.maxPossiblePoints}<b> x 80% + Quiz total - 2% for every absence over 5.</b></p>
-    
+    <p>You have completed <b>${d.currentAvailablePoints.student} out of ${d.maxPossiblePoints}</b> LMS submittable work.</p>
+    <p>That gives you a completion ratio of <b>${d.currentAvailablePoints.student}/${d.maxPossiblePoints}</b></p>
+    <p>The current grade calcuation is:</p>
+    <div style="text-align: center;">
+    <p><b>${d.currentAvailablePoints.student}/${d.maxPossiblePoints} x 80% + Quiz total - 2% for every absence over 5</b>.</p>
+    </div>
     <button id="openPw" style="margin-top:1rem">Change Password</button>
     <hr>`;
 
