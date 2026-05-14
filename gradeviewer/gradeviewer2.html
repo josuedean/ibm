@@ -103,10 +103,10 @@ document.querySelectorAll('[data-set-theme]').forEach(btn=>{
 }});
 
 /* grade helpers (no minus grades) */
-const LADDER=["A+","A","B+","B","C+","C","D","F"];
+const LADDER=["A+","A","B+","B","C+","C","D+","D","F"];
 function letterFromPercent(p){
   if(p>=95)return"A+";if(p>=90)return"A";if(p>=85)return"B+";if(p>=80)return"B";
-  if(p>=75)return"C+";if(p>=70)return"C";if(p>=60)return"D";return"F";}
+  if(p>=75)return"C+";if(p>=70)return"C";if(p>=65)return"D+";if(p>=60)return"D";return"F";}
 function gradeColour(l){if(l==="F")return"#000";
   const i=LADDER.indexOf(l);const hue=220-i*(220/(LADDER.length-2));return`hsl(${hue},80%,55%)`;}
 /*function pointsToNext(p){const r=(100-Math.floor(p))%5;return r===0?0:r;}*/
