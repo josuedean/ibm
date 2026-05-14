@@ -139,6 +139,9 @@ function render(d){
    ${showMsg ? `<p class="points-msg sparkle">
         Need <b>${need}</b> pt to reach <b>${nextLetter}</b>!
       </p>` : ''}
+      
+  <p><b>Current Points:</b> ${d.currentAvailablePoints.student}/${d.currentAvailablePoints.max}</p>
+  <p><b>Max Possible Points:</b> ${d.maxPossiblePoints}</p>
   */
   const g = $('grades');
   g.innerHTML = `
@@ -147,12 +150,11 @@ function render(d){
     <p><b>Current %:</b> ${pct.toFixed(1)}%
        <span class="letter-big" style="color:${gradeColour(letter)}">${letter}</span>
     </p>
-   
-   
-
-    <p><b>Current Points:</b> ${d.currentAvailablePoints.student}/${d.currentAvailablePoints.max}</p>
-    <p><b>Max Possible Points:</b> ${d.maxPossiblePoints}</p>
-
+    
+    <p><b>You have completed</b> ${d.currentAvailablePoints.student} <b>out of</b> ${d.maxPossiblePoints} <b>LMS submittable work.</b></p>
+    <p><b>That gives you a completion ratio of</b> ${d.currentAvailablePoints.student}/${d.maxPossiblePoints}<b>.</b></p>
+    <p><b>The current grade calcuation is</b> ${d.currentAvailablePoints.student}/${d.maxPossiblePoints}<b> x 80% + Quiz total - 2% for every absence over 5.</b></p>
+    
     <button id="openPw" style="margin-top:1rem">Change Password</button>
     <hr>`;
 
