@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini Pizza Branch & Bound Visualizer</title>
+  <style>
+    :root {
+      --bg: #f7f3ec;
+      --card: #fffdf8;
+      --ink: #24201c;
+      --muted: #6f655b;
+      --line: #c8b8a3;
+      --accent: #d35400;
+      --blue: #2f6f9f;
+      --green: #2e8b57;
+      --red: #b23b3b;
+      --gold: #c99700;
+      --shadow: 0 10px 30px rgba(60, 40, 20, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #fff8e8 0, var(--bg) 38%, #eee6da 100%);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    header {
+      padding: 28px 20px 18px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.7rem, 4vw, 3rem);
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      margin: 0 auto;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    .panel, .visual {
+      background: rgba(255, 253, 248, 0.88);
+      border: 1px solid rgba(110, 90, 65, 0.16);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel { padding: 18px; }
+
+    .visual {
+      padding: 18px;
+      min-height: 680px;
+      overflow: hidden;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 15px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 12px rgba(211, 84, 0, 0.24);
+    }
+
+    button.secondary {
+      background: #eee2d1;
+      color: var(--ink);
+      box-shadow: none;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .step-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .pill {
+      display: inline-block;
+      background: #f1dfc8;
+      color: #6b3a06;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .explain h2 { margin: 0 0 8px; font-size: 1.35rem; }
+    .explain p { margin: 0 0 10px; color: var(--muted); }
+
+    .formula {
+      background: #2b2621;
+      color: #fff7e8;
+      padding: 12px;
+      border-radius: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      margin: 12px 0;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      text-align: left;
+      border-bottom: 1px solid #eadfcc;
+      padding: 8px 6px;
+    }
+
+    th { color: #6b3a06; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    .board-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .board-title h2 { margin: 0; }
+
+    .legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .dot { width: 10px; height: 10px; border-radius: 99px; display: inline-block; }
+    .dot.blue { background: var(--blue); }
+    .dot.green { background: var(--green); }
+    .dot.red { background: var(--red); }
+    .dot.gold { background: var(--gold); }
+
+    .tree-wrap {
+      position: relative;
+      min-height: 420px;
+      border-radius: 18px;
+      background:
+        linear-gradient(90deg, rgba(120,100,80,.08) 1px, transparent 1px),
+        linear-gradient(rgba(120,100,80,.08) 1px, transparent 1px);
+      background-size: 32px 32px;
+      padding: 22px;
+      overflow: auto;
+    }
+
+    svg.lines {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .node {
+      position: absolute;
+      width: 190px;
+      min-height: 104px;
+      border-radius: 18px;
+      background: var(--card);
+      border: 3px solid var(--blue);
+      padding: 10px 12px;
+      box-shadow: 0 8px 20px rgba(46, 111, 159, 0.12);
+      opacity: 0;
+      transform: translateY(8px) scale(0.96);
+      transition: opacity .35s ease, transform .35s ease;
+    }
+
+    .node.show { opacity: 1; transform: translateY(0) scale(1); }
+    .node.green { border-color: var(--green); box-shadow: 0 8px 20px rgba(46, 139, 87, 0.16); }
+    .node.red { border-color: var(--red); box-shadow: 0 8px 20px rgba(178, 59, 59, 0.12); }
+    .node.gold { border-color: var(--gold); box-shadow: 0 8px 20px rgba(201, 151, 0, 0.14); }
+
+    .node strong { display: block; font-size: 0.95rem; margin-bottom: 3px; }
+    .node .small { color: var(--muted); font-size: 0.78rem; }
+    .node .z { font-weight: 900; font-size: 1.2rem; margin-top: 3px; }
+    .node .tag {
+      display: inline-block;
+      margin-top: 5px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #eee;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+    .node.green .tag { background: #dff3e8; color: var(--green); }
+    .node.red .tag { background: #f5dddd; color: var(--red); }
+    .node.gold .tag { background: #fff0b8; color: #7a5600; }
+    .node.blue .tag { background: #deedf7; color: var(--blue); }
+
+    .n0 { left: 50%; top: 20px; margin-left: -95px; }
+    .n1 { left: 20%; top: 190px; margin-left: -95px; }
+    .n2 { left: 80%; top: 190px; margin-left: -95px; }
+    .n3 { left: 66%; top: 360px; margin-left: -95px; }
+    .n4 { left: 94%; top: 360px; margin-left: -95px; }
+
+    .edge { opacity: 0; transition: opacity .35s ease; stroke: var(--line); stroke-width: 4; fill: none; stroke-linecap: round; }
+    .edge.show { opacity: 1; }
+    .edge-label {
+      position: absolute;
+      opacity: 0;
+      transition: opacity .35s ease;
+      background: #fff8e8;
+      border: 1px solid #e1cfb9;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #6b3a06;
+      white-space: nowrap;
+    }
+    .edge-label.show { opacity: 1; }
+    .l01 { left: 32%; top: 145px; }
+    .l02 { left: 62%; top: 145px; }
+    .l23 { left: 70%; top: 315px; }
+    .l24 { left: 86%; top: 315px; }
+
+    .status-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 700px) {
+      .status-cards { grid-template-columns: 1fr; }
+      .visual { min-height: 760px; }
+      .tree-wrap { min-width: 720px; }
+    }
+
+    .status {
+      background: #fffaf1;
+      border: 1px solid #eadfcc;
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .status .label {
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 800;
+    }
+
+    .status .value { font-size: 1.45rem; font-weight: 900; }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 700px) { .choices { grid-template-columns: 1fr; } }
+
+    .choice-card {
+      background: #fffdf8;
+      border: 1px solid #eadfcc;
+      border-radius: 16px;
+      padding: 12px;
+      opacity: .45;
+      transition: opacity .3s ease, border-color .3s ease, transform .3s ease;
+    }
+
+    .choice-card.active {
+      opacity: 1;
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .choice-card.best {
+      border-color: var(--green);
+      background: #f2fff7;
+    }
+
+    .choice-card h3 { margin: 0 0 6px; }
+    .choice-card p { margin: 3px 0; color: var(--muted); font-size: 0.92rem; }
+
+    .warning {
+      margin-top: 14px;
+      padding: 12px;
+      border-left: 5px solid var(--accent);
+      background: #fff2de;
+      border-radius: 12px;
+      color: #6b3a06;
+      font-size: 0.94rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mini Pizza Branch & Bound Visualizer</h1>
+    <p class="subtitle">A step-by-step decision tree for a small binary integer optimization problem: choose pizza toppings under a $4 budget.</p>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="step-count"><span class="pill" id="stepPill">Step 0</span><span id="stepMini">Problem setup</span></div>
+      <div class="explain" id="explain"></div>
+      <div class="controls">
+        <button id="prevBtn" class="secondary">← Back</button>
+        <button id="nextBtn">Next →</button>
+        <button id="resetBtn" class="secondary">Reset</button>
+      </div>
+
+      <h2>Problem Data</h2>
+      <div class="formula">Maximize Z = 10x₁ + 6x₂ + 5x₃<br>Subject to 3x₁ + 2x₂ + 2x₃ ≤ 4<br>x₁, x₂, x₃ ∈ {0,1}</div>
+      <table>
+        <thead>
+          <tr><th>Topping</th><th>Variable</th><th>Cost</th><th>Sat.</th><th>Ratio</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Pepperoni</td><td>x₁</td><td>$3</td><td>10</td><td>3.33</td></tr>
+          <tr><td>Mushrooms</td><td>x₂</td><td>$2</td><td>6</td><td>3.00</td></tr>
+          <tr><td>Cheese</td><td>x₃</td><td>$2</td><td>5</td><td>2.50</td></tr>
+        </tbody>
+      </table>
+      <div class="warning">For the relaxation, fractions are allowed temporarily. For the real pizza, each topping must be either 0 or 1.</div>
+    </section>
+
+    <section class="visual">
+      <div class="board-title">
+        <h2>Decision Tree</h2>
+        <div class="legend">
+          <span><i class="dot blue"></i> Bound</span>
+          <span><i class="dot green"></i> Best incumbent</span>
+          <span><i class="dot red"></i> Fathomed</span>
+          <span><i class="dot gold"></i> Root best bound</span>
+        </div>
+      </div>
+
+      <div class="tree-wrap" id="tree">
+        <svg class="lines" viewBox="0 0 900 500" preserveAspectRatio="none">
+          <path id="e01" class="edge" d="M450 105 C385 140 280 160 210 190" />
+          <path id="e02" class="edge" d="M450 105 C515 140 620 160 690 190" />
+          <path id="e23" class="edge" d="M690 275 C660 315 620 335 594 360" />
+          <path id="e24" class="edge" d="M690 275 C735 315 790 335 846 360" />
+        </svg>
+
+        <div id="l01" class="edge-label l01">x₂ = 0</div>
+        <div id="l02" class="edge-label l02">x₂ = 1</div>
+        <div id="l23" class="edge-label l23">x₁ = 0</div>
+        <div id="l24" class="edge-label l24">x₁ = 1</div>
+
+        <div id="n0" class="node gold n0">
+          <strong>Node 0: Relaxation</strong>
+          <div class="small">x₁=1, x₂=0.5, x₃=0</div>
+          <div class="small">Cost = $4</div>
+          <div class="z">Z = 13</div>
+          <span class="tag">Best Bound</span>
+        </div>
+
+        <div id="n1" class="node blue n1">
+          <strong>Node 1</strong>
+          <div class="small">Force x₂ = 0</div>
+          <div class="small">x₁=1, x₃=0.5</div>
+          <div class="z">Z = 12.5</div>
+          <span class="tag">Fractional</span>
+        </div>
+
+        <div id="n2" class="node blue n2">
+          <strong>Node 2</strong>
+          <div class="small">Force x₂ = 1</div>
+          <div class="small">x₁=0.67, x₃=0</div>
+          <div class="z">Z = 12.67</div>
+          <span class="tag">Higher bound</span>
+        </div>
+
+        <div id="n3" class="node green n3">
+          <strong>Node 3</strong>
+          <div class="small">x₂=1, x₁=0</div>
+          <div class="small">Take x₃=1</div>
+          <div class="z">Z = 11</div>
+          <span class="tag">Best Incumbent</span>
+        </div>
+
+        <div id="n4" class="node red n4">
+          <strong>Node 4</strong>
+          <div class="small">x₂=1, x₁=1</div>
+          <div class="small">Cost = $5 &gt; $4</div>
+          <div class="z">Infeasible</div>
+          <span class="tag">Fathomed</span>
+        </div>
+      </div>
+
+      <div class="status-cards">
+        <div class="status">
+          <div class="label">Best Bound</div>
+          <div class="value" id="boundVal">—</div>
+        </div>
+        <div class="status">
+          <div class="label">Best Incumbent</div>
+          <div class="value" id="incVal">—</div>
+        </div>
+        <div class="status">
+          <div class="label">Gap</div>
+          <div class="value" id="gapVal">—</div>
+        </div>
+      </div>
+
+      <div class="choices">
+        <div id="choiceA" class="choice-card">
+          <h3>Integer Option A</h3>
+          <p>Pepperoni only</p>
+          <p>Cost = $3</p>
+          <p>Satisfaction = 10</p>
+        </div>
+        <div id="choiceB" class="choice-card">
+          <h3>Integer Option B</h3>
+          <p>Mushrooms + Cheese</p>
+          <p>Cost = $4</p>
+          <p>Satisfaction = 11</p>
+        </div>
+        <div id="choiceC" class="choice-card">
+          <h3>Bad Option</h3>
+          <p>Pepperoni + Mushrooms</p>
+          <p>Cost = $5</p>
+          <p>Over budget</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const steps = [
+      {
+        title: "Problem setup",
+        html: `<h2>Start with the pizza problem</h2><p>We have three possible toppings and a $4 budget. The decision is binary: each topping is either chosen or not chosen.</p><p>The objective is to maximize satisfaction, not to spend the most money.</p>`,
+        show: [], edges: [], labels: [], bound: "—", inc: "—", gap: "—", choices: []
+      },
+      {
+        title: "Root node: solve the relaxation",
+        html: `<h2>Step 1: Root Node</h2><p>Temporarily allow fractional toppings. Sort by satisfaction per dollar: pepperoni first, mushrooms second, cheese third.</p><p>The relaxed solution is <strong>1 pepperoni + 0.5 mushrooms</strong>, giving <strong>Z = 13</strong>. This is an upper bound, not a real pizza.</p>`,
+        show: ["n0"], edges: [], labels: [], bound: "13", inc: "—", gap: "—", choices: []
+      },
+      {
+        title: "Branch on the fractional variable",
+        html: `<h2>Step 2: Branch</h2><p>The problem is that <strong>x₂ = 0.5</strong>. You cannot order half of a mushroom topping in this model.</p><p>So we split the tree into two cases: <strong>x₂ = 0</strong> and <strong>x₂ = 1</strong>.</p>`,
+        show: ["n0"], edges: ["e01", "e02"], labels: ["l01", "l02"], bound: "13", inc: "—", gap: "—", choices: []
+      },
+      {
+        title: "Solve Node 1",
+        html: `<h2>Step 3A: Node 1</h2><p>At Node 1, mushrooms are forced out: <strong>x₂ = 0</strong>.</p><p>The relaxed solution becomes <strong>1 pepperoni + 0.5 cheese</strong>, giving <strong>Z = 12.5</strong>. Still fractional, so it is not yet a real pizza.</p>`,
+        show: ["n0", "n1"], edges: ["e01", "e02"], labels: ["l01", "l02"], bound: "13", inc: "—", gap: "—", choices: []
+      },
+      {
+        title: "Solve Node 2",
+        html: `<h2>Step 3B: Node 2</h2><p>At Node 2, mushrooms are forced in: <strong>x₂ = 1</strong>.</p><p>That leaves $2. The relaxation uses that money on <strong>0.67 pepperoni</strong>, giving <strong>Z ≈ 12.67</strong>. This has a better bound than Node 1, so we explore it first.</p>`,
+        show: ["n0", "n1", "n2"], edges: ["e01", "e02"], labels: ["l01", "l02"], bound: "13", inc: "—", gap: "—", choices: []
+      },
+      {
+        title: "Branch inside Node 2",
+        html: `<h2>Step 4: Branch again</h2><p>Node 2 is still fractional because <strong>x₁ = 0.67</strong>.</p><p>So we split Node 2 into two cases: <strong>x₁ = 0</strong> and <strong>x₁ = 1</strong>.</p>`,
+        show: ["n0", "n1", "n2"], edges: ["e01", "e02", "e23", "e24"], labels: ["l01", "l02", "l23", "l24"], bound: "13", inc: "—", gap: "—", choices: []
+      },
+      {
+        title: "Find the best incumbent",
+        html: `<h2>Step 5: Integer solution found</h2><p>At Node 3, we have <strong>x₂ = 1</strong> and <strong>x₁ = 0</strong>. That leaves $2, so we can take cheese: <strong>x₃ = 1</strong>.</p><p>This gives a real integer solution: <strong>Mushrooms + Cheese</strong>, with <strong>Z = 11</strong>. This becomes the <strong>Best Incumbent</strong>.</p>`,
+        show: ["n0", "n1", "n2", "n3"], edges: ["e01", "e02", "e23", "e24"], labels: ["l01", "l02", "l23", "l24"], bound: "13", inc: "11", gap: "2", choices: ["choiceB"]
+      },
+      {
+        title: "Fathom the infeasible branch",
+        html: `<h2>Step 6: Fathom bad branches</h2><p>At Node 4, we try <strong>x₂ = 1</strong> and <strong>x₁ = 1</strong>. But mushrooms + pepperoni costs $5, which breaks the $4 budget.</p><p>So this branch is <strong>fathomed</strong>: we stop exploring it.</p>`,
+        show: ["n0", "n1", "n2", "n3", "n4"], edges: ["e01", "e02", "e23", "e24"], labels: ["l01", "l02", "l23", "l24"], bound: "13", inc: "11", gap: "2", choices: ["choiceB", "choiceC"]
+      },
+      {
+        title: "Final answer",
+        html: `<h2>Final Result</h2><p>The best real pizza is <strong>Mushrooms + Extra Cheese</strong>.</p><p>Decision variables: <strong>x₁ = 0, x₂ = 1, x₃ = 1</strong>.</p><p>Total cost = <strong>$4</strong>. Total satisfaction = <strong>11</strong>.</p><p>The root relaxation gave Z = 13, so the simple teaching gap is <strong>13 − 11 = 2</strong>.</p>`,
+        show: ["n0", "n1", "n2", "n3", "n4"], edges: ["e01", "e02", "e23", "e24"], labels: ["l01", "l02", "l23", "l24"], bound: "13", inc: "11", gap: "2", choices: ["choiceA", "choiceB", "choiceC"], best: "choiceB"
+      }
+    ];
+
+    let step = 0;
+    const explain = document.getElementById("explain");
+    const stepPill = document.getElementById("stepPill");
+    const stepMini = document.getElementById("stepMini");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const boundVal = document.getElementById("boundVal");
+    const incVal = document.getElementById("incVal");
+    const gapVal = document.getElementById("gapVal");
+
+    const allNodes = ["n0", "n1", "n2", "n3", "n4"];
+    const allEdges = ["e01", "e02", "e23", "e24"];
+    const allLabels = ["l01", "l02", "l23", "l24"];
+    const allChoices = ["choiceA", "choiceB", "choiceC"];
+
+    function render() {
+      const s = steps[step];
+      explain.innerHTML = s.html;
+      stepPill.textContent = `Step ${step}`;
+      stepMini.textContent = s.title;
+      boundVal.textContent = s.bound;
+      incVal.textContent = s.inc;
+      gapVal.textContent = s.gap;
+
+      allNodes.forEach(id => document.getElementById(id).classList.toggle("show", s.show.includes(id)));
+      allEdges.forEach(id => document.getElementById(id).classList.toggle("show", s.edges.includes(id)));
+      allLabels.forEach(id => document.getElementById(id).classList.toggle("show", s.labels.includes(id)));
+
+      allChoices.forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.toggle("active", s.choices.includes(id));
+        el.classList.toggle("best", s.best === id);
+      });
+
+      prevBtn.disabled = step === 0;
+      nextBtn.disabled = step === steps.length - 1;
+    }
+
+    prevBtn.addEventListener("click", () => { if (step > 0) { step--; render(); } });
+    nextBtn.addEventListener("click", () => { if (step < steps.length - 1) { step++; render(); } });
+    resetBtn.addEventListener("click", () => { step = 0; render(); });
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowRight" && step < steps.length - 1) { step++; render(); }
+      if (e.key === "ArrowLeft" && step > 0) { step--; render(); }
+    });
+
+    render();
+  </script>
+</body>
+</html>
