@@ -32,7 +32,7 @@ ul.grade-list{list-style:none;margin:.55rem 0 .9rem;padding-left:1.15rem;padding
 .status-complete{background:#14532d;color:#4ade80;border:2px solid #22c55e}
 .status-incomplete{background:linear-gradient(90deg,#0c4a6e 0 25%,transparent 25% 100%);color:#38bdf8;border:2px solid #38bdf8}
 .status-unattempted{background:transparent;color:#fb7185;border:2px solid #ef4444}
-.score-token{background:linear-gradient(90deg,#164e63 0 80%,transparent 80% 100%);color:#67e8f9;border:2px solid #0e7490}
+.score-token{background:linear-gradient(90deg,#164e63 0 var(--fill,0%),transparent var(--fill,0%) 100%);color:#67e8f9;border:2px solid #0e7490}
 .account-actions{display:flex;justify-content:flex-end;margin-bottom:.45rem}
 .password-link{width:auto;margin:0;padding:.2rem .15rem;background:transparent;color:var(--muted);border:none;font-size:.85rem;text-decoration:underline;text-underline-offset:3px;font-weight:500}
 .password-link:hover{background:transparent;color:var(--accent)}
@@ -164,14 +164,32 @@ function statusClass(value){
   if (status === 'unattempted') return 'status-unattempted';
   return '';
 }
+function numericValue(v){
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  const text = String(v ?? '').trim();
+  if (!text) return null;
+  const match = text.match(/-?\d+(?:\.\d+)?/);
+  if (!match) return null;
+  const n = Number(match[0]);
+  return Number.isFinite(n) ? n : null;
+}
+function scoreFillPercent(score, total){
+  const s = numericValue(score);
+  const t = numericValue(total);
+  if (s === null || t === null || t <= 0) return 0;
+  return Math.max(0, Math.min(100, (s / t) * 100));
+}
 function renderScoreValue(cat, item){
   if (isEffortBasedCategory(cat)) {
     const score = item.score ?? '';
     const cls = statusClass(score);
     if (cls) return `<span class="status-pill ${cls}">${escapeHtml(score)}</span>`;
-    return `<span class="score-token">${escapeHtml(score || '—')}</span>`;
+    return `<span class="score-token" style="--fill:0%">${escapeHtml(score || '—')}</span>`;
   }
-  return `<span class="score-token">${escapeHtml(item.score ?? 0)}/${escapeHtml(item.total ?? 0)}</span>`;
+  const score = item.score ?? 0;
+  const total = item.total ?? 0;
+  const fill = scoreFillPercent(score, total).toFixed(2);
+  return `<span class="score-token" style="--fill:${fill}%">${escapeHtml(score)}/${escapeHtml(total)}</span>`;
 }
 function completionNumber(t, key){
   return t && hasValue(t[key]) ? t[key] : '—';
