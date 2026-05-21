@@ -24,6 +24,7 @@ button{cursor:pointer;margin-top:1rem;background:var(--accent);color:#fff;border
 button:hover{background:var(--text);color:var(--bg)}
 .error{color:#e11d48;margin-top:.7rem;text-align:center}
 /* list layout */
+ul{list-style:none;margin-top:.4rem;padding-left:0}
 ul.grade-list{list-style:none;margin-top:.5rem;padding-left:1rem}
 .grade-list li.grade-item{display:grid;grid-template-columns:8.6rem 1.5rem minmax(0,1fr);column-gap:.4rem;align-items:center;margin:.32rem 0;color:var(--muted)}
 .grade-score{justify-self:start;text-align:left;font-weight:700;color:var(--accent);white-space:nowrap;min-width:0}
@@ -101,7 +102,7 @@ ul.grade-list{list-style:none;margin-top:.5rem;padding-left:1rem}
 <div id="overlay" style="display:none;position:fixed;inset:0;background:#0008;backdrop-filter:blur(2px)"></div>
 
 <script>
-const GAS_ENDPOINT='https://script.google.com/macros/s/AKfycbzftvbhxfCV27BGk-ceQcA3VPHeLnl3HFRUf-Kv-FOPnEu0n9np-26btH_byhVj8v-EFw/exec';
+const GAS_ENDPOINT='https://script.google.com/macros/s/AKfycbwVhAYnKmB3q7yOTrM8wx3WeXwdj22WPr1bRcHmZG-O7vZYDZ70CXtDw-O-DY2dSVnlXQ/exec';
 const $=id=>document.getElementById(id);
 
 /* theme switch */
@@ -120,7 +121,9 @@ function letterFromPercent(p){
 function gradeColour(l){if(l==="F")return"#000";
   const i=LADDER.indexOf(l);const hue=220-i*(220/(LADDER.length-2));return`hsl(${hue},80%,55%)`;}
 /*function pointsToNext(p){const r=(100-Math.floor(p))%5;return r===0?0:r;}*/
-function escapeHtml(v){return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function escapeHtml(v){return String(v ?? '').replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch]));}
+function hasValue(v){return v !== undefined && v !== null && String(v).trim() !== '';}
+function hasCompletionTotals(t){return t && (hasValue(t.complete) || hasValue(t.incomplete) || hasValue(t.unattempted));}
 function categoryDisplayName(cat){
   const key = String(cat ?? '').trim().toLowerCase();
   if (key === 'assignments') return 'LMS Assignments';
@@ -147,6 +150,16 @@ function renderScoreValue(cat, item){
     return escapeHtml(score || '—');
   }
   return `${escapeHtml(item.score ?? 0)}/${escapeHtml(item.total ?? 0)}`;
+}
+function renderCompletionTotal(value, label, status){
+  if (!hasValue(value)) return '';
+  const cls = statusClass(status);
+  const labelHtml = cls ? `<span class="status-pill ${cls}">${escapeHtml(label)}</span>` : escapeHtml(label);
+  return `<li class="grade-item">
+    <span class="grade-score">${escapeHtml(value)}</span>
+    <span class="grade-arrow">←</span>
+    <span class="grade-label">${labelHtml}</span>
+  </li>`;
 }
 
 /* LOGIN */
@@ -185,15 +198,22 @@ function render(d){
     <div class="account-actions">
       <button id="openPw" class="password-link" type="button">Change Password</button>
     </div>
+
     <h2>Hello, ${escapeHtml(d.name || 'Student')}</h2>
 
     <p><b>Current %:</b> ${pct.toFixed(1)}%
        <span class="letter-big" style="color:${gradeColour(letter)}">${letter}</span>
     </p>
-    
-    <p>You have <b>${escapeHtml(d.currentAvailablePoints.student)}</b> works unattempted for LMS Assignments.</p>
-    <p>That doesn't include Class Activities. How many of those have you done from class?</p>
-    <p>Hmmm, I wonder what your grade should be...</p>
+
+    ${hasCompletionTotals(d.completionTotals) ? `
+      <h3>Completion Summary</h3>
+      <ul class="grade-list">
+        ${renderCompletionTotal(d.completionTotals.complete, 'Total Complete', 'Complete')}
+        ${renderCompletionTotal(d.completionTotals.incomplete, 'Total Incomplete', 'Incomplete')}
+        ${renderCompletionTotal(d.completionTotals.unattempted, 'Total Unattempted', 'Unattempted')}
+      </ul>
+    ` : ''}
+
     <hr>`;
 
   /* grade list */
