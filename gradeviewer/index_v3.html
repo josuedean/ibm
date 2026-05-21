@@ -153,10 +153,6 @@ function render(d){
        <span class="letter-big" style="color:${gradeColour(letter)}">${letter}</span>
     </p>
     
-    <p>You have <b>${hasValue(d.completionTotals?.unattempted) ? escapeHtml(d.completionTotals.unattempted) : escapeHtml(d.currentAvailablePoints.student)}</b> works unattempted for LMS submittable Assignments.</p>
-    <p>That doesn't include Activities. How many of those have you done from class?</p>
-    <p>Hmmm, I wonder what your grade should be...</p>
-
     ${hasCompletionTotals(d.completionTotals) ? `
       <h3>Completion Summary</h3>
       <ul>
@@ -174,8 +170,22 @@ function render(d){
     const safeId = `ul-${cat}`.replace(/[^a-z0-9_-]/gi, '-');
     g.insertAdjacentHTML('beforeend', `<h3>${escapeHtml(cat)}</h3><ul id="${safeId}"></ul>`);
     const ul = $(safeId);
-    items.forEach(o => ul.insertAdjacentHTML('beforeend',
-      `<li><strong>${escapeHtml(o.score ?? 0)}/${escapeHtml(o.total ?? 0)}</strong>${escapeHtml(o.label)}</li>`));
+    items.forEach(o => {
+      const isEffortBased =
+        cat === 'Assignments' ||
+        cat === 'Activities';
+    
+      const display = isEffortBased
+        ? `<strong>${escapeHtml(o.score ?? '')}</strong>
+           <span style="opacity:.6;padding:0 .35rem">←</span>
+           ${escapeHtml(o.label)}`
+           
+        : `<strong>${escapeHtml(o.score ?? 0)}/${escapeHtml(o.total ?? 0)}</strong>
+           <span style="opacity:.6;padding:0 .35rem">←</span>
+           ${escapeHtml(o.label)}`;
+    
+      ul.insertAdjacentHTML('beforeend', `<li>${display}</li>`);
+    });
 
     if (/^Attendance$/i.test(cat)) {
       renderAbsenceDates(g, d.absenceDates, d.absenceDatesError);
