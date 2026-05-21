@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grade Viewer v3</title>
+
+<style>
+:root{--font-main:'Inter',system-ui,sans-serif;--radius:12px;--speed:320ms}
+/* themes (unchanged) */
+[data-theme=light]{--bg:#f8fafc;--surface:#fff;--text:#0f172a;--muted:#475569;--accent:#06b6d4;--accent-soft:#a5f3fc}
+[data-theme=dark]{--bg:#0f172a;--surface:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--accent:#22d3ee;--accent-soft:#0e7490}
+[data-theme=crazy]{--bg:#090114;--surface:rgba(15,15,35,.85);--text:#f5f5f5;--muted:#cbd5e1;--accent:#ff26a8;--accent-soft:#9b5de5;animation:hue 10s linear infinite}@keyframes hue{from{filter:hue-rotate(0)}to{filter:hue-rotate(360deg)}}
+/* layout */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-main);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;transition:background var(--speed),color var(--speed),filter var(--speed)}
+.card{width:min(100%,38rem);background:var(--surface);padding:2rem 2.5rem;border-radius:var(--radius);box-shadow:0 0 12px rgba(0,0,0,.15)}
+h1,h2,h3{margin-bottom:.75rem;font-weight:600}h1{font-size:1.75rem;text-align:center;color:var(--accent)}h2{font-size:1.5rem}
+h3{font-size:1.15rem;margin-top:1.2rem;border-bottom:1px solid var(--accent-soft)}
+label{display:block;margin:.9rem 0 .25rem;font-weight:500}
+input,select,button{width:100%;padding:.55rem .8rem;font-size:1rem;border-radius:var(--radius);border:2px solid var(--accent-soft);background:var(--bg);color:var(--text);transition:border var(--speed),background var(--speed)}
+input:focus,select:focus{outline:none;border-color:var(--accent)}
+button{cursor:pointer;margin-top:1rem;background:var(--accent);color:#fff;border:none}
+button:hover{background:var(--text);color:var(--bg)}
+.error{color:#e11d48;margin-top:.7rem;text-align:center}
+/* list layout */
+ul.grade-list{list-style:none;margin-top:.5rem;padding-left:1rem}
+.grade-list li.grade-item{display:grid;grid-template-columns:8.6rem 1.5rem minmax(0,1fr);column-gap:.4rem;align-items:center;margin:.32rem 0;color:var(--muted)}
+.grade-score{justify-self:start;text-align:left;font-weight:700;color:var(--accent);white-space:nowrap;min-width:0}
+.grade-arrow{color:var(--muted);opacity:.6;text-align:center;font-weight:700}
+.grade-label{min-width:0}
+.status-pill{display:inline-block;min-width:7.6rem;text-align:center;padding:.18rem .5rem;border-radius:999px;color:#fff;font-size:.88rem;line-height:1.35;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.status-complete{background:#2f8f2f;animation:greenTwinkle 4.8s ease-in-out infinite}
+.status-incomplete{background:#38bdf8;color:#063247}
+.status-unattempted{background:#8a0303;color:#fff}
+@keyframes greenTwinkle{0%,68%,100%{box-shadow:0 1px 4px rgba(0,0,0,.15);filter:brightness(1)}72%{box-shadow:0 0 4px #fff,0 0 10px #7CFC00,0 0 18px #2f8f2f;filter:brightness(1.18)}76%{box-shadow:0 1px 4px rgba(0,0,0,.15);filter:brightness(1)}80%{box-shadow:0 0 3px #fff,0 0 8px #7CFC00;filter:brightness(1.12)}}
+.account-actions{display:flex;justify-content:flex-end;margin-bottom:.45rem}
+.password-link{width:auto;margin:0;padding:.2rem .15rem;background:transparent;color:var(--muted);border:none;font-size:.85rem;text-decoration:underline;text-underline-offset:3px}
+.password-link:hover{background:transparent;color:var(--accent)}
+/* theme toggle */
+.theme-toggle{position:fixed;top:1rem;right:1rem;display:flex;gap:.45rem}
+.theme-toggle button{width:2.25rem;height:2.25rem;border-radius:50%;border:none;cursor:pointer;transition:transform .2s}
+.theme-toggle button:hover{transform:scale(1.1)}
+[data-theme=light] .btn-light,[data-theme=dark] .btn-dark,[data-theme=crazy] .btn-crazy{outline:3px solid var(--accent)}
+.btn-light{background:#f8fafc}.btn-dark{background:#0f172a}.btn-crazy{background:linear-gradient(135deg,#ff26a8 0%,#22d3ee 100%)}
+/* letter + sparkle */
+.letter-big{font-size:2.4rem;font-weight:700;margin-left:.6rem;vertical-align:middle}
+.points-msg{margin:.8rem 0 1rem;font-size:1.25rem;font-weight:600;text-align:center;color:var(--accent);position:relative}
+.absence-dates{display:flex;flex-wrap:wrap;gap:.4rem;margin:.5rem 0 1rem}
+.absence-chip{display:inline-block;padding:.25rem .55rem;border-radius:999px;background:var(--accent-soft);color:var(--text);font-size:.92rem}
+.attendance-note{margin:.45rem 0 1rem;color:var(--muted);font-size:.95rem}
+/* sparkle animation */
+@keyframes sparkle{0%,20%,40%,60%,80%,100%{text-shadow:0 0 8px var(--accent)}10%,30%,50%,70%,90%{text-shadow:0 0 3px #fff,0 0 12px var(--accent),0 0 24px var(--accent)}}
+.sparkle{animation:sparkle 2.5s ease-in-out infinite}
+</style>
+</head>
+
+<body>
+
+<!-- theme switcher -->
+<div class="theme-toggle">
+ <button class="btn-light" title="Light" data-set-theme="light"></button>
+ <button class="btn-dark"  title="Dark"  data-set-theme="dark"></button>
+ <button class="btn-crazy" title="Crazy" data-set-theme="crazy"></button>
+</div>
+
+<!-- LOGIN -->
+<section id="login" class="card">
+ <h1>Grade Viewer</h1>
+ <form id="frm">
+ <label>Class
+ <select id="cls" required>
+ <option value="" disabled selected>Choose…</option>
+ <option>Logistics</option>
+ <option>Trade</option>
+ <option>Management Science</option>
+ </select>
+ </label>
+ <label>Student ID <input id="sid" required></label>
+ <label>Password   <input id="pw" type="password" required></label>
+ <button type="submit">View Grades</button>
+ </form>
+ <p id="err" class="error"></p>
+</section>
+
+<!-- GRADES -->
+<section id="grades" class="card" style="display:none;"></section>
+
+<!-- PW dialog + overlay (unchanged) -->
+<section id="pwCard" class="card" style="display:none;position:fixed;inset:0;margin:auto;max-width:26rem;z-index:50">
+ <h2>Change Password</h2>
+ <form id="pwForm">
+ <label>Current Password <input id="oldPw" type="password" required></label>
+ <label>New Password     <input id="newPw" type="password" required></label>
+ <label>Confirm New      <input id="newPw2" type="password" required></label>
+ <button type="submit">Save</button>
+ <button type="button" id="cancelPw" style="margin-top:.5rem;background:var(--surface);color:var(--text)">Cancel</button>
+ </form>
+ <p id="pwMsg" class="error"></p>
+</section>
+<div id="overlay" style="display:none;position:fixed;inset:0;background:#0008;backdrop-filter:blur(2px)"></div>
+
+<script>
+const GAS_ENDPOINT='https://script.google.com/macros/s/AKfycbzftvbhxfCV27BGk-ceQcA3VPHeLnl3HFRUf-Kv-FOPnEu0n9np-26btH_byhVj8v-EFw/exec';
+const $=id=>document.getElementById(id);
+
+/* theme switch */
+document.querySelectorAll('[data-set-theme]').forEach(btn=>{
+  btn.onclick=()=>{
+    document.documentElement.setAttribute('data-theme',btn.dataset.setTheme);
+    document.querySelectorAll('.theme-toggle button').forEach(b=>b.style.outline='none');
+    btn.style.outline='3px solid var(--accent)';
+}});
+
+/* grade helpers (no minus grades) */
+const LADDER=["A+","A","B+","B","C+","C","D+","D","F"];
+function letterFromPercent(p){
+  if(p>=95)return"A+";if(p>=90)return"A";if(p>=85)return"B+";if(p>=80)return"B";
+  if(p>=75)return"C+";if(p>=70)return"C";if(p>=65)return"D+";if(p>=60)return"D";return"F";}
+function gradeColour(l){if(l==="F")return"#000";
+  const i=LADDER.indexOf(l);const hue=220-i*(220/(LADDER.length-2));return`hsl(${hue},80%,55%)`;}
+/*function pointsToNext(p){const r=(100-Math.floor(p))%5;return r===0?0:r;}*/
+function escapeHtml(v){return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function categoryDisplayName(cat){
+  const key = String(cat ?? '').trim().toLowerCase();
+  if (key === 'assignments') return 'LMS Assignments';
+  if (key === 'activities' || key === 'activites') return 'Class Activities';
+  if (key === 'quiz') return 'Quizzes';
+  return cat;
+}
+function isEffortBasedCategory(cat){
+  const key = String(cat ?? '').trim().toLowerCase();
+  return key === 'assignments' || key === 'activities' || key === 'activites';
+}
+function statusClass(value){
+  const status = String(value ?? '').trim().toLowerCase();
+  if (status === 'complete') return 'status-complete';
+  if (status === 'incomplete') return 'status-incomplete';
+  if (status === 'unattempted') return 'status-unattempted';
+  return '';
+}
+function renderScoreValue(cat, item){
+  if (isEffortBasedCategory(cat)) {
+    const score = item.score ?? '';
+    const cls = statusClass(score);
+    if (cls) return `<span class="status-pill ${cls}">${escapeHtml(score)}</span>`;
+    return escapeHtml(score || '—');
+  }
+  return `${escapeHtml(item.score ?? 0)}/${escapeHtml(item.total ?? 0)}`;
+}
+
+/* LOGIN */
+$('frm').addEventListener('submit',async e=>{
+  e.preventDefault();$('err').textContent='Checking…';
+  const cls=$('cls').value,id=$('sid').value.trim(),pw=$('pw').value;
+  try{
+    const res=await fetch(`${GAS_ENDPOINT}?${new URLSearchParams({class:cls,id,pw,tab:'Totals'})}`);
+    const js=await res.json();if(js.status!=='ok')throw new Error(js.message);
+    window._login={cls,id,pw};render(js.data);
+  }catch(err){$('err').textContent=err.message||err;}
+});
+
+/* RENDER */
+function render(d){
+  $('login').style.display = 'none';
+  $('grades').style.display = 'block';
+
+  const pct     = +d.currentPercent;
+  const letter  = d.letterGrade || letterFromPercent(pct);
+  /*
+  const need    = pointsToNext(pct);
+  const showMsg = letter !== 'A+' && need > 0;           // ⇦ NEW
+
+  const nextLetter = showMsg ? letterFromPercent(pct + need) : '';
+
+   ${showMsg ? `<p class="points-msg sparkle">
+        Need <b>${need}</b> pt to reach <b>${nextLetter}</b>!
+      </p>` : ''}
+      
+  <p><b>Current Points:</b> ${d.currentAvailablePoints.student}/${d.currentAvailablePoints.max}</p>
+  <p><b>Max Possible Points:</b> ${d.maxPossiblePoints}</p>
+  */
+  const g = $('grades');
+  g.innerHTML = `
+    <div class="account-actions">
+      <button id="openPw" class="password-link" type="button">Change Password</button>
+    </div>
+    <h2>Hello, ${escapeHtml(d.name || 'Student')}</h2>
+
+    <p><b>Current %:</b> ${pct.toFixed(1)}%
+       <span class="letter-big" style="color:${gradeColour(letter)}">${letter}</span>
+    </p>
+    
+    <p>You have <b>${escapeHtml(d.currentAvailablePoints.student)}</b> works unattempted for LMS Assignments.</p>
+    <p>That doesn't include Class Activities. How many of those have you done from class?</p>
+    <p>Hmmm, I wonder what your grade should be...</p>
+    <hr>`;
+
+  /* grade list */
+  for (const [cat, items] of Object.entries(d.categories)) {
+    const safeId = `ul-${cat}`.replace(/[^a-z0-9_-]/gi, '-');
+    g.insertAdjacentHTML('beforeend', `<h3>${escapeHtml(categoryDisplayName(cat))}</h3><ul id="${safeId}" class="grade-list"></ul>`);
+    const ul = $(safeId);
+    items.forEach(o => ul.insertAdjacentHTML('beforeend',
+      `<li class="grade-item">
+        <span class="grade-score">${renderScoreValue(cat, o)}</span>
+        <span class="grade-arrow">←</span>
+        <span class="grade-label">${escapeHtml(o.label)}</span>
+      </li>`));
+
+    if (/^Attendance$/i.test(cat)) {
+      renderAbsenceDates(g, d.absenceDates, d.absenceDatesError);
+    }
+  }
+  $('openPw').onclick = () => { $('overlay').style.display = $('pwCard').style.display = 'block'; };
+ 
+  if (d.payload) {
+  g.insertAdjacentHTML('beforeend', `
+    <h3>Payload</h3>
+    <p><a href="${d.payload}" target="_blank" rel="noopener noreferrer">${d.payload}</a></p>
+  `);
+  }
+}
+
+
+function renderAbsenceDates(container, dates, error) {
+  if (error) {
+    container.insertAdjacentHTML('beforeend',
+      `<p class="attendance-note">Absence dates could not be loaded: ${escapeHtml(error)}</p>`);
+    return;
+  }
+
+  if (!Array.isArray(dates) || dates.length === 0) {
+    container.insertAdjacentHTML('beforeend',
+      `<p class="attendance-note"><b>Absence Dates:</b> No recorded absences.</p>`);
+    return;
+  }
+
+  container.insertAdjacentHTML('beforeend', `
+    <p class="attendance-note"><b>Absence Dates:</b></p>
+    <div class="absence-dates">
+      ${dates.map(date => `<span class="absence-chip">${escapeHtml(date)}</span>`).join('')}
+    </div>
+  `);
+}
+
+/* PW change (unchanged) */
+$('cancelPw').onclick=()=>{$('overlay').style.display=$('pwCard').style.display='none';$('pwMsg').textContent='';$('pwForm').reset();};
+$('pwForm').addEventListener('submit',async e=>{
+  e.preventDefault();const oldPw=$('oldPw').value,new1=$('newPw').value,new2=$('newPw2').value;
+  if(new1!==new2){$('pwMsg').textContent='New passwords do not match.';return;}
+  $('pwMsg').textContent='Updating…';
+  const body=new URLSearchParams({action:'changePw',class:_login.cls,id:_login.id,oldPw,newPw:new1,tab:'Totals'});
+  try{
+    const r=await fetch(GAS_ENDPOINT,{method:'POST',body});const js=await r.json();
+    if(js.status!=='ok')throw new Error(js.message);
+    $('pwMsg').style.color='var(--accent)';$('pwMsg').textContent='Password updated!';_login.pw=new1;
+    setTimeout(()=>$('cancelPw').click(),1200);
+  }catch(err){$('pwMsg').style.color='#e11d48';$('pwMsg').textContent=err.message||err;}
+});
+</script>
+</body>
+</html>
