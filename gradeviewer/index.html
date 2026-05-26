@@ -65,7 +65,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font-main);background:var(--page-bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;transition:background var(--speed),color var(--speed)}
-.card{width:min(100%,42rem);background:var(--surface);padding:2rem 2.5rem;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--line)}
+.card{width:min(100%,42rem);background:var(--surface);padding:2rem 2.5rem;border-radius:var(--radius);box-shadow:var(--shadow);border:3px solid var(--line)}
 h1,h2,h3{margin-bottom:.75rem;font-weight:650}h1{font-size:1.75rem;text-align:center;color:var(--accent)}h2{font-size:1.55rem}
 h3{font-size:1.08rem;margin-top:1.2rem;border-bottom:1px solid var(--accent-soft);padding-bottom:.25rem}
 label{display:block;margin:.9rem 0 .25rem;font-weight:500}
@@ -103,7 +103,7 @@ ul.grade-list{list-style:none;margin:.55rem 0 .9rem;padding-left:1.15rem;padding
   background:linear-gradient(90deg,var(--pill-fill-color,var(--pill-blue-fill)) 0 var(--fill,0%),var(--pill-empty) var(--fill,0%) 100%);
 }
 .status-complete{--fill:100%;--pill-fill-color:var(--pill-green-fill);--pill-text-color:var(--pill-green-text);--pill-border-color:var(--pill-green-border)}
-.status-effort{--fill:100%;--pill-fill-color:var(--pill-green-fill);--pill-text-color:var(--pill-green-text);--pill-border-color:var(--pill-green-border);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--pill-green-fill) 82%,var(--pill-empty)) 0 6px,var(--pill-green-fill) 6px 12px)}
+.status-effort{--fill:100%;--pill-fill-color:var(--pill-green-fill);--pill-text-color:var(--pill-green-text);--pill-border-color:var(--pill-green-border);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--pill-green-fill) 55%,var(--pill-empty)) 0 6px,var(--pill-green-fill) 6px 12px)}
 .status-incomplete{--fill:25%;--pill-fill-color:var(--pill-orange-fill);--pill-text-color:var(--pill-orange-text);--pill-border-color:var(--pill-orange-border)}
 .status-unattempted{--fill:0%;--pill-fill-color:var(--pill-red-fill);--pill-text-color:var(--pill-red-text);--pill-border-color:var(--pill-red-border)}
 .score-token{--pill-fill-color:var(--pill-blue-fill);--pill-text-color:var(--pill-blue-text);--pill-border-color:var(--pill-blue-border)}
