@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026-1 Grade Viewer</title>
+<style>
+:root{--font:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--radius:16px;--speed:220ms}
+[data-theme=dark]{--bg:#07111f;--page:radial-gradient(circle at top,#14243b 0,#07111f 46rem);--card:#111c2e;--soft:#17253a;--text:#e2e8f0;--muted:#9fb0c4;--accent:#22d3ee;--line:#26384f;--danger:#fb7185;--good:#86efac;--warn:#fdba74;--buttonText:#04212b;--shadow:0 18px 44px rgba(0,0,0,.35);--input:#07111f}
+[data-theme=light]{--bg:#f6f9fc;--page:radial-gradient(circle at top,#e0f7ff 0,#f8fafc 46rem);--card:#fff;--soft:#edf7fb;--text:#0f172a;--muted:#52667a;--accent:#0891b2;--line:#cfdee8;--danger:#be123c;--good:#166534;--warn:#c2410c;--buttonText:#fff;--shadow:0 14px 34px rgba(15,23,42,.13);--input:#fff}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--font);background:var(--page);color:var(--text);min-height:100vh;padding:2rem;display:flex;justify-content:center;align-items:flex-start}.wrap{width:min(100%,52rem)}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem}h1{color:var(--accent);font-size:1.8rem;text-align:center;margin-bottom:1rem}h2{font-size:1.45rem;margin-bottom:.4rem}label{display:block;margin:.85rem 0 .25rem;font-weight:650;color:var(--text)}input,select,button{width:100%;font:inherit;border-radius:12px;border:1px solid var(--line);padding:.6rem .8rem;background:var(--input);color:var(--text)}button{margin-top:1rem;background:var(--accent);color:var(--buttonText);border:0;font-weight:800;cursor:pointer}button.secondary{background:var(--soft);color:var(--text);border:1px solid var(--line)}button.linkish{width:auto;margin:0;padding:.15rem .1rem;border:0;background:transparent;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:.88rem}.error{color:var(--danger);text-align:center;margin-top:.75rem}.topbar{position:fixed;top:1rem;right:1rem;z-index:10}.themeBtn{width:auto;margin:0;background:var(--card);color:var(--text);border:1px solid var(--line);padding:.45rem .75rem;border-radius:999px}.studentHead{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem}.subtle{color:var(--muted);font-size:.95rem}.hero{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;margin:1rem 0}.metric{background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:.8rem;text-align:center;min-height:5.4rem;display:flex;flex-direction:column;justify-content:center}.metric .label{font-size:.76rem;color:var(--muted);margin-bottom:.2rem}.metric .value{font-size:1.35rem;font-weight:900}.metric.good .value{color:var(--good)}.metric.warn .value{color:var(--warn)}.metric.danger .value{color:var(--danger)}.gradeLine{display:flex;align-items:center;justify-content:space-between;gap:1rem;background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:1rem;margin:.85rem 0}.letter{font-size:2.4rem;font-weight:950;color:var(--accent)}details{border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--card) 88%,var(--soft));margin:.85rem 0;overflow:hidden}summary{cursor:pointer;list-style:none;padding:.85rem 1rem;display:flex;align-items:center;justify-content:space-between;font-weight:800}summary::-webkit-details-marker{display:none}summary:after{content:'▾';color:var(--accent)}details[open] summary{border-bottom:1px solid var(--line)}.sectionBody{padding:.8rem 1rem 1rem}.rows{list-style:none}.row{display:grid;grid-template-columns:minmax(9rem,1fr) 7.5rem 7.5rem;gap:.7rem;align-items:center;border-bottom:1px dashed var(--line);padding:.48rem 0}.row:last-child{border-bottom:0}.row .name{color:var(--text);word-break:break-word}.score,.max{font-weight:800;text-align:right}.max{color:var(--muted)}.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.6rem}.chip{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:.25rem .65rem;background:var(--soft);font-weight:750}.chip.absent{color:var(--danger)}.note{color:var(--muted);line-height:1.45}.overlay{display:none;position:fixed;inset:0;background:#0008;backdrop-filter:blur(2px);z-index:40}.dialog{display:none;position:fixed;inset:0;margin:auto;max-width:28rem;height:max-content;z-index:50}.backBtn{margin-top:.6rem}@media(max-width:720px){body{padding:5.5rem 1rem 1rem}.hero{grid-template-columns:repeat(2,minmax(0,1fr))}.row{grid-template-columns:1fr;gap:.15rem}.score,.max{text-align:left}.studentHead{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="topbar"><button id="themeToggle" class="themeBtn" type="button">☀ Light mode</button></div>
+<main class="wrap">
+<section id="login" class="card">
+<h1>2026-1 Grade Viewer</h1>
+<form id="loginForm">
+<label>Class number
+<select id="classCode" required><option value="" selected disabled>Choose…</option><option>111</option><option>112</option><option>117</option><option>125</option><option>130</option><option>132</option></select>
+</label>
+<label>Student ID <input id="studentId" inputmode="numeric" autocomplete="username" required></label>
+<label>Password <input id="password" type="password" autocomplete="current-password" required></label>
+<button type="submit">View Grades</button>
+</form>
+<p id="loginMsg" class="error"></p>
+</section>
+<section id="grades" class="card" style="display:none"></section>
+</main>
+<div id="overlay" class="overlay"></div>
+<section id="pwDialog" class="card dialog">
+<h2>Change Password</h2>
+<form id="pwForm">
+<label>Current Password <input id="oldPw" type="password" required></label>
+<label>New Password <input id="newPw" type="password" required></label>
+<label>Confirm New Password <input id="newPw2" type="password" required></label>
+<button type="submit">Save Password</button>
+<button type="button" id="cancelPw" class="secondary">Cancel</button>
+</form>
+<p id="pwMsg" class="error"></p>
+</section>
+<script>
+const GAS_ENDPOINT = 'PASTE_YOUR_DEPLOYED_APPS_SCRIPT_WEB_APP_URL_HERE';
+const $ = id => document.getElementById(id);
+let loginState = null;
+const THEME_KEY='gv-2026-theme';
+function applyTheme(theme){const safe=theme==='light'?'light':'dark';document.documentElement.dataset.theme=safe;$('themeToggle').textContent=safe==='dark'?'☀ Light mode':'🌙 Dark mode'}
+applyTheme(localStorage.getItem(THEME_KEY)||'dark');
+$('themeToggle').onclick=()=>{const next=document.documentElement.dataset.theme==='dark'?'light':'dark';localStorage.setItem(THEME_KEY,next);applyTheme(next)};
+function esc(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
+function has(v){return v!==undefined&&v!==null&&String(v).trim()!==''}
+function fmt(v){if(!has(v))return '—'; if(typeof v==='number')return Number.isInteger(v)?String(v):String(Math.round(v*100)/100); return esc(v)}
+function pct(v){const n=Number(v);return Number.isFinite(n)?`${Math.round(n*10)/10}%`:'—'}
+function metric(label,value,cls='',sub=''){return `<div class="metric ${cls}"><span class="label">${esc(label)}</span><span class="value">${fmt(value)}</span>${sub?`<span class="subtle">${esc(sub)}</span>`:''}</div>`}
+function section(title,body,count='',open=true){return `<details ${open?'open':''}><summary><span>${esc(title)}</span>${count!==''?`<span class="subtle">${esc(count)}</span>`:''}</summary><div class="sectionBody">${body}</div></details>`}
+function itemRows(items){if(!items||!items.length)return '<p class="note">No visible items yet.</p>';return `<ul class="rows">${items.map(it=>`<li class="row"><span class="name">${esc(it.label)}</span><span class="score">${fmt(it.score)}</span><span class="max">${has(it.max)?'Max '+fmt(it.max):''}</span></li>`).join('')}</ul>`}
+function attendanceDetails(a){const dates=(a.absenceDates||[]).map(d=>`<span class="chip absent">${esc(d)}</span>`).join('');return `<p class="note">Attendance is calculated only through ${esc(a.today)}. Future class meetings are excluded.</p><div class="chips"><span class="chip">Sessions to date: ${fmt(a.sessionsToDate)}</span><span class="chip">Attended: ${fmt(a.attended)}</span><span class="chip absent">Absent: ${fmt(a.absent)}</span><span class="chip">Late: ${fmt(a.late)}</span></div><p class="note" style="margin-top:.75rem"><b>Absence dates:</b></p><div class="chips">${dates||'<span class="chip">No recorded absences</span>'}</div>`}
+function render(d){$('login').style.display='none';$('grades').style.display='block';const a=d.attendance||{};const m=d.metrics||{};$('grades').innerHTML=`
+<div class="studentHead"><div><h2>Hello, ${esc(d.name||'Student')}</h2><p class="subtle">Class ${esc(d.classCode)} · ID ${esc(d.studentId)}</p></div><button id="openPw" type="button" class="linkish">Change Password</button></div>
+<div class="gradeLine"><div><span class="subtle">Current total</span><br><b>${pct(m.totalScore)}</b></div><div class="letter">${esc(m.adjustedLetter||m.trueLetter||'—')}</div></div>
+<section class="hero">${metric('Attendance',m.attendanceScore,'good','/ 15')}${metric('Participation',m.participationScore,'','/ 20')}${metric('Quiz & Homework',m.quizHomeworkScore,'','/ 20')}${metric('Absences',a.absent,'danger')}</section>
+<section class="hero">${metric('Midterm',m.midtermScore,'','/ 20')}${metric('Final',m.finalScore,'','/ 25')}${metric('Rank',m.rank||'—')}${metric('True Letter',m.trueLetter||'—')}</section>
+${section('Attendance Details',attendanceDetails(a),'current-date logic',true)}
+${(d.sections||[]).map(s=>section(s.title,itemRows(s.items),s.items?s.items.length:'',true)).join('')}
+<button id="backBtn" type="button" class="secondary backBtn">Return to Login</button>`;$('openPw').onclick=openPw;$('backBtn').onclick=()=>location.reload()}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginMsg').textContent='Checking…';const classCode=$('classCode').value;const id=$('studentId').value.trim();const pw=$('password').value;try{const qs=new URLSearchParams({action:'login',class:classCode,id,pw});const res=await fetch(`${GAS_ENDPOINT}?${qs}`);const js=await res.json();if(js.status!=='ok')throw new Error(js.message||'Login failed.');loginState={classCode,id,pw};render(js.data)}catch(err){$('loginMsg').textContent=err.message||String(err)}});
+function openPw(){$('overlay').style.display='block';$('pwDialog').style.display='block'}
+function closePw(){$('overlay').style.display='none';$('pwDialog').style.display='none';$('pwMsg').textContent='';$('pwForm').reset()}
+$('cancelPw').onclick=closePw;$('overlay').onclick=closePw;
+$('pwForm').addEventListener('submit',async e=>{e.preventDefault();if(!loginState)return;const oldPw=$('oldPw').value,newPw=$('newPw').value,newPw2=$('newPw2').value;if(newPw!==newPw2){$('pwMsg').textContent='New passwords do not match.';return}$('pwMsg').textContent='Updating…';try{const body=new URLSearchParams({action:'changePw',class:loginState.classCode,id:loginState.id,oldPw,newPw});const res=await fetch(GAS_ENDPOINT,{method:'POST',body});const js=await res.json();if(js.status!=='ok')throw new Error(js.message||'Password change failed.');loginState.pw=newPw;$('pwMsg').style.color='var(--accent)';$('pwMsg').textContent='Password updated.';setTimeout(closePw,900)}catch(err){$('pwMsg').style.color='var(--danger)';$('pwMsg').textContent=err.message||String(err)}});
+</script>
+</body>
+</html>
