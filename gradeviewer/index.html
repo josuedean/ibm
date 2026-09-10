@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Grade Viewer</title>
+<title>Gradeviewer</title>
 
 <style>
 :root{--font-main:'Inter',system-ui,sans-serif;--radius:14px;--speed:260ms}
@@ -107,10 +107,16 @@ ul.grade-list{list-style:none;margin:.55rem 0 .9rem;padding-left:1.15rem;padding
 .status-incomplete{--fill:25%;--pill-fill-color:var(--pill-orange-fill);--pill-text-color:var(--pill-orange-text);--pill-border-color:var(--pill-orange-border)}
 .status-unattempted{--fill:0%;--pill-fill-color:var(--pill-red-fill);--pill-text-color:var(--pill-red-text);--pill-border-color:var(--pill-red-border)}
 .score-token{--pill-fill-color:var(--pill-blue-fill);--pill-text-color:var(--pill-blue-text);--pill-border-color:var(--pill-blue-border)}
-.student-header{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.75rem}
-.student-header h2{margin-bottom:0}
-.password-link{width:auto;margin:0;padding:.2rem .15rem;background:transparent;color:var(--muted);border:none;font-size:.85rem;text-decoration:underline;text-underline-offset:3px;font-weight:500;white-space:nowrap}
+.student-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.75rem}
+.student-header h2{margin-bottom:0;line-height:1.15}
+.student-actions{display:flex;flex-direction:column;align-items:flex-end;gap:.35rem;flex-shrink:0}
+.password-link,.refresh-link{width:auto;margin:0;background:transparent;border:none;font-size:.85rem;font-weight:600;white-space:nowrap}
+.password-link{padding:.2rem .15rem;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.refresh-link{padding:.28rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--surface-soft);color:var(--accent);text-decoration:none}
 .password-link:hover{background:transparent;color:var(--accent)}
+.refresh-link:hover{background:var(--accent);color:var(--button-text)}
+.refresh-link:disabled{opacity:.65;cursor:wait}
+.grade-message{min-height:1.1rem;margin:.15rem 0 .55rem;color:var(--muted);font-size:.86rem;text-align:right}
 .grade-label a,.course-info-list a,.payload-content a{color:var(--text);text-decoration:none;border-bottom:1px dotted var(--accent)}
 .grade-label a:hover,.course-info-list a:hover,.payload-content a:hover{color:var(--accent);border-bottom-style:solid}
 .course-info-list{list-style:none;margin:.2rem 0 0;padding:0}
@@ -149,7 +155,7 @@ ul.grade-list{list-style:none;margin:.55rem 0 .9rem;padding-left:1.15rem;padding
 .absence-chip{min-width:auto;--fill:0%;--pill-fill-color:var(--pill-red-fill);--pill-text-color:var(--pill-red-text);--pill-border-color:var(--pill-red-border);font-size:.9rem;padding:.24rem .65rem}
 .attendance-note{margin:.55rem 1rem 1rem;padding-left:1.15rem;color:var(--muted);font-size:.95rem}
 @media (max-width:760px){.summary-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:640px){body{padding:1rem}.card{padding:1.35rem}.summary-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}.grade-list li.grade-item{grid-template-columns:7.2rem 1.1rem minmax(0,1fr)}.grade-score{width:7rem}.status-pill,.score-token{min-width:6.9rem;font-size:.82rem}.absence-chip{font-size:.82rem}}
+@media (max-width:640px){body{padding:1rem}.card{padding:1.35rem}.student-header{align-items:flex-start}.student-actions{align-items:flex-end}.summary-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}.grade-list li.grade-item{grid-template-columns:7.2rem 1.1rem minmax(0,1fr)}.grade-score{width:7rem}.status-pill,.score-token{min-width:6.9rem;font-size:.82rem}.absence-chip{font-size:.82rem}}
 @media (max-width: 640px) {
   body {
     align-items: flex-start;
@@ -184,10 +190,7 @@ ul.grade-list{list-style:none;margin:.55rem 0 .9rem;padding-left:1.15rem;padding
  <form id="frm">
  <label>Class
  <select id="cls" required>
- <option value="" disabled selected>Choose…</option>
- <option>Logistics</option>
- <option>Trade</option>
- <option>Management Science</option>
+ <option selected>Accounting</option>
  </select>
  </label>
  <label>Student ID <input id="sid" required></label>
@@ -215,7 +218,7 @@ ul.grade-list{list-style:none;margin:.55rem 0 .9rem;padding-left:1.15rem;padding
 <div id="overlay" style="display:none;position:fixed;inset:0;background:#0008;backdrop-filter:blur(2px)"></div>
 
 <script>
-const GAS_ENDPOINT='https://script.google.com/macros/s/AKfycbzdpDaCC9rrersG8Upma0wvKYFuqzJ_1sqGRnHFz-0Hv0JwyE7JXlPSlT_V1WwOOlq1Xg/exec';
+const GAS_ENDPOINT='https://script.google.com/macros/s/AKfycbyof5DL4zyJiZAFEjzaXEaRFjDT2j9-7thvN8v9bbFki9LTMOZPDX0PJcKa_rHefYqfVw/exec';
 const $=id=>document.getElementById(id);
 
 /* theme switch */
@@ -374,11 +377,7 @@ function renderCourseInfoSection(){
     <summary><span>Course Information</span></summary>
     <div class="info-content">
       <ul class="course-info-list">
-        <li>Here is where you will find important information for this course. Start with the reading the following:</li>
-        <li>Updated frequently - <a href="https://docs.google.com/document/d/1UbmMfzJcsf7v5y3UDxDd-lyvO-XWEdF87Zkp-me1UwY/edit?usp=sharing" target="_blank" rel="noopener noreferrer">README</a></li>
-        <li><a href="https://docs.google.com/spreadsheets/d/15GWtJZ86RjD5ofLIUkzvy1g0tihkuZyLIM9ycnPKYjo/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Effort-based Rubric</a></li>
-        <li></li>
-        <li>Note: Complete and Effort contribute to the 80% portion of your overall grade as described in the README and Rubric. Incompletes seen here are different than those on the LMS. The LMS is limited and does not fully allow for non-point based rubrics. An Incomplete on the LMS solely means you did not complete all requirements on time BUT it does not indicate your level of effort. In this way, an Incomplete on the LMS is a form of feedback.</li>
+        <li>Course information links can be added here when they are ready.</li>
       </ul>
     </div>
   </details>`;
@@ -425,14 +424,57 @@ function shouldSectionStartOpen(cat, d){
   return true;
 }
 
+
+async function fetchGradeData(login, options = {}) {
+  const params = {
+    class: login.cls || 'Accounting',
+    id: login.id,
+    pw: login.pw,
+    tab: 'Totals',
+    _ts: Date.now()
+  };
+
+  if (options.refresh) params.action = 'refresh';
+
+  const res = await fetch(`${GAS_ENDPOINT}?${new URLSearchParams(params)}`);
+  const js = await res.json();
+  if (js.status !== 'ok') throw new Error(js.message);
+  return js.data;
+}
+
+async function refreshGrades() {
+  if (!window._login) return;
+
+  const btn = $('refreshGrades');
+  const msg = $('gradeMsg');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Refreshing…';
+  }
+  if (msg) msg.textContent = 'Checking for updates…';
+
+  try {
+    const data = await fetchGradeData(window._login, { refresh: true });
+    render(data);
+    const newMsg = $('gradeMsg');
+    if (newMsg) newMsg.textContent = 'Grades refreshed.';
+  } catch (err) {
+    if (msg) msg.textContent = err.message || err;
+    const newBtn = $('refreshGrades');
+    if (newBtn) {
+      newBtn.disabled = false;
+      newBtn.textContent = 'Refresh Grades';
+    }
+  }
+}
+
 /* LOGIN */
 $('frm').addEventListener('submit',async e=>{
   e.preventDefault();$('err').textContent='Checking…';
   const cls=$('cls').value,id=$('sid').value.trim(),pw=$('pw').value;
   try{
-    const res=await fetch(`${GAS_ENDPOINT}?${new URLSearchParams({class:cls,id,pw,tab:'Totals'})}`);
-    const js=await res.json();if(js.status!=='ok')throw new Error(js.message);
-    window._login={cls,id,pw};render(js.data);
+    const data = await fetchGradeData({cls,id,pw});
+    window._login={cls,id,pw};render(data);
   }catch(err){$('err').textContent=err.message||err;}
 });
 
@@ -460,8 +502,12 @@ function render(d){
   g.innerHTML = `
     <div class="student-header">
       <h2>Hello, ${escapeHtml(d.name || 'Student')}</h2>
-      <button id="openPw" class="password-link" type="button">Change Password</button>
+      <div class="student-actions">
+        <button id="refreshGrades" class="refresh-link" type="button">Refresh Grades</button>
+        <button id="openPw" class="password-link" type="button">Change Password</button>
+      </div>
     </div>
+    <p id="gradeMsg" class="grade-message" aria-live="polite"></p>
 
     ${renderCurrentGrade(pct, letter)}
     ${renderAttendancePenaltyAlert(d)}
@@ -497,6 +543,7 @@ function render(d){
     }
   }
   $('openPw').onclick = () => { $('overlay').style.display = $('pwCard').style.display = 'block'; };
+  $('refreshGrades').onclick = refreshGrades;
 
 }
 
