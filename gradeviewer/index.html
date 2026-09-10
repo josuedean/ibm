@@ -190,8 +190,11 @@ ul.grade-list{list-style:none;margin:.55rem 0 .9rem;padding-left:1.15rem;padding
  <form id="frm">
  <label>Class
  <select id="cls" required>
- <option selected>Accounting</option>
- </select>
+  <option value="" disabled selected>Choose…</option>
+  <option>Accounting</option>
+  <option>Data Analysis (Mon)</option>
+  <option>Data Analysis (Wed)</option>
+</select>
  </label>
  <label>Student ID <input id="sid" required></label>
  <label>Password   <input id="pw" type="password" required></label>
@@ -218,7 +221,7 @@ ul.grade-list{list-style:none;margin:.55rem 0 .9rem;padding-left:1.15rem;padding
 <div id="overlay" style="display:none;position:fixed;inset:0;background:#0008;backdrop-filter:blur(2px)"></div>
 
 <script>
-const GAS_ENDPOINT='https://script.google.com/macros/s/AKfycbyof5DL4zyJiZAFEjzaXEaRFjDT2j9-7thvN8v9bbFki9LTMOZPDX0PJcKa_rHefYqfVw/exec';
+const GAS_ENDPOINT='https://script.google.com/macros/s/AKfycbwAsUM04TlZ_vD_A__A5yO5Icb4wbu5qWkgRg6f1r-572cQsRbulqGeA4v1M6L8O_4wnQ/exec';
 const $=id=>document.getElementById(id);
 
 /* theme switch */
