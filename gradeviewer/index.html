@@ -393,7 +393,7 @@ function renderPayloadSection(payload){
   </details>`;
 }
 function orderedCategoryNames(categories){
-  const order = ['Assessments','Assignments','Activities','Attendance','Absences','Project','Extra Points','Quiz','Exams'];
+  const order = ['Assessments','Assignments','Activities','Attendance','Absences','Project','Extras','Quiz','Exams'];
   const keys = Object.keys(categories || {});
   return [
     ...order.filter(cat => keys.includes(cat)),
