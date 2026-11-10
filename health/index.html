@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#151d1c">
+  <meta name="description" content="A personal workout notebook. Log sets, revisit sessions, and follow your progress.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon-180.png">
+  <link rel="stylesheet" href="./styles.css">
+  <title>Setbook — Workout notebook</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('setbook-theme')||'dark'}catch(e){}</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to notebook</a>
+  <header class="site-header">
+    <a class="brand" href="#workout" aria-label="Setbook, workout"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="6" y="3" width="22" height="26" rx="3"/><path d="M11 3v26M16 11h7M16 16h7M16 21h4"/></svg><span>setbook<span class="brand-dot">.</span></span></a>
+    <div class="header-actions"><button id="sync-button" class="sync-state" type="button" aria-label="Sync notebook"><span class="status-dot"></span><span id="sync-label">On this device</span></button><button id="settings-button" class="icon-button" type="button" aria-label="Open settings"></button></div>
+  </header>
+  <main id="main" tabindex="-1"></main>
+  <nav class="bottom-nav" aria-label="Notebook sections">
+    <a href="#workout" data-tab="workout"><span class="nav-icon" data-icon="notebook"></span><span>Workout</span></a>
+    <a href="#history" data-tab="history"><span class="nav-icon" data-icon="history"></span><span>History</span></a>
+    <a href="#progress" data-tab="progress"><span class="nav-icon" data-icon="chart"></span><span>Progress</span></a>
+    <a href="#body" data-tab="body"><span class="nav-icon" data-icon="body"></span><span>Body</span></a>
+  </nav>
+  <dialog id="modal" aria-labelledby="modal-title"><div class="modal-top"><h2 id="modal-title"></h2><button id="close-modal" class="icon-button" type="button" aria-label="Close dialog"></button></div><div id="modal-body"></div></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="fatal-error" class="fatal-error" role="alert" hidden></div>
+  <noscript><div class="fatal-error">Enable JavaScript to use this workout notebook.</div></noscript>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
