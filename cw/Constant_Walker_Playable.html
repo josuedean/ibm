@@ -1,233 +1,145 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#182921">
-  <meta name="description" content="Explore an endless wilderness. Keep your distance from a pursuer that never stops.">
-  <title>The Constant Walker</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='%23d45b45'/%3E%3C/svg%3E">
-  <style>
-:root { color-scheme: light; --ink: #233b30; --muted: #6c7567; --paper: #f3f1e7; --red: #c84d3d; --line: #233b3024; }
-* { box-sizing: border-box; }
-[hidden] { display: none !important; }
-html, body { margin: 0; min-height: 100%; }
-body { background: var(--paper); color: var(--ink); font-family: "Trebuchet MS", Arial, sans-serif; }
-button, a, canvas { -webkit-tap-highlight-color: transparent; }
-button { font: inherit; cursor: pointer; }
-button:focus-visible, a:focus-visible, canvas:focus-visible { outline: 3px solid #dcab47; outline-offset: 4px; }
-.app { height: 100vh; height: 100dvh; min-height: 540px; display: flex; flex-direction: column; padding: 0 32px; max-width: 2100px; margin: auto; }
-.masthead { min-height: 105px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
-.brand { display: flex; align-items: center; gap: 15px; }
-.brand-symbol { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--ink); border-radius: 50%; }
-.brand-symbol i { width: 12px; height: 12px; background: var(--red); border-radius: 50%; position: relative; }
-.brand-symbol i::after { content: ""; width: 22px; height: 1px; position: absolute; left: -5px; top: 6px; background: var(--ink); transform: rotate(-45deg); }
-.eyebrow { font-size: 9px; text-transform: uppercase; letter-spacing: .17em; font-weight: 700; margin: 0; }
-.brand .eyebrow { margin-bottom: 7px; color: var(--muted); }
-h1 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: 25px; letter-spacing: -.5px; margin: 0; }
-.version { vertical-align: middle; margin-left: 14px; padding: 4px 6px; border: 1px solid var(--line); font-family: Arial, sans-serif; color: var(--muted); font-size: 8px; letter-spacing: .1em; }
-.pursuit-status { display: flex; gap: 8px; align-items: center; text-transform: uppercase; letter-spacing: .12em; font-size: 10px; }
-.status-dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; }
-.hud { border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr 1.1fr 1fr; padding: 19px 0 23px; }
-.stat { border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; padding: 0 25px; }
-.stat:first-child { padding-left: 0; }
-.stat:last-child { border: 0; }
-.stat-label { color: var(--muted); text-transform: uppercase; font-size: 9px; letter-spacing: .14em; font-weight: 700; }
-.stat strong { font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: 30px; font-variant-numeric: tabular-nums; line-height: 1.1; }
-.stat strong small { font-family: "Trebuchet MS", sans-serif; font-size: 11px; padding-left: 4px; color: var(--muted); }
-.stat-note { color: var(--muted); font-size: 10px; }
-.catch-stat strong { color: var(--red); }
-.state-stat strong { font-size: 27px; }
-.game-stage { position: relative; flex: 1; min-height: 275px; overflow: hidden; border: 1px solid #334e3b36; border-radius: 3px; background: #8e9e73; }
-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.map-label { position: absolute; left: 26px; top: 22px; color: #f7f4e4; display: flex; align-items: center; gap: 10px; pointer-events: none; text-shadow: 0 1px 5px #173523; }
-.map-label .eyebrow { display: block; opacity: .8; font-size: 8px; }
-#biomeName { display: block; font-family: Georgia, serif; font-size: 19px; margin-top: 4px; }
-.map-cross { font-size: 25px; font-weight: 100; opacity: .8; }
-.north-mark { position: absolute; top: 22px; right: 25px; color: #fff8e6; display: flex; flex-direction: column; align-items: center; gap: 3px; pointer-events: none; text-shadow: 0 1px 3px #173523; }
-.north-mark span:first-child { font-size: 8px; letter-spacing: .1em; }
-.north-mark span:last-child { font-size: 22px; font-weight: 100; }
-.stamina { position: absolute; left: 23px; top: 50%; transform: translateY(-45%); display: flex; align-items: center; flex-direction: column; gap: 7px; color: #fff8e6; pointer-events: none; text-shadow: 0 1px 4px #173523; }
-.stamina .eyebrow { font-size: 8px; }
-#staminaValue { font-size: 10px; font-variant-numeric: tabular-nums; }
-.stamina-meter { background: #132b2560; border: 1px solid #f5f0d480; border-radius: 2px; width: 8px; height: clamp(65px, 17vh, 145px); display: flex; align-items: flex-end; padding: 1px; }
-#staminaFill { width: 100%; height: 100%; background: #f1e7bc; }
-.terrain-note { position: absolute; bottom: 19px; left: 23px; font-size: 9px; color: #fff8e6c9; pointer-events: none; text-shadow: 0 1px 3px #173523; }
-.map-key { position: absolute; bottom: 18px; right: 24px; display: flex; align-items: center; gap: 15px; color: #fff8e6; font-size: 10px; pointer-events: none; text-shadow: 0 1px 3px #173523; }
-.map-key span { display: flex; align-items: center; gap: 6px; }
-.map-key i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; outline: 1px solid #f5f0d4a0; }
-.player-key { background: #243e38; }
-.walker-key { background: #d8513f; }
-.overlay { position: absolute; inset: 0; z-index: 3; background: #142a2561; display: flex; align-items: center; justify-content: center; padding: 22px; backdrop-filter: blur(2px); overflow-y: auto; }
-.overlay-card { padding: 34px 42px 27px; background: #f3f1e7; max-width: 620px; width: 100%; margin: auto; flex-shrink: 0; box-shadow: 0 20px 80px #0f231d26; text-align: center; border: 1px solid #fff7; }
-.overlay-card .eyebrow { color: var(--red); }
-h2 { margin: 17px 0; font: 400 34px/1.17 Georgia, "Times New Roman", serif; letter-spacing: -.8px; }
-.overlay-card p { font-size: 12px; line-height: 1.8; color: #586457; }
-.control-guide { padding-top: 13px; margin-top: 16px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; font-size: 10px; color: var(--muted); }
-kbd { font: inherit; font-size: .9em; border: 1px solid #69745a40; border-bottom-width: 2px; border-radius: 3px; padding: 2px 4px; white-space: nowrap; }
-.primary-button { padding: 14px 24px; background: var(--ink); border: 1px solid var(--ink); color: #f3f1e7; font-size: 12px; margin-top: 24px; min-width: 210px; text-align: left; display: inline-flex; justify-content: space-between; align-items: center; gap: 32px; }
-.primary-button:hover { background: #3e5745; }
-.primary-button span { font-size: 18px; }
-.overlay-card .fine-print { margin: 13px 0 0; font-size: 9px; color: var(--muted); }
-.caught-card h2 { color: var(--red); }
-.footer { padding: 17px 0 19px; display: flex; justify-content: space-between; align-items: center; gap: 15px; font-size: 9px; color: var(--muted); min-height: 54px; }
-.coordinates { display: flex; flex-wrap: wrap; gap: 20px; }
-.coordinates b { font-family: ui-monospace, Consolas, monospace; font-weight: 400; color: var(--ink); margin-left: 5px; }
-.keyboard-hint { display: flex; align-items: center; gap: 7px; }
-.keyboard-hint > span { margin: 0 3px; opacity: .5; }
-.seed-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 210px; }
-.seed-label a { color: var(--ink); text-decoration-color: #69745a50; text-underline-offset: 3px; }
-.touch-controls { display: none; }
-.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-@media (max-width: 1000px) {
-  .keyboard-hint { display: none; }
-  .app { padding: 0 20px; }
-  .version { display: none; }
-}
-@media (max-width: 640px) {
-  .app { padding: 0 14px; min-height: 550px; }
-  .masthead { min-height: 81px; gap: 8px; }
-  .brand { gap: 9px; }
-  .brand-symbol { width: 26px; height: 26px; flex-shrink: 0; }
-  .brand .eyebrow { font-size: 7px; letter-spacing: .09em; margin-bottom: 5px; }
-  h1 { font-size: 20px; }
-  .pursuit-status { font-size: 7px; letter-spacing: .02em; max-width: 85px; line-height: 1.5; }
-  .hud { padding: 13px 0 15px; grid-template-columns: 1fr 1fr 1.1fr; }
-  .stat { padding: 0 10px; gap: 7px; }
-  .stat strong { font-size: 25px; }
-  .stat-label { font-size: 7px; letter-spacing: .08em; }
-  .stat-note { font-size: 8px; line-height: 1.4; min-height: 22px; }
-  .state-stat { display: none; }
-  .catch-stat { border-right: 0; padding-right: 0; }
-  .game-stage { min-height: 220px; }
-  .map-label { top: 14px; left: 15px; }
-  .map-label .eyebrow { font-size: 7px; }
-  #biomeName { font-size: 16px; }
-  .north-mark { top: 13px; right: 17px; }
-  .stamina { left: 12px; }
-  .stamina .eyebrow { font-size: 7px; }
-  .stamina-meter { height: 65px; }
-  .terrain-note { left: 14px; bottom: 13px; font-size: 7px; max-width: 150px; }
-  .map-key { right: 14px; bottom: 13px; font-size: 8px; gap: 10px; }
-  .overlay { padding: 14px; }
-  .overlay-card { padding: 24px 18px 20px; }
-  h2 { font-size: 27px; margin: 13px 0; }
-  .overlay-card p { font-size: 11px; line-height: 1.6; }
-  .overlay-card .eyebrow { font-size: 8px; }
-  .control-guide { display: none; }
-  .desktop-break { display: none; }
-  .primary-button { margin-top: 12px; padding: 11px 18px; }
-  .overlay-card .fine-print { font-size: 8px; }
-  .footer { min-height: 47px; font-size: 8px; gap: 8px; padding: 12px 0; }
-  .coordinates { flex-direction: column; gap: 5px; }
-  .seed-label { max-width: 145px; }
-}
-@media (pointer: coarse), (max-width: 640px) {
-  .touch-controls { display: flex; align-items: center; justify-content: space-between; padding: 12px 5px 0; gap: 12px; }
-  .touch-controls > span { color: var(--muted); font-size: 9px; line-height: 1.6; }
-  .dpad { display: grid; grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(2, 44px); gap: 3px; }
-  .dpad button, .sprint-button { background: #e5e7d8; color: var(--ink); border: 1px solid var(--line); border-radius: 3px; touch-action: none; user-select: none; -webkit-user-select: none; }
-  [data-control="up"] { grid-column: 2; }
-  [data-control="left"] { grid-column: 1; grid-row: 2; }
-  [data-control="down"] { grid-column: 2; grid-row: 2; }
-  [data-control="right"] { grid-column: 3; grid-row: 2; }
-  .sprint-button { min-height: 62px; min-width: 70px; font-size: 10px; line-height: 1.5; }
-  .touch-controls .pressed { background: var(--ink); color: var(--paper); }
-}
-@media (max-height: 600px) and (min-width: 641px) {
-  .app { min-height: 450px; }
-  .masthead { min-height: 65px; }
-  .hud { padding: 12px 0; }
-  .stat-note { display: none; }
-  .game-stage { min-height: 220px; }
-  .overlay-card { padding: 20px 30px; }
-  h2 { font-size: 27px; margin: 10px 0; }
-  .control-guide { margin-top: 8px; padding-top: 10px; }
-  .primary-button { margin-top: 12px; padding: 10px 20px; }
-}
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#192b27">
+<title>The Constant Walker · v0.3.1</title>
+<meta name="cw-build" content="0.3.1">
+<style>
+:root{color-scheme:light;--ink:#20362e;--paper:#f1efdf;--muted:#788171;--line:#d5d9c8;--rust:#a94e3c;--green:#314d40}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden}body{font-family:Arial,Helvetica,sans-serif;background:var(--paper);color:var(--ink);font-size:13px}button,input,textarea{font:inherit}button{cursor:pointer;color:inherit}button:disabled{cursor:default;opacity:.38}button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid #bc7546;outline-offset:3px}[hidden]{display:none!important}
+.masthead{height:76px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:#f5f2e6}.wordmark{display:flex;gap:13px;text-decoration:none;color:var(--ink);font-size:13px;font-weight:bold;letter-spacing:1.6px;align-items:center}.wordmark small{display:block;font-size:8px;letter-spacing:3px;font-weight:normal;margin-top:5px;color:#788171}.brand-mark{font-size:28px;border:1px solid #acb3a1;width:38px;height:38px;text-align:center;line-height:34px}.header-right{display:flex;align-items:center;gap:10px;font:10px monospace;letter-spacing:.6px}.live-dot{width:5px;height:5px;background:#5f7a51;border-radius:50%}.icon-button{width:29px;height:29px;border:1px solid #c8cebd;background:transparent;border-radius:50%;margin-left:15px}.expedition{height:calc(100dvh - 76px);display:grid;grid-template-columns:minmax(0,1fr) 340px}.map-column{min-width:0;display:flex;flex-direction:column;padding:0 20px 16px;background:#e7e9da}.map-topline{height:40px;flex-shrink:0;display:flex;justify-content:space-between;align-items:center;font:10px monospace;color:#596a5a;letter-spacing:.7px}.stage{position:relative;flex:1;min-height:0;background:#8c9c76;border:1px solid #acb59b;overflow:hidden}canvas{display:block;width:100%;height:100%;outline:none;touch-action:none}.map-stamp{position:absolute;top:17px;left:17px;pointer-events:none;color:#203b2bd9;text-shadow:0 1px 4px #e7e9da}.map-stamp span{font-size:9px;letter-spacing:2px}.map-stamp small{display:block;font:10px monospace;margin-top:5px;max-width:190px;overflow:hidden;text-overflow:ellipsis}.compass{position:absolute;right:18px;top:14px;font:10px monospace;text-align:center;color:#203b2b;pointer-events:none}.compass span{display:block;font-size:28px;line-height:30px}.map-footer{height:30px;display:flex;align-items:center;justify-content:space-between;font:8px monospace;letter-spacing:.4px;color:#66725f;flex-shrink:0}.map-footer i{font-style:normal;margin:0 7px}.vitals{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;padding:6px 0 0}.vital>div{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:9px;letter-spacing:1px}.vital strong{font:11px monospace;letter-spacing:0}.vital progress{height:4px}.vital.food progress{accent-color:#a08e4c}.vital.fatigue progress{accent-color:#b46b48}progress{width:100%;display:block;appearance:none;border:0;border-radius:0;background:#cad1bd;accent-color:#365e48}progress::-webkit-progress-bar{background:#cad1bd}progress::-webkit-progress-value{background:#365e48}.food progress::-webkit-progress-value{background:#a08e4c}.fatigue progress::-webkit-progress-value{background:#b46b48}
+.field-panel{min-width:0;border-left:1px solid var(--line);display:flex;flex-direction:column;background:#f3f1e5}.panel-tabs{display:flex;flex-shrink:0;border-bottom:1px solid var(--line);height:49px;padding:0 17px;gap:22px}.panel-tabs button{border:0;background:none;font-size:11px;padding:0;position:relative;color:#88907d;white-space:nowrap}.panel-tabs button.active{color:var(--ink)}.panel-tabs button.active:after{content:"";position:absolute;height:2px;left:0;right:0;bottom:-1px;background:var(--ink)}.panel-tabs span{font-size:9px;margin-left:2px}.panel-body{padding:22px;overflow:auto;flex:1;min-height:0;scrollbar-width:thin;scrollbar-color:#b4bea5 transparent}.section-label{display:flex;align-items:center;justify-content:space-between;color:#89917f;letter-spacing:1.4px;font-size:8px;font-weight:bold;min-height:18px}.space-top{margin-top:27px}.terrain-card{padding:15px 0 17px}.terrain-card>div:first-child{display:flex;align-items:center;justify-content:space-between}.terrain-card h2{font:23px Georgia,serif;margin:0 0 6px;font-weight:normal}.terrain-card span{font:10px monospace;color:#6d7d67}.terrain-card p{font:9px monospace;color:#63745d;letter-spacing:.2px;margin:3px 0 10px;line-height:1.8}.muted{font-size:10px;color:#87907b;line-height:1.6}.button-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}button.primary,button.secondary{border:1px solid #bac4ac;min-height:37px;padding:10px 12px;font-size:10px;display:inline-flex;align-items:center;justify-content:space-between;gap:8px}button.primary{color:#f5f1df;background:var(--green);border-color:var(--green)}button.primary:hover:not(:disabled){background:#243e33}button.secondary{background:transparent}button.secondary:hover:not(:disabled){background:#e7ebdb}.wide{width:100%}kbd{font:8px monospace;border:1px solid currentColor;padding:2px 3px;opacity:.7}.text-button{border:0;padding:3px 0;background:transparent;font-size:10px;text-align:left;color:#65775f}.text-button:hover{color:#1e392b}.tool-actions{margin-top:8px}.tool-button{display:flex;align-items:center;width:100%;padding:12px 0;background:transparent;border:0;border-bottom:1px solid #dce0cf;text-align:left;gap:14px}.tool-button>span:first-child{font-size:21px;color:#63765c;width:20px;text-align:center}.tool-button>div{flex:1}.tool-button strong{display:block;font-size:11px;font-weight:normal}.tool-button small{display:block;font:9px monospace;color:#8a927f;margin-top:5px}.tool-button>span:last-child{font-size:14px;color:#9ca68e}.tool-button:not(:disabled):hover strong{text-decoration:underline}.tool-button.danger>span:first-child{color:#a25e48}.sleep-card{margin-top:12px;padding:14px;border:1px solid #d7ddc9;background:#ecefdf}.sleep-title{display:flex;align-items:center;justify-content:space-between}.sleep-title h3{font:16px Georgia,serif;margin:0}.sleep-title strong{font:10px monospace;font-weight:normal}.sleep-card input[type=range]{width:100%;margin:15px 0;accent-color:#425c42}.sleep-preview{font:11px monospace;margin-bottom:4px}.sleep-card button{margin-top:12px;background:#f4f2e7}.sleep-card>small{font-size:9px;color:#849079;display:block;line-height:1.6;margin-top:9px}.checkpoint-card{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:22px}.checkpoint-card small{grid-column:1/-1;font:9px monospace;color:#8a927d}.backup{font-size:9px;color:#849079;margin-top:15px}.backup summary{cursor:pointer}.backup button{display:block;margin-top:10px}.inventory-item{display:flex;gap:14px;padding:18px 0;border-bottom:1px solid var(--line)}.inventory-item>span{font-size:24px;width:25px;color:#657c5a}.inventory-item strong{font:17px Georgia,serif;font-weight:normal}.inventory-item p{font-size:11px;line-height:1.7;color:#7c8871;margin:7px 0 0}.inventory-item small{font:10px monospace;color:#8a927f;float:right;margin-top:4px}.panel-foot{font-size:10px;line-height:1.8;color:#8c947e;margin-top:20px}.notes-panel{display:flex;flex-direction:column}.notes-panel textarea{margin-top:14px;flex:1;min-height:210px;background:linear-gradient(transparent 27px,#dce0cc 28px);background-size:100% 28px;border:0;resize:none;font:14px/28px Georgia,serif;color:#42533b;padding:0;outline-offset:5px}.notes-panel textarea::placeholder{color:#9aa38b}.notes-footer{display:flex;justify-content:space-between;margin-top:13px;font-size:9px;color:#8e967f}.notes-panel .panel-foot{margin:13px 0 0}
+.veil{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#152a2352;backdrop-filter:blur(3px);z-index:10;padding:15px}.intro-card{width:min(390px,100%);background:#f4f0e1;padding:35px 34px;box-shadow:0 18px 70px #14271d55;border:1px solid #e4e4cd}.eyebrow{font-size:8px;letter-spacing:1.7px;color:#8b917b}.intro-card h1{font:52px/.95 Georgia,serif;letter-spacing:-2px;margin:23px 0 19px;font-weight:normal}.intro-card p{font-size:12px;line-height:1.9;color:#72806b}.control-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 10px;margin:25px 0;color:#6e7e65;font-size:10px}.control-grid kbd{color:#435e3d;margin-right:6px}.seed-field{font-size:8px;letter-spacing:1px;color:#8a937d;display:block;margin:24px 0 12px}.seed-field input{width:100%;background:transparent;border:0;border-bottom:1px solid #c4ccb7;padding:9px 0;color:#425b3b;font:12px monospace;letter-spacing:0}.intro-card .primary{height:43px;font-size:11px}.intro-card .secondary{margin-top:9px}.intro-foot{display:block;font-size:9px;line-height:1.7;color:#929981;margin-top:15px}.caught-card h1{font-size:48px}.caught-card .text-button{text-align:center;margin-top:15px}.toast{position:absolute;top:15px;left:50%;transform:translateX(-50%);max-width:min(450px,80%);background:#f5f1dff2;color:#3c5038;padding:10px 16px;font-size:11px;border:1px solid #c3ceb0;box-shadow:0 3px 15px #243f2420;pointer-events:none;opacity:0;transition:opacity .2s;text-align:center;z-index:5}.toast.visible{opacity:1}.action-card{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);width:min(360px,86%);padding:15px 17px;background:#f5f1e3f5;border:1px solid #c2cbb1;box-shadow:0 4px 30px #1e351e30;z-index:4}.action-heading{display:flex;justify-content:space-between;margin-bottom:12px;font-size:12px}.action-heading>span:last-child{font:10px monospace;color:#7d8a70}.action-card progress{height:3px}.action-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:11px}.action-bottom>span{font-size:8px;letter-spacing:1px;color:#8c8363}.speed-switch{display:flex;gap:3px}.speed-switch button{border:1px solid #d2d9c3;background:transparent;font:9px monospace;padding:5px 8px}.speed-switch button.active{background:#37513e;color:#f4f0df;border-color:#37513e}.victory{position:absolute;top:70px;left:50%;transform:translateX(-50%);width:min(430px,90%);padding:17px 20px;background:#f5efd5f2;border:1px solid #a9b38d;display:flex;gap:15px;align-items:center;z-index:6;box-shadow:0 4px 20px #2e463433}.victory>span{font-size:32px}.victory strong{font:19px Georgia,serif;display:block;font-weight:normal}.victory small{font-size:10px;color:#859174;display:block;margin-top:5px}.victory button{background:none;border:0;font-size:21px;margin-left:auto;align-self:flex-start}.touch-pad{display:none}
+dialog{color:var(--ink);border:1px solid #b8c4a8;padding:32px;background:#f4f0e1;width:min(420px,90vw);box-shadow:0 20px 80px #15291f66}dialog::backdrop{background:#152b2344}dialog h2{font:30px Georgia,serif;font-weight:normal}dialog dl{display:grid;grid-template-columns:120px 1fr;font-size:11px;line-height:1.8;gap:10px}dialog dd{margin:0;color:#7d8b72}dialog p{font-size:11px;line-height:1.8;color:#829075}.dialog-close{position:absolute;top:12px;right:16px;border:0;background:none;font-size:24px}
+@media(min-width:1600px){.expedition{grid-template-columns:minmax(0,1fr) 370px}.field-panel .panel-body{padding:25px}.masthead{padding:0 32px}}
+@media(max-width:900px){.expedition{grid-template-columns:minmax(0,1fr) 290px}.panel-body{padding:17px}.map-column{padding:0 12px 12px}.masthead{height:65px;padding:0 16px}.expedition{height:calc(100dvh - 65px)}.map-footer>span:last-child{display:none}.panel-tabs{gap:16px;padding:0 14px}.vitals{gap:14px}.header-right{font-size:9px}.wordmark{font-size:11px;letter-spacing:1px}.wordmark small{font-size:7px;letter-spacing:2px}}
+@media(max-width:640px){.masthead{height:57px;padding:0 12px}.wordmark{font-size:10px;gap:8px;letter-spacing:.7px}.brand-mark{font-size:22px;width:29px;height:29px;line-height:25px}.wordmark small{font-size:6px;letter-spacing:1.8px}.header-right{font-size:8px;gap:5px}.icon-button{margin-left:5px;width:25px;height:25px}.expedition{height:calc(100dvh - 57px);display:flex;flex-direction:column}.map-column{flex:1;padding:0 10px 10px;min-height:0}.map-topline{height:29px;font-size:8px}.map-footer{height:20px;font-size:7px}.vitals{padding-top:3px;gap:14px}.vital>div{font-size:7px;letter-spacing:.4px;margin-bottom:5px}.vital strong{font-size:9px}.field-panel{height:220px;border-left:0;border-top:1px solid var(--line);flex-shrink:0}.panel-tabs{height:37px;gap:25px;padding:0 18px}.panel-body{padding:16px 18px}.panel-tabs button{font-size:10px}.map-stamp{top:11px;left:11px}.map-stamp small{font-size:8px}.compass{right:11px;top:9px}.intro-card{padding:24px;width:min(350px,94%)}.intro-card h1{font-size:43px;margin:17px 0}.intro-card p{font-size:11px}.control-grid{margin:16px 0;gap:10px}.seed-field{margin-top:16px}.intro-foot{margin-top:10px;font-size:8px}.intro-card .primary{height:38px}.veil{padding:10px;backdrop-filter:blur(2px)}.notes-panel textarea{min-height:90px}.notes-panel .panel-foot{display:none}.toast{font-size:10px;top:10px;max-width:85%;padding:8px 12px}.action-card{bottom:12px;width:min(300px,85%);padding:12px}.touch-pad{position:absolute;bottom:15px;left:12px;display:grid;grid-template-columns:repeat(3,29px);grid-template-rows:repeat(2,29px);gap:3px;opacity:.85}.touch-pad button{background:#f1efdfb3;border:1px solid #6c866766;color:#294b37;font-size:17px;touch-action:none;border-radius:3px}.touch-pad button[data-control=up]{grid-column:2}.touch-pad button[data-control=left]{grid-column:1;grid-row:2}.touch-pad button[data-control=down]{grid-column:2;grid-row:2}.touch-pad button[data-control=right]{grid-column:3;grid-row:2}.touch-pad button[data-control=sprint]{position:absolute;left:calc(100vw - 78px);bottom:0;width:43px;height:39px;font-size:9px;letter-spacing:.8px}.action-card:not([hidden])~.touch-pad{bottom:115px}.touch-pad .pressed{background:#3f6149;color:#f4f0df}}
+@media(max-height:600px) and (min-width:641px){.masthead{height:50px}.expedition{height:calc(100dvh - 50px)}.map-topline{height:28px}.intro-card{padding:20px 26px}.intro-card h1{font-size:39px;margin:12px 0}.intro-card p{margin:8px 0}.control-grid{margin:12px 0;gap:9px}.seed-field{margin:10px 0}.intro-foot{margin-top:8px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* Keep the opening and capture controls reachable on short viewports. */
+.veil{overflow-y:auto;align-items:flex-start}.intro-card{margin:auto;flex-shrink:0}
+@media(max-width:640px){.veil{position:fixed;top:57px;right:0;bottom:0;left:0;z-index:20;padding:18px}}
 </style>
 </head>
 <body>
-  <div class="app">
-    <header class="masthead">
-      <div class="brand">
-        <span class="brand-symbol" aria-hidden="true"><i></i></span>
-        <div><p class="eyebrow">A wilderness. An inevitability.</p><h1>The Constant Walker<span class="version">PROTOTYPE 0.2</span></h1></div>
+<header class="masthead">
+  <a class="wordmark" href="#" aria-label="The Constant Walker"><span class="brand-mark">↗</span><span>THE CONSTANT WALKER<small>PROTOTYPE v0.3.1 · FIELD EXPEDITION</small></span></a>
+  <div class="header-right"><span class="live-dot"></span><span id="clock">DAY 01 · 08:00</span><button id="helpBtn" class="icon-button" aria-label="Show controls">?</button></div>
+</header>
+<main class="expedition">
+  <section class="map-column" aria-label="Expedition map">
+    <div class="map-topline"><span id="coordinates">E 0.5 · N −0.5</span><span id="gap">DISTANCE —</span></div>
+    <div id="gameStage" class="stage">
+      <canvas id="gameCanvas" tabindex="0" aria-label="Terrain map. Move with WASD or arrow keys. Click ground to select a tool target."></canvas>
+      <div class="map-stamp"><span>FIELD MAP</span><small id="seedLabel">constant-walker</small></div>
+      <div class="compass" aria-hidden="true">N<span>↑</span></div>
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div id="victory" class="victory" hidden><span>◎</span><div><strong>The Walker is contained.</strong><small>The expedition has achieved its objective.</small></div><button id="dismissVictory" aria-label="Dismiss containment message">×</button></div>
+      <div id="actionCard" class="action-card" hidden>
+        <div class="action-heading"><span id="actionTitle">Exploring</span><span id="actionTime"></span></div>
+        <progress id="actionProgress" max="1" value="0"></progress>
+        <div class="action-bottom"><button id="cancelAction" class="text-button">Stop work</button><span id="committedLabel" hidden>UNINTERRUPTED SLEEP</span><div class="speed-switch" aria-label="Time speed"><button data-speed="1" class="active">1×</button><button data-speed="5">5×</button><button data-speed="20">20×</button></div></div>
       </div>
-      <div class="pursuit-status"><span class="status-dot" aria-hidden="true"></span><span id="runStatus">Awaiting departure</span></div>
-    </header>
-
-    <section id="hud" class="hud" aria-label="Run information">
-      <div class="stat"><span class="stat-label">Time survived</span><strong id="survivalTime">00:00.0</strong><span class="stat-note">Every second counts</span></div>
-      <div class="stat"><span class="stat-label">Distance to walker</span><strong id="walkerGap">41.9 <small>tiles</small></strong><span class="stat-note">Between collision edges</span></div>
-      <div class="stat catch-stat"><span id="catchLabel" class="stat-label">Time to catch</span><strong id="catchTime">23.3<small>s</small></strong><span id="catchNote" class="stat-note">While you remain still</span></div>
-      <div class="stat state-stat"><span class="stat-label">Your pace</span><strong id="playerState">Resting</strong><span id="paceNote" class="stat-note">Stamina recovers quickly</span></div>
-    </section>
-
-    <main id="gameStage" class="game-stage">
-      <canvas id="gameCanvas" tabindex="0" aria-label="Game world. Move with W A S D or arrow keys. Hold Shift to sprint. Release movement keys to rest. The walker is a red circle or a red arrow."></canvas>
-      <div class="map-label" aria-hidden="true"><span class="map-cross">+</span><div><span class="eyebrow">Current terrain</span><span id="biomeName">Grassland</span></div></div>
-      <div class="north-mark" aria-hidden="true"><span>N</span><span>↑</span></div>
-      <div class="stamina">
-        <span class="eyebrow">Stamina</span><span id="staminaValue">100%</span>
-        <div id="staminaMeter" class="stamina-meter" role="meter" aria-label="Stamina" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div id="staminaFill"></div></div>
+      <div class="touch-pad" aria-label="Touch movement">
+        <button data-control="up" aria-label="Move north">↑</button>
+        <button data-control="left" aria-label="Move west">←</button>
+        <button data-control="down" aria-label="Move south">↓</button>
+        <button data-control="right" aria-label="Move east">→</button>
+        <button data-control="sprint" aria-label="Sprint">RUN</button>
       </div>
-      <div class="terrain-note">Open terrain · all biomes traversable</div>
-      <div class="map-key" aria-label="Map key"><span><i class="player-key"></i>You</span><span><i class="walker-key"></i>Walker</span></div>
-
-      <div id="startScreen" class="overlay" role="dialog" aria-modal="true" aria-labelledby="startTitle" aria-describedby="startDescription">
-        <div class="overlay-card">
-          <span class="eyebrow">The pursuit begins with you</span>
-          <h2 id="startTitle">The world is vast.<br>The walker never stops.</h2>
-          <p id="startDescription">Walk to keep your distance. Sprint to make room.<br class="desktop-break"> Stop to recover, but keep an eye on the red arrow.</p>
-          <div class="control-guide"><span><kbd>W A S D</kbd> / <kbd>↑ ← ↓ →</kbd> Move</span><span><kbd>Shift</kbd> Sprint</span><span>Release keys to rest</span></div>
-          <button id="startBtn" class="primary-button" type="button">Begin the walk <span aria-hidden="true">↗</span></button>
-          <p class="fine-print">Once started, pursuit continues when you leave the tab.</p>
+      <div id="startScreen" class="veil">
+        <div class="intro-card">
+          <span class="eyebrow">THE CONSTANT WALKER · PROTOTYPE v0.3.1</span>
+          <h1>Keep moving.</h1>
+          <p>Something is following you.<br>Find your way through the landscape.</p>
+          <div class="control-grid"><span><kbd>W A S D</kbd> Move</span><span><kbd>SHIFT</kbd> Sprint</span><span><kbd>Q</kbd> Explore</span><span><kbd>E</kbd> Interact</span></div>
+          <label class="seed-field">WORLD SEED<input id="seedInput" maxlength="64" autocomplete="off" value="constant-walker"></label>
+          <button id="startBtn" class="primary wide">Begin expedition <span>↗</span></button>
+          <button id="continueBtn" class="secondary wide" hidden>Continue checkpoint</button>
+          <small class="intro-foot">Click ground to select it. Use the field kit for other actions.</small>
         </div>
       </div>
-
-      <div id="gameOver" class="overlay" role="dialog" aria-modal="true" aria-labelledby="caughtTitle" aria-describedby="runSummary" hidden>
-        <div class="overlay-card caught-card">
-          <span class="eyebrow">The distance ran out</span>
-          <h2 id="caughtTitle">The walker caught you.</h2>
-          <p id="runSummary"></p>
-          <button id="restartBtn" class="primary-button" type="button">Walk again <span aria-hidden="true">↗</span></button>
-          <p class="fine-print">Same world. A fresh start.</p>
-        </div>
+      <div id="gameOver" class="veil" hidden>
+        <div class="intro-card caught-card"><span class="eyebrow">CONTACT</span><h1>It caught you.</h1><p id="caughtText">Return to your last checkpoint.</p><button id="restartBtn" class="primary wide">Return to last refuge</button><button id="newRunBtn" class="text-button wide">New expedition</button></div>
       </div>
-      <p id="announcer" class="sr-only" aria-live="polite"></p>
-    </main>
-
-    <div class="touch-controls" aria-label="Touch controls">
-      <div class="dpad"><button data-control="up" aria-label="Move north" type="button">↑</button><button data-control="left" aria-label="Move west" type="button">←</button><button data-control="down" aria-label="Move south" type="button">↓</button><button data-control="right" aria-label="Move east" type="button">→</button></div>
-      <span>Hold a direction to move.<br>Release to rest.</span>
-      <button data-control="sprint" class="sprint-button" type="button">Hold to<br>sprint</button>
     </div>
-
-    <footer class="footer">
-      <div class="coordinates"><span>You <b id="playerCoords">0.0, 0.0</b></span><span>Walker <b id="walkerCoords">30.0, −30.0</b></span></div>
-      <div class="keyboard-hint"><kbd>WASD</kbd> Move <span>·</span> <kbd>Shift</kbd> Sprint <span>·</span> Stay still to rest</div>
-      <span class="seed-label">World <a id="seedLink" href="?seed=constant-walker">constant-walker</a></span>
-    </footer>
-  </div>
-  <noscript>This game needs JavaScript. Enable it, then reload this page.</noscript>
-  <script type="module">
-// Generated by build.mjs. Edit the individual source modules.
-
-// config.js
-// Positions, radii and speeds use tiles. One tile renders as 50 CSS pixels.
-// Provisional PRD balance: 120 / 240 / 90 CSS pixels per second.
+    <div class="map-footer"><span id="terrainLabel">GRASSLAND</span><span>WASD MOVE <i>·</i> SHIFT SPRINT <i>·</i> Q EXPLORE <i>·</i> E INTERACT</span></div>
+    <div class="vitals">
+      <div class="vital"><div><span>STAMINA</span><strong id="staminaText">100 / 100</strong></div><progress id="staminaMeter" max="100" value="100"></progress></div>
+      <div class="vital food"><div><span>PROVISIONS</span><strong id="foodText">24.0 h</strong></div><progress id="foodMeter" max="1800" value="1440"></progress></div>
+      <div class="vital fatigue"><div><span>FATIGUE</span><strong id="fatigueText">0%</strong></div><progress id="fatigueMeter" max="100" value="0"></progress></div>
+    </div>
+  </section>
+  <aside class="field-panel">
+    <nav class="panel-tabs" aria-label="Field panel"><button data-tab="actions" class="active">Field kit</button><button data-tab="inventory">Inventory <span id="kitCount">0</span></button><button data-tab="notes">Notes</button></nav>
+    <section id="panel-actions" class="panel-body">
+      <div class="section-label"><span>01 / YOUR SURROUNDINGS</span><button id="centerTarget" class="text-button">Here ↙</button></div>
+      <div class="terrain-card"><div><h2 id="selectedName">Grassland</h2><span id="selectedPosition">0, 0</span></div><p id="selectedDetails">SOIL · ELEVATION 0.20</p><div id="targetDistance" class="muted">Select nearby ground on the map.</div></div>
+      <div class="button-pair"><button id="searchBtn" class="primary">Explore area <kbd>Q</kbd></button><button id="interactBtn" class="secondary">Interact <kbd>E</kbd></button></div>
+      <div class="section-label space-top">02 / EQUIPMENT ACTIONS</div>
+      <div class="tool-actions">
+        <button id="refugeBtn" class="tool-button"><span>⌂</span><div><strong>Excavate a refuge</strong><small>20 seconds · shovel</small></div><span>↗</span></button>
+        <button id="digBtn" class="tool-button"><span>↧</span><div><strong>Lower selected ground</strong><small>Resumable work · shovel</small></div><span>↗</span></button>
+        <button id="decoyBtn" class="tool-button"><span>◉</span><div><strong>Place a decoy</strong><small id="decoyCount">None carried</small></div><span>↗</span></button>
+        <button id="blastBtn" class="tool-button danger"><span>✳</span><div><strong>Place dynamite</strong><small id="dynamiteCount">8-second fuse · none carried</small></div><span>↗</span></button>
+      </div>
+      <div class="section-label space-top">03 / RECOVERY</div>
+      <div class="sleep-card"><div class="sleep-title"><h3>Plan your sleep</h3><strong id="sleepHoursLabel">6 hours</strong></div><input id="sleepHours" aria-label="Sleep duration in world hours" type="range" min="0.5" max="8" value="6" step="0.5"><div id="sleepPreview" class="sleep-preview">Fatigue 0% → 0%</div><div id="sleepStats" class="muted"></div><button id="sleepBtn" class="secondary wide">Begin uninterrupted sleep</button><small>Sleep cannot be interrupted once started.</small></div>
+      <div class="checkpoint-card"><button id="saveBtn" class="primary">Save checkpoint</button><button id="loadBtn" class="secondary">Load</button><small id="saveStatus">No checkpoint in this world.</small></div>
+      <details class="backup"><summary>Checkpoint backup</summary><button id="exportBtn" class="text-button">Export checkpoint ↓</button><button id="importBtn" class="text-button">Import checkpoint ↑</button><input id="importFile" type="file" accept=".json,application/json" hidden></details>
+    </section>
+    <section id="panel-inventory" class="panel-body" hidden><div class="section-label">EQUIPMENT & SUPPLIES</div><div id="inventoryList"></div><p class="panel-foot">Everything you carry stays with you. Food reserves are shown below the map.</p></section>
+    <section id="panel-notes" class="panel-body notes-panel" hidden><div class="section-label">YOUR FIELD NOTES</div><textarea id="notes" aria-label="Player-written field notes" placeholder="Write what you notice. Record a place, a pattern, a question…"></textarea><div class="notes-footer"><span id="notesStatus">Player-written notes</span><button id="exportNotes" class="text-button">Export ↓</button></div><p class="panel-foot">Time continues while you write.</p></section>
+  </aside>
+</main>
+<dialog id="helpDialog"><button id="closeHelp" class="dialog-close" aria-label="Close controls">×</button><span class="eyebrow">CONTROLS</span><h2>Out in the field</h2><dl><dt>WASD / arrows</dt><dd>Move</dd><dt>Shift</dt><dd>Sprint</dd><dt>Q</dt><dd>Explore the selected area</dd><dt>E</dt><dd>Collect nearby finds / enter or leave</dd><dt>Click map</dt><dd>Select ground for an action</dd><dt>Esc</dt><dd>Stop work; sleep remains committed</dd></dl><p>Use the field kit to work, rest, or write. Time controls are available during long actions.</p><button id="closeHelpBottom" class="primary wide">Back to the expedition</button></dialog>
+<script>
+(() => {
+const __modules = Object.create(null);
+__modules["config.js"] = (() => {
+// Distances: tiles. Time: simulation seconds. One world hour = 60 seconds.
 const CONFIG = Object.freeze({
-  tileSize: 50, chunkSize: 16, fixedStep: 1 / 120, awayThreshold: 0.25,
-  defaultSeed: 'constant-walker',
-  player: Object.freeze({
-    x: 0, y: 0, radius: 10 / 50, speedWalk: 120 / 50, speedRun: 240 / 50,
-    maxStamina: 100, staminaDrain: 30, regenRest: 60, regenWalk: 6,
-  }),
-  walker: Object.freeze({ x: 30, y: -30, radius: 15 / 50, speed: 90 / 50 }),
+  version: 3, release: '0.3.1', defaultSeed: 'constant-walker', tileSize: 36, chunkSize: 16,
+  fixedStep: 1 / 30, hourSeconds: 60, daySeconds: 1440,
+  fatigueSeconds: 1800, foodCapacityDisplay: 1800,
+  searchSeconds: 8, refugeSeconds: 20, digSeconds: 80,
+  fuseSeconds: 8, blastRadius: 1.65, orbitRadius: 3,
+  maxWalkerSlope: Math.tan(Math.PI / 6), maxPlayerSlope: 1,
+  maxWalkerDensity: 70, maxWalkerCurrent: 0.78, shallowDepth: 0.52, navBudget: 10000,
+  player: Object.freeze({ x: 0.5, y: 0.5, radius: 0.19,
+    speedWalk: 2.4, speedRun: 4.8, maxStamina: 100,
+    staminaDrain: 24, regenRest: 24, regenWalk: 5 }),
+  walker: Object.freeze({ x: 58.5, y: -43.5, radius: 0.27, speed: 1.8 }),
 });
+const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+const tileKey = (x, y) => Math.floor(x) + ',' + Math.floor(y);
+const areaKey = (x, y) => Math.floor(x / 3) + ',' + Math.floor(y / 3);
+const mod = (n, m) => ((n % m) + m) % m;
+const ITEMS = Object.freeze({
+  shovel: { name: 'Shovel', description: 'Excavate soil and underground chambers.', icon: '↧' },
+  bedroll: { name: 'Shelter roll', description: 'A dry sleeping surface and a light canopy.', icon: '⌂' },
+  climbing: { name: 'Climbing equipment', description: 'Ropes and anchors for steep ground.', icon: '⌁' },
+  fishing: { name: 'Fishing pole', description: 'Search suitable water for food.', icon: '⌇' },
+  diving: { name: 'Diving equipment', description: 'Submerge while travelling through deep water.', icon: '≈' },
+  decoy: { name: 'Decoy', description: 'Place the device on dry ground.', icon: '◉' },
+  dynamite: { name: 'Dynamite', description: 'An eight-second fuse. Reshapes nearby terrain.', icon: '✳' },
+  food: { name: 'Provisions', description: 'Carried food, consumed over time.', icon: '◒' },
+});
+function sleepRecovery(hours, sheltered) {
+  const curve = sheltered ? [[0, 0], [2, 0], [4, 60], [6, 100], [8, 100]]
+    : [[0, 0], [2, 0], [4, 30], [6, 65], [8, 100]];
+  for (let i = 1; i < curve.length; i++) if (hours <= curve[i][0]) {
+    const [a, va] = curve[i - 1], [b, vb] = curve[i];
+    return va + (vb - va) * clamp((hours - a) / (b - a), 0, 1);
+  }
+  return 100;
+}
 
-// geometry.js
+return { CONFIG, clamp, tileKey, areaKey, mod, ITEMS, sleepRecovery };
+})();
+__modules["geometry.js"] = (() => {
 function worldToScreen(x, y, cameraX, cameraY, width, height, tileSize) {
   return { x: (x - cameraX) * tileSize + width / 2,
     y: (y - cameraY) * tileSize + height / 2 };
@@ -277,7 +189,9 @@ function edgeIndicator(dx, dy, width, height, padding = 30) {
     angle: Math.atan2(dy, dx) };
 }
 
-// noise.min.js
+return { worldToScreen, screenToWorld, gapBetween, stationaryCatchTime, sweptContact, edgeIndicator };
+})();
+__modules["noise.min.js"] = (() => {
 /*
  * A speed-improved perlin and simplex noise algorithms for 2D.
  * Based on code by Stefan Gustavson.
@@ -352,476 +266,1189 @@ return noise;
 
 
 
-// player.js
+return { createNoise };
+})();
+__modules["world.js"] = (() => {
+const { createNoise } = __modules["noise.min.js"];
+const { CONFIG, clamp, tileKey, areaKey, mod } = __modules["config.js"];
+const BIOMES = Object.freeze({
+  grass: { name: 'Grassland', color: '#8c9c76' },
+  forest: { name: 'Woodland', color: '#567351' },
+  denseForest: { name: 'Dense undergrowth', color: '#365b48' },
+  rock: { name: 'Rocky ground', color: '#99998a' },
+  foothills: { name: 'Foothills', color: '#8a9274' },
+  mountain: { name: 'Mountain', color: '#747f72' },
+  peak: { name: 'High ground', color: '#bac0ad' },
+  water: { name: 'Deep lake', color: '#355e72' },
+  river: { name: 'Deep river', color: '#406b7c' },
+  stream: { name: 'Stream', color: '#66949a' },
+  shallowWater: { name: 'Shallows', color: '#82aaa4' },
+});
+function hashSeed(value) {
+  let hash = 2166136261;
+  for (const c of String(value)) { hash ^= c.codePointAt(0); hash = Math.imul(hash, 16777619); }
+  return hash >>> 0;
+}
+function fieldRandom(x, y, salt = 0) {
+  let h = Math.imul(x | 0, 374761393) ^ Math.imul(y | 0, 668265263) ^ salt;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+const BASIN_ROWS = [[-1, 1], [-2, 3], [-3, 3], [-3, 3], [-3, 2], [-2, 2], [-1, 1]];
+function basinInterior(dx, dy) {
+  const row = BASIN_ROWS[dy + 3];
+  return !!row && dx >= row[0] && dx <= row[1];
+}
 
-class Player {
-  constructor() { this.reset(); }
-
-  reset() {
-    const config = CONFIG.player;
-    this.x = config.x;
-    this.y = config.y;
-    this.radius = config.radius;
-    this.stamina = config.maxStamina;
-    this.state = 'resting';
-    this.exhausted = false;
-    this.heading = -Math.PI / 2;
+class World {
+  constructor({ seed = CONFIG.defaultSeed, terrain = null } = {}) {
+    this.seed = String(seed).slice(0, 64); this.salt = hashSeed(this.seed);
+    this.noise = createNoise(this.salt); this.coverNoise = createNoise(this.salt ^ 73471);
+    this.terrain = terrain; this.baseCache = new Map(); this.edits = new Map();
+    this.refuges = new Map(); this.searched = new Set(); this.searchProgress = new Map();
+    this.collected = new Set(); this.resources = new Map(); this.revision = 0;
+    const shift = (this.salt % 5) - 2;
+    this.sites = { basin: { x: 44 + shift, y: -22, radius: 4 }, cave: { x: -19, y: 12 } };
+    const j = ((this.salt >>> 4) % 3) - 1;
+    this.finds = [
+      { id: 'starter-shovel', kind: 'shovel', x: 4 + j, y: -1, amount: 1 },
+      { id: 'starter-shelter', kind: 'bedroll', x: -5, y: -3 + j, amount: 1 },
+      { id: 'starter-provisions', kind: 'food', x: 0, y: 3, amount: 480 },
+      { id: 'climbing-kit', kind: 'climbing', x: 13 + j, y: -7, amount: 1 },
+      { id: 'fishing-pole', kind: 'fishing', x: 19, y: 7 + j, amount: 1 },
+      { id: 'diving-kit', kind: 'diving', x: 29 + j, y: 13, amount: 1 },
+      { id: 'decoy-cache', kind: 'decoy', x: 31, y: -10, amount: 2 },
+      { id: 'charges-west', kind: 'dynamite', x: -14, y: -12, amount: 2 },
+      { id: 'charges-east', kind: 'dynamite', x: 36, y: 9, amount: 2 },
+      { id: 'charges-north', kind: 'dynamite', x: 64, y: -31, amount: 2 },
+    ];
   }
-
-  update(input, dt) {
-    const config = CONFIG.player;
-    let dx = input.x || 0, dy = input.y || 0;
-    const magnitude = Math.hypot(dx, dy);
-    if (!input.run) this.exhausted = false;
-    if (magnitude === 0) {
-      this.state = 'resting';
-      this.stamina = Math.min(config.maxStamina, this.stamina + config.regenRest * dt);
-      return 0;
+  riverY(band, x) {
+    return 25 + band * 96 + Math.sin(x * 0.035 + (this.salt % 113)) * 5
+      + this.noise.perlin2(x * 0.013 + 12, band * 7 + 1.6) * 4;
+  }
+  basinNear(x, y) {
+    const first = this.sites.basin;
+    if (Math.max(Math.abs(x - first.x), Math.abs(y - first.y)) <= 24) return first;
+    const gx = Math.floor(x / 192), gy = Math.floor((y + 96) / 192);
+    if (gx === 0 && gy === 0) return null;
+    const r = fieldRandom(gx, gy, this.salt ^ 3197);
+    const b = { x: gx * 192 + 86 + Math.floor(r * 32), y: gy * 192 - 38 + Math.floor(r * 8), radius: 4 };
+    return Math.max(Math.abs(x - b.x), Math.abs(y - b.y)) <= 24 ? b : null;
+  }
+  cavePoints(x, y, radius = 20) {
+    const result = [this.sites.cave];
+    const minX = Math.floor((x - radius) / 96), maxX = Math.floor((x + radius) / 96);
+    const minY = Math.floor((y - radius) / 96), maxY = Math.floor((y + radius) / 96);
+    for (let cy = minY; cy <= maxY; cy++) for (let cx = minX; cx <= maxX; cx++) {
+      const r = fieldRandom(cx, cy, this.salt ^ 827);
+      if (r < 0.08 && Math.abs(cx) + Math.abs(cy) > 0)
+        result.push({ x: cx * 96 + 18 + Math.floor(r * 500), y: cy * 96 + 35 });
     }
-
-    dx /= magnitude;
-    dy /= magnitude;
-    this.heading = Math.atan2(dy, dx);
-    let runTime = 0;
-    if (input.run && !this.exhausted && this.stamina > 0) {
-      runTime = Math.min(dt, this.stamina / config.staminaDrain);
-      this.stamina = Math.max(0, this.stamina - runTime * config.staminaDrain);
-      // Latch until sprint is released: no empty-stamina stutter.
-      if (this.stamina <= 1e-9) {
-        this.stamina = 0;
-        this.exhausted = true;
+    return result.filter(p => Math.abs(p.x - x) <= radius && Math.abs(p.y - y) <= radius
+      && !this.basinNear(p.x, p.y));
+  }
+  baseTile(wx, wy) {
+    const x = Math.floor(wx), y = Math.floor(wy), key = tileKey(x, y);
+    if (this.baseCache.has(key)) return this.baseCache.get(key);
+    let t;
+    if (this.terrain) {
+      t = { x, y, height: 0.2, density: 5, material: 'soil', soilDepth: 1.1,
+        waterLevel: null, waterKind: 'river', current: 0, ...this.terrain(x, y) };
+    } else {
+      const large = this.noise.perlin2(x * 0.019 + 13.7, y * 0.019 - 22.3);
+      const ridge = Math.max(0, large + 0.02) * 11;
+      let height = 0.2 + this.noise.perlin2(x * 0.08 - 20, y * 0.08 + 10) * 0.3 + ridge;
+      if (ridge > 2) height += this.noise.perlin2(x * 0.35, y * 0.35) * 1.1;
+      const cover = this.coverNoise.perlin2(x * 0.08 + 31, y * 0.08 + 18);
+      const detail = this.coverNoise.perlin2(x * 0.36 - 20, y * 0.36 + 30);
+      let density = clamp(25 + cover * 105 + Math.max(0, detail) * 80, 4, 96);
+      // Blocked cover occurs in compact detail patches, rather than vast safe biomes.
+      if (detail < 0.18) density = Math.min(density, 69);
+      let material = height > 3.5 ? 'bedrock' : height > 1.9 ? 'stone' : 'soil';
+      let waterLevel = null, waterKind = 'river';
+      const band = Math.round((y - 25) / 96), center = this.riverY(band, x);
+      let riverDistance = Math.abs(y - center), width = 3.2;
+      const lakeX = 34 + Math.floor(x / 192) * 192;
+      const lakeY = this.riverY(band, lakeX);
+      const lakeDistance = Math.hypot((x - lakeX) / 10, (y - lakeY) / 7);
+      const ford = mod(x - (this.salt % 7), 28) < 2;
+      if (lakeDistance < 1) { riverDistance = 0; waterKind = 'water'; }
+      if (riverDistance < width + 5) {
+        const blend = clamp((riverDistance - width - 1) / 4, 0, 1);
+        height = 0.2 * (1 - blend) + height * blend;
+        density *= blend; material = 'soil';
+      }
+      if (riverDistance < width) {
+        waterLevel = 0; height = ford || riverDistance > width - 1 ? -0.24 : -1.05;
+        density = 0;
+      }
+      const tributaryCell = Math.floor(x / 64), joinX = tributaryCell * 64 + 32;
+      const joinY = this.riverY(band, joinX), along = (y - (joinY - 20)) / 20;
+      if (along >= 0 && along <= 1 && Math.abs(x - joinX - Math.sin(along * Math.PI) * 3) < 0.85
+        && waterLevel === null) {
+        waterLevel = 0; height = -0.24; density = 0; material = 'soil'; waterKind = 'stream';
+      }
+      const openingDistance = Math.hypot(x, y);
+      if (openingDistance < 27 && waterLevel === null) {
+        const blend = clamp((openingDistance - 13) / 14, 0, 1);
+        height = 0.2 + (height - 0.2) * blend;
+        density = 7 + (density - 7) * blend;
+        if (height < 1.9) material = 'soil';
+      }
+      if (openingDistance < 13) {
+        height = 0.2; waterLevel = null; material = 'soil'; density = 7;
+        if (x < -4 && y > 2 && y < 8) density = 52;
+      }
+      const b = this.basinNear(x, y);
+      if (b) {
+        const dx = Math.abs(x - b.x), dy = Math.abs(y - b.y);
+        const basinDistance = Math.max(dx, dy);
+        if (basinDistance > 7 && basinDistance < 24 && waterLevel === null) {
+          const blend = (basinDistance - 7) / 17;
+          height = 0.2 + (height - 0.2) * blend;
+          density = 8 + (density - 8) * blend;
+          if (height < 1.9) material = 'soil';
+        }
+        if (dx <= 7 && dy <= 7) {
+          height = 0.2; density = 8; waterLevel = null; material = 'soil';
+          const rx = x - b.x, ry = y - b.y;
+          const boundary = !basinInterior(rx, ry) && [-1,0,1].some(ox =>
+            [-1,0,1].some(oy => basinInterior(rx + ox, ry + oy)));
+          if (boundary) {
+            height = 2.3 + fieldRandom(x,y,this.salt) * 0.25; material = 'bedrock'; density = 35;
+            if (x === b.x && y === b.y + b.radius) { height = 0.2; material = 'soil'; density = 5; }
+          }
+        }
+      }
+      const cave = this.cavePoints(x, y, 10).find(c => Math.hypot(x - c.x, y - c.y) <= 10);
+      if (cave) {
+        const blend = clamp((Math.hypot(x - cave.x, y - cave.y) - 4) / 6, 0, 1);
+        if (blend === 0 || waterLevel === null) {
+          height = 0.2 + (height - 0.2) * blend; density = 8 + (density - 8) * blend;
+          if (blend === 0) waterLevel = null;
+          if (height < 1.9) material = 'soil';
+        }
+      }
+      if (this.finds.some(f => f.x === x && f.y === y)) {
+        height = 0.2; density = Math.min(density, 50); waterLevel = null; material = 'soil';
+      }
+      t = { x, y, height, density, material, waterLevel, waterKind,
+        current: waterLevel === null ? 0 : ford || waterKind === 'stream' ? 0.1
+          : 0.3 + Math.max(0, Math.sin(x * 0.11 + band)) * 0.6,
+        soilDepth: material === 'soil' ? 1.05 : material === 'stone' ? 0.2 : 0 };
+    }
+    if (this.baseCache.size > 80000) this.baseCache.clear();
+    this.baseCache.set(key, Object.freeze(t)); return t;
+  }
+  getTile(x, y) {
+    const base = this.baseTile(x, y), edit = this.edits.get(tileKey(x, y));
+    const t = { ...base, ...edit };
+    t.depth = t.waterLevel === null ? 0 : Math.max(0, t.waterLevel - t.height);
+    t.wet = t.depth > 0.05; t.deep = t.depth > CONFIG.shallowDepth;
+    t.type = t.wet ? (t.deep ? t.waterKind : t.waterKind === 'stream' ? 'stream' : 'shallowWater')
+      : t.density >= 70 && t.material === 'soil' ? 'denseForest' : t.density >= 30 && t.material === 'soil' ? 'forest'
+      : t.height > 4.4 ? 'peak' : t.height > 2.3 ? 'mountain'
+      : t.height > 1.1 ? 'foothills' : t.material !== 'soil' ? 'rock' : 'grass';
+    return t;
+  }
+  getTileType(x, y) { return this.getTile(x, y).type; }
+  getTileColor(type) { return BIOMES[type]?.color || BIOMES.grass.color; }
+  slopeAt(x, y) {
+    const t = this.getTile(x, y);
+    return Math.max(...[[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) =>
+      Math.abs(t.height - this.getTile(t.x + dx, t.y + dy).height)));
+  }
+  walkerTile(x, y) {
+    const t = this.getTile(x, y);
+    return !t.deep && t.current < CONFIG.maxWalkerCurrent && t.density < CONFIG.maxWalkerDensity;
+  }
+  canTraverse(x, y, nx, ny, actor = 'walker', equipment = {}) {
+    x = Math.floor(x); y = Math.floor(y); nx = Math.floor(nx); ny = Math.floor(ny);
+    if (x === nx && y === ny) return actor !== 'walker' || this.walkerTile(nx, ny);
+    if (Math.abs(nx - x) > 1 || Math.abs(ny - y) > 1) return false;
+    const a = this.getTile(x, y), b = this.getTile(nx, ny);
+    const distance = Math.hypot(nx - x, ny - y);
+    if (actor === 'walker') {
+      if (!this.walkerTile(x, y) || !this.walkerTile(nx, ny)) return false;
+      if (Math.abs(b.height - a.height) / distance > CONFIG.maxWalkerSlope + 1e-8) return false;
+    } else if (!equipment.climbing && Math.abs((b.wet ? b.waterLevel : b.height)
+      - (a.wet ? a.waterLevel : a.height)) / distance > CONFIG.maxPlayerSlope + 1e-8) return false;
+    if (nx !== x && ny !== y) return this.canTraverse(x, y, nx, y, actor, equipment)
+      && this.canTraverse(x, y, x, ny, actor, equipment)
+      && this.canTraverse(nx, y, nx, ny, actor, equipment)
+      && this.canTraverse(x, ny, nx, ny, actor, equipment);
+    return true;
+  }
+  neighbors(x, y, actor = 'walker', equipment = {}) {
+    const list = [];
+    for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1], [1, 1], [-1, 1], [-1, -1], [1, -1]])
+      if (this.canTraverse(x, y, x + dx, y + dy, actor, equipment)) list.push({ x: x + dx, y: y + dy });
+    return list;
+  }
+  component(x, y, limit = 600) {
+    x = Math.floor(x); y = Math.floor(y);
+    if (!this.walkerTile(x, y)) return { closed: true, keys: new Set(), cells: [] };
+    const cells = [{ x, y }], keys = new Set([tileKey(x, y)]);
+    for (let i = 0; i < cells.length; i++) for (const n of this.neighbors(cells[i].x, cells[i].y)) {
+      const key = tileKey(n.x, n.y);
+      if (!keys.has(key)) {
+        keys.add(key); cells.push(n);
+        if (cells.length > limit) return { closed: false, keys, cells };
       }
     }
-    const walkTime = dt - runTime;
-    this.stamina = Math.min(config.maxStamina, this.stamina + walkTime * config.regenWalk);
-    const distance = runTime * config.speedRun + walkTime * config.speedWalk;
-    this.x += dx * distance;
-    this.y += dy * distance;
-    this.state = runTime > 0 && walkTime < 1e-10 ? 'running' : 'walking';
-    return distance;
+    return { closed: true, keys, cells };
+  }
+  edit(x, y, change) {
+    const key = tileKey(x, y), previous = this.edits.get(key) || {};
+    this.edits.set(key, { ...previous, ...change }); this.revision++;
+  }
+  clearCache() { this.baseCache.clear(); }
+  sampleFields(x, y) {
+    const t = this.getTile(x, y); return { elevation: t.height, moisture: t.density / 100 };
+  }
+  refugeAt(x, y) {
+    const key = tileKey(x, y);
+    if (this.refuges.has(key)) return this.refuges.get(key);
+    const cave = this.cavePoints(Math.floor(x), Math.floor(y), 0).find(c => c.x === Math.floor(x) && c.y === Math.floor(y));
+    return cave ? { ...cave, kind: 'cave', name: 'Natural cave' } : null;
+  }
+  canRefuge(x, y) {
+    const t = this.getTile(x, y);
+    if (t.wet || t.material !== 'soil' || t.density > 29 || this.refugeAt(x, y)) return false;
+    for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) {
+      const n = this.getTile(t.x + dx, t.y + dy);
+      if (!this.walkerTile(n.x, n.y) || n.wet || Math.abs(n.height - t.height) > 0.3) return false;
+    }
+    return true;
+  }
+  clueAt(x, y) {
+    if (this.searched.has(areaKey(x, y))) return false;
+    const ax = Math.floor(x / 3), ay = Math.floor(y / 3);
+    return this.finds.some(f => areaKey(f.x, f.y) === ax + ',' + ay)
+      || fieldRandom(ax, ay, this.salt ^ 1829) < 0.09;
+  }
+  completeSearch(x, y, now, hasFishing) {
+    const key = areaKey(x, y); this.searched.add(key); this.searchProgress.delete(key);
+    const t = this.getTile(x, y), previous = this.resources.get(key);
+    const forest = t.type === 'forest' || t.type === 'denseForest';
+    if ((forest || (t.wet && hasFishing)) && (!previous || previous.availableAt <= now)) {
+      const [ax, ay] = key.split(',').map(Number);
+      if (t.wet || fieldRandom(ax, ay, this.salt ^ 921) < 0.85)
+        this.resources.set(key, { id: 'food:' + key, kind: 'food', x: Math.floor(x), y: Math.floor(y),
+          amount: t.wet ? 300 : 180, availableAt: Infinity, present: true });
+    }
+    return this.visibleFinds();
+  }
+  visibleFinds() {
+    return [...this.finds.filter(f => this.searched.has(areaKey(f.x, f.y)) && !this.collected.has(f.id)),
+      ...[...this.resources.values()].filter(f => f.present)];
+  }
+  collect(id, now) {
+    const find = this.visibleFinds().find(f => f.id === id);
+    if (!find) return null;
+    if (id.startsWith('food:')) this.resources.set(id.slice(5), { ...find, present: false, availableAt: now + 300 });
+    else this.collected.add(id);
+    return { ...find };
+  }
+  serialize() {
+    return { edits: [...this.edits], refuges: [...this.refuges], searched: [...this.searched],
+      searchProgress: [...this.searchProgress], collected: [...this.collected],
+      resources: [...this.resources].map(([key, r]) => [key, { ...r, availableAt: Number.isFinite(r.availableAt) ? r.availableAt : -1 }]),
+      revision: this.revision };
+  }
+  restore(data) {
+    this.edits = new Map(data.edits || []); this.refuges = new Map(data.refuges || []);
+    this.searched = new Set(data.searched || []); this.searchProgress = new Map(data.searchProgress || []);
+    this.collected = new Set(data.collected || []);
+    this.resources = new Map((data.resources || []).map(([k, r]) => [k, { ...r, availableAt: r.availableAt === -1 ? Infinity : r.availableAt }]));
+    this.revision = data.revision || 0; this.clearCache();
   }
 }
 
-// tcw.js
+return { BIOMES, hashSeed, fieldRandom, World };
+})();
+__modules["navigation.js"] = (() => {
+const { CONFIG, tileKey } = __modules["config.js"];
+class PathHeap {
+  constructor() { this.nodes = []; }
+  push(node) {
+    const a = this.nodes; a.push(node); let i = a.length - 1;
+    while (i > 0) { const p = (i - 1) >> 1; if (a[p].f <= node.f) break; a[i] = a[p]; i = p; }
+    a[i] = node;
+  }
+  pop() {
+    const a = this.nodes, root = a[0], end = a.pop();
+    if (a.length) {
+      let i = 0;
+      while (i * 2 + 1 < a.length) {
+        let c = i * 2 + 1;
+        if (c + 1 < a.length && a[c + 1].f < a[c].f) c++;
+        if (a[c].f >= end.f) break;
+        a[i] = a[c]; i = c;
+      }
+      a[i] = end;
+    }
+    return root;
+  }
+}
+const estimatePath = (a, b) => {
+  const dx = Math.abs(a.x - b.x), dy = Math.abs(a.y - b.y);
+  return Math.max(dx, dy) + (Math.SQRT2 - 1) * Math.min(dx, dy);
+};
+function findPath(world, from, to, budget = CONFIG.navBudget) {
+  const start = { x: Math.floor(from.x), y: Math.floor(from.y) };
+  const goal = { x: Math.floor(to.x), y: Math.floor(to.y) };
+  if (!world.walkerTile(start.x, start.y) || !world.walkerTile(goal.x, goal.y))
+    return { path: [], found: false, exhausted: true, visited: 0 };
+  const heap = new PathHeap(), costs = new Map(), closed = new Set();
+  const first = { ...start, g: 0, f: estimatePath(start, goal), parent: null };
+  heap.push(first); costs.set(tileKey(start.x, start.y), 0);
+  let best = first, found = false, count = 0;
+  while (heap.nodes.length && count < budget) {
+    const node = heap.pop(), key = tileKey(node.x, node.y);
+    if (closed.has(key)) continue;
+    closed.add(key); count++;
+    if (estimatePath(node, goal) < estimatePath(best, goal)) best = node;
+    if (node.x === goal.x && node.y === goal.y) { best = node; found = true; break; }
+    for (const n of world.neighbors(node.x, node.y)) {
+      const nk = tileKey(n.x, n.y), g = node.g + Math.hypot(n.x - node.x, n.y - node.y);
+      if (closed.has(nk) || (costs.has(nk) && costs.get(nk) <= g)) continue;
+      costs.set(nk, g);
+      heap.push({ ...n, g, f: g + estimatePath(n, goal), parent: node });
+    }
+  }
+  // A capped search follows a legal frontier, even when the detour initially
+  // goes away from the target. Budget exhaustion never means "unreachable".
+  if (!found && count >= budget) {
+    const frontier = heap.nodes.filter(n => !closed.has(tileKey(n.x, n.y)))
+      .reduce((best, n) => !best || n.f < best.f ? n : best, null);
+    if (frontier) best = frontier;
+  }
+  const path = [];
+  for (let n = best; n && n.parent; n = n.parent) path.push({ x: n.x + 0.5, y: n.y + 0.5 });
+  path.reverse();
+  return { path, found, exhausted: !found && heap.nodes.length === 0, visited: count };
+}
 
+return { findPath };
+})();
+__modules["player.js"] = (() => {
+const { CONFIG, clamp } = __modules["config.js"];
+class Player {
+  constructor() { this.reset(); }
+  reset() {
+    Object.assign(this, { x: CONFIG.player.x, y: CONFIG.player.y, radius: CONFIG.player.radius,
+      stamina: 100, fatigue: 0, food: 1440, underground: false,
+      heading: -Math.PI / 2, state: 'resting', exhausted: false });
+  }
+  maxStamina() { return Math.max(20, 100 - this.fatigue * 0.8); }
+  fatigueSpeed() { return 1 - 0.42 * Math.pow(this.fatigue / 100, 1.7); }
+  speedMultiplier(world, inventory, direction = { x: 0, y: 0 }) {
+    const t = world.getTile(this.x, this.y);
+    const next = world.getTile(this.x + direction.x, this.y + direction.y);
+    const horizontal = Math.max(1, Math.hypot(next.x - t.x, next.y - t.y));
+    const slope = Math.abs((next.wet ? next.waterLevel : next.height)
+      - (t.wet ? t.waterLevel : t.height)) / horizontal;
+    let surface = t.wet ? (t.deep ? 0.5 : 0.6) : t.density >= 70 ? 0.5
+      : t.type === 'forest' ? 0.8 : t.material !== 'soil' ? 0.6 : 1;
+    let slopeSpeed = slope > 1 ? (inventory.climbing ? 0.25 : 0.35)
+      : slope > CONFIG.maxWalkerSlope ? (inventory.climbing ? 0.7 : 0.45)
+      : slope > Math.tan(Math.PI / 12) ? 0.8 : 1;
+    return Math.min(surface, slopeSpeed) * this.fatigueSpeed() * (this.food > 0 ? 1 : 0.55);
+  }
+  concealed(world, inventory) {
+    return this.underground || !!(inventory.diving && world.getTile(this.x, this.y).deep);
+  }
+  update(input, dt, world, inventory, locked = false) {
+    const c = CONFIG.player, water = world.getTile(this.x, this.y).wet;
+    let dx = Number(input.x) || 0, dy = Number(input.y) || 0;
+    if (!input.run) this.exhausted = false;
+    const length = Math.hypot(dx, dy), max = this.maxStamina();
+    if (locked || this.underground || length === 0) {
+      this.state = locked ? 'occupied' : this.underground ? 'underground' : water ? 'swimming' : 'resting';
+      if (!water && this.food > 0) this.stamina = Math.min(max, this.stamina + c.regenRest * dt);
+      if (this.food <= 0) this.stamina = 0;
+      return 0;
+    }
+    dx /= length; dy /= length; this.heading = Math.atan2(dy, dx);
+    const run = input.run && !water && !this.exhausted && this.stamina > 0 && this.food > 0;
+    const runTime = run ? Math.min(dt, this.stamina / c.staminaDrain) : 0;
+    const distance = (runTime * c.speedRun + (dt - runTime) * c.speedWalk)
+      * this.speedMultiplier(world, inventory, { x: dx, y: dy });
+    const oldX = this.x, oldY = this.y;
+    // Axis sliding retains movement at cliffs without allowing diagonal corner cuts.
+    const nx = this.x + dx * distance, ny = this.y + dy * distance;
+    if (world.canTraverse(this.x, this.y, nx, ny, 'player', inventory)) { this.x = nx; this.y = ny; }
+    else {
+      if (world.canTraverse(this.x, this.y, nx, this.y, 'player', inventory)) this.x = nx;
+      if (world.canTraverse(this.x, this.y, this.x, ny, 'player', inventory)) this.y = ny;
+    }
+    const moved = Math.hypot(this.x - oldX, this.y - oldY);
+    if (moved > 1e-9 && runTime > 0) {
+      this.stamina = Math.max(0, this.stamina - runTime * c.staminaDrain);
+      if (this.stamina < 1e-8) { this.stamina = 0; this.exhausted = true; }
+    } else if (!water && this.food > 0) this.stamina = Math.min(max, this.stamina + c.regenWalk * dt);
+    if (this.food <= 0) this.stamina = 0;
+    this.state = water ? 'swimming' : moved < 1e-9 ? 'blocked' : runTime > 0 ? 'running' : 'walking';
+    return moved;
+  }
+}
+
+return { Player };
+})();
+__modules["tcw.js"] = (() => {
+const { CONFIG, tileKey, mod } = __modules["config.js"];
+const { findPath } = __modules["navigation.js"];
 class TCW {
   constructor() { this.reset(); }
   get speed() { return CONFIG.walker.speed; }
-
   reset() {
-    this.x = CONFIG.walker.x;
-    this.y = CONFIG.walker.y;
-    this.radius = CONFIG.walker.radius;
+    Object.assign(this, { x: CONFIG.walker.x, y: CONFIG.walker.y, radius: CONFIG.walker.radius,
+      lastKnown: { x: CONFIG.player.x, y: CONFIG.player.y }, path: [], planKey: '',
+      planRevision: -1, phase: 0, mode: 'pursuing', orbitTarget: null, enclosure: null,
+      componentKey: '', targetClosed: false, distanceWalked: 0, footPhase: 0 });
   }
-
-  update(playerX, playerY, dt) {
-    const dx = playerX - this.x, dy = playerY - this.y;
-    const distance = Math.hypot(dx, dy);
-    if (distance > 0) {
-      const travel = Math.min(distance, this.speed * dt);
-      this.x += dx / distance * travel;
-      this.y += dy / distance * travel;
+  orbitGoal(world, center) {
+    if (this.enclosure?.length) {
+      const cells = this.enclosure, cx = cells.reduce((s, p) => s + p.x + 0.5, 0) / cells.length;
+      const cy = cells.reduce((s, p) => s + p.y + 0.5, 0) / cells.length;
+      for (let attempt = 0; attempt < 16; attempt++) {
+        const desired = { x: cx + Math.cos(this.phase * Math.PI / 8) * 3,
+          y: cy + Math.sin(this.phase * Math.PI / 8) * 3 };
+        const p = cells.reduce((best, p) => Math.hypot(p.x + 0.5 - desired.x, p.y + 0.5 - desired.y)
+          < Math.hypot(best.x + 0.5 - desired.x, best.y + 0.5 - desired.y) ? p : best, cells[0]);
+        const goal = { x: p.x + 0.5, y: p.y + 0.5 };
+        if (Math.hypot(goal.x - this.x, goal.y - this.y) > 0.15) return goal;
+        this.phase = (this.phase + 1) % 16;
+      }
+      return { x: cells[0].x + 0.5, y: cells[0].y + 0.5 };
     }
-    return Math.hypot(playerX - this.x, playerY - this.y);
+    for (let n = 0; n < 80; n++) {
+      const angle = this.phase * Math.PI / 8;
+      const radius = CONFIG.orbitRadius + Math.floor(n / 16) * 1.5;
+      const p = { x: center.x + Math.cos(angle) * radius,
+        y: center.y + Math.sin(angle) * radius };
+      if (world.walkerTile(p.x, p.y)) return p;
+      this.phase = (this.phase + 1) % 16;
+    }
+    const currentAngle = Math.atan2(this.y - center.y, this.x - center.x);
+    const neighbors = world.neighbors(Math.floor(this.x), Math.floor(this.y));
+    neighbors.sort((a,b) => {
+      const score = p => Math.abs(Math.hypot(p.x + 0.5 - center.x,p.y + 0.5 - center.y)
+        - Math.hypot(this.x-center.x,this.y-center.y))
+        + mod(Math.atan2(p.y+0.5-center.y,p.x+0.5-center.x)-currentAngle,Math.PI*2)*0.3;
+      return score(a)-score(b);
+    });
+    return neighbors.length ? {x:neighbors[0].x+0.5,y:neighbors[0].y+0.5} : center;
   }
+  update(game, dt) {
+    const world = game.world, player = game.player;
+    if (!player.concealed(world, game.inventory)) this.lastKnown = { x: player.x, y: player.y };
+    const decoy = game.decoys[0];
+    const target = decoy ? { x: decoy.x, y: decoy.y } : this.lastKnown;
+    let circle = !decoy && player.concealed(world, game.inventory);
+    const ck = tileKey(target.x, target.y) + ':' + world.revision;
+    if (!circle && !decoy && ck !== this.componentKey) {
+      this.componentKey = ck;
+      const c = world.component(target.x, target.y, 250);
+      this.targetClosed = !world.walkerTile(target.x, target.y)
+        || (c.closed && !c.keys.has(tileKey(this.x, this.y)));
+    }
+    if (!decoy && this.targetClosed) circle = true;
+    if (this.enclosure && this.planRevision !== world.revision) this.enclosure = null;
+    this.mode = circle || this.enclosure ? 'circling' : decoy ? 'decoy' : 'pursuing';
+    if (this.enclosure?.length === 1 || !world.walkerTile(this.x, this.y)) {
+      // A newly enclosed footprint still has room for continuous motion.
+      const cx = Math.floor(this.x) + 0.5, cy = Math.floor(this.y) + 0.5;
+      this.footPhase += this.speed * dt / 0.17;
+      const tx = cx + Math.cos(this.footPhase) * 0.17, ty = cy + Math.sin(this.footPhase) * 0.17;
+      const distance = Math.hypot(tx - this.x, ty - this.y), move = Math.min(this.speed * dt, distance);
+      if (distance > 1e-9) { this.x += (tx - this.x) / distance * move; this.y += (ty - this.y) / distance * move; }
+      this.distanceWalked += move; return;
+    }
+    if (circle || this.enclosure) {
+      if (!this.orbitTarget || Math.hypot(this.x - this.orbitTarget.x, this.y - this.orbitTarget.y) < 0.12) {
+        this.phase = (this.phase + 1) % 16; this.orbitTarget = this.orbitGoal(world, target);
+      }
+    } else this.orbitTarget = null;
+    const goal = this.orbitTarget || target;
+    const key = this.mode + ':' + tileKey(goal.x, goal.y) + ':' + (this.orbitTarget ? this.phase : '');
+    if (!this.path.length || this.planRevision !== world.revision || this.planKey !== key) {
+      const plan = findPath(world, this, goal);
+      this.path = plan.path;
+      if (plan.found) this.path.push({ x: goal.x, y: goal.y });
+      if (!plan.found && plan.exhausted) {
+        const c = world.component(this.x, this.y, 2048);
+        if (c.closed && c.cells.length) {
+          this.enclosure = c.cells; this.mode = 'circling';
+          this.phase = (this.phase + 1) % 16; this.orbitTarget = this.orbitGoal(world, target);
+          this.path = findPath(world, this, this.orbitTarget).path;
+        } else {
+          this.phase = (this.phase + 1) % 16; this.orbitTarget = null;
+        }
+      }
+      this.planKey = key; this.planRevision = world.revision;
+    }
+    let remaining = this.speed * dt, attempts = 0;
+    while (remaining > 1e-9 && this.path.length && attempts++ < 32) {
+      const next = this.path[0], distance = Math.hypot(next.x - this.x, next.y - this.y);
+      if (distance < 1e-8) { this.path.shift(); continue; }
+      const move = Math.min(distance, remaining);
+      const nx = this.x + (next.x - this.x) / distance * move;
+      const ny = this.y + (next.y - this.y) / distance * move;
+      if (!world.canTraverse(this.x, this.y, nx, ny)) { this.path = []; break; }
+      this.x = nx; this.y = ny; this.distanceWalked += move; remaining -= move;
+      if (move >= distance - 1e-8) this.path.shift();
+    }
+    if (decoy && Math.hypot(this.x - decoy.x, this.y - decoy.y) < 0.4) {
+      game.decoys.shift(); this.path = []; this.planKey = ''; game.notice('A device falls silent.');
+    }
+  }
+  serialize() {
+    const { x, y, lastKnown, path, planKey, planRevision, phase, mode, orbitTarget,
+      enclosure, componentKey, targetClosed, distanceWalked, footPhase } = this;
+    return { x, y, lastKnown, path, planKey, planRevision, phase, mode, orbitTarget,
+      enclosure, componentKey, targetClosed, distanceWalked, footPhase };
+  }
+  restore(data) { this.reset(); Object.assign(this, JSON.parse(JSON.stringify(data))); }
 }
 
-// game.js
-
-
-
-
+return { TCW };
+})();
+__modules["game.js"] = (() => {
+const { CONFIG, ITEMS, clamp, tileKey, areaKey, sleepRecovery } = __modules["config.js"];
+const { World } = __modules["world.js"];
+const { Player } = __modules["player.js"];
+const { TCW } = __modules["tcw.js"];
+const { sweptContact } = __modules["geometry.js"];
 const REST = Object.freeze({ x: 0, y: 0, run: false });
-
-// Pure simulation: no DOM, drawing, terrain loading or animation-loop ownership.
+const copyState = data => JSON.parse(JSON.stringify(data));
 class Game {
-  constructor() {
-    this.player = new Player();
-    this.walker = new TCW();
-    this.reset();
+  constructor({ seed = CONFIG.defaultSeed, world = null } = {}) {
+    this.seed = world?.seed || String(seed); this.terrain = world?.terrain || null;
+    this.world = world || new World({ seed: this.seed }); this.player = new Player(); this.walker = new TCW();
+    this.reset(false, true);
   }
-
-  reset(start = false) {
-    this.player.reset();
-    this.walker.reset();
-    this.elapsed = 0;
-    this.travelled = 0;
-    this.accumulator = 0;
-    this.status = start ? 'running' : 'ready';
+  reset(start = false, preserveWorld = false) {
+    if (!preserveWorld) this.world = new World({ seed: this.seed, terrain: this.terrain });
+    this.player.reset(); this.walker.reset(); this.elapsed = 0; this.travelled = 0; this.accumulator = 0;
+    this.inventory = Object.fromEntries(Object.keys(ITEMS).filter(k => k !== 'food').map(k => [k, 0]));
+    this.status = start ? 'running' : 'ready'; this.action = null; this.jobs = new Map();
+    this.blasts = []; this.decoys = []; this.effects = []; this.notices = [];
+    this.victory = false; this.containmentRevision = this.world.revision; this.lastSave = null; this.savedAt = null;
+    if (!this.world.walkerTile(this.walker.x, this.walker.y)
+      || this.world.component(this.walker.x, this.walker.y, 256).closed) {
+      outer: for (let r = 1; r < 20; r++) for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) {
+        const nx = Math.floor(CONFIG.walker.x) + x, ny = Math.floor(CONFIG.walker.y) + y;
+        if (this.world.walkerTile(nx, ny) && !this.world.component(nx, ny, 80).closed) {
+          this.walker.x = nx + 0.5; this.walker.y = ny + 0.5; break outer;
+        }
+      }
+    }
   }
-
+  notice(text) { this.notices.push({ text, at: this.elapsed }); if (this.notices.length > 4) this.notices.shift(); }
+  concealed() { return this.player.concealed(this.world, this.inventory); }
+  targetInReach(target) { return Math.hypot(target.x + 0.5 - this.player.x, target.y + 0.5 - this.player.y) <= 1.95; }
+  nearbyFinds() {
+    return this.world.visibleFinds().filter(f => Math.hypot(f.x + 0.5 - this.player.x, f.y + 0.5 - this.player.y) <= 1.9);
+  }
+  collectNearby() {
+    if (this.action?.kind === 'sleep' || this.player.underground) return false;
+    const nearby = this.nearbyFinds();
+    for (const f of nearby) {
+      const item = this.world.collect(f.id, this.elapsed);
+      if (!item) continue;
+      if (item.kind === 'food') this.player.food += item.amount;
+      else this.inventory[item.kind] = (this.inventory[item.kind] || 0) + item.amount;
+      this.notice('Collected ' + ITEMS[item.kind].name + (item.kind === 'food' ? '.' : ' × ' + item.amount + '.'));
+    }
+    return nearby.length > 0;
+  }
+  interact() {
+    if (this.status !== 'running' || this.action?.kind === 'sleep') return false;
+    if (this.player.underground) {
+      this.player.underground = false; this.action = null;
+      this.walker.lastKnown = { x: this.player.x, y: this.player.y }; this.walker.planKey = '';
+      this.notice('Back aboveground.'); return true;
+    }
+    if (this.collectNearby()) return true;
+    const refuge = this.world.refugeAt(this.player.x, this.player.y);
+    if (!refuge) { this.notice('Nothing within reach.'); return false; }
+    this.action = null; this.walker.lastKnown = { x: this.player.x, y: this.player.y };
+    this.player.underground = true; this.notice('Entered ' + refuge.name.toLowerCase() + '.'); return true;
+  }
+  sleepPreview(hours) {
+    const duration = clamp(Number(hours) || 0.5, 0.5, 8);
+    const recovered = sleepRecovery(duration, this.inventory.bedroll > 0);
+    const fatigue = Math.max(0, this.player.fatigue - recovered);
+    return { hours: duration, fatigue, recovered: this.player.fatigue - fatigue,
+      maxStamina: Math.max(20, 100 - fatigue * 0.8),
+      speed: 1 - 0.42 * Math.pow(fatigue / 100, 1.7), sheltered: this.inventory.bedroll > 0 };
+  }
+  startAction(kind, target = null, hours = 6) {
+    if (this.status !== 'running' || this.action?.kind === 'sleep') return false;
+    const p = this.player, world = this.world, t = target ? world.getTile(target.x, target.y) : world.getTile(p.x, p.y);
+    if (kind === 'sleep') {
+      if (world.getTile(p.x, p.y).wet && !p.underground) { this.notice('You cannot sleep while swimming or wading.'); return false; }
+      const preview = this.sleepPreview(hours);
+      this.action = { kind, elapsed: 0, total: preview.hours * CONFIG.hourSeconds,
+        fatigueBefore: p.fatigue, sheltered: preview.sheltered };
+      return true;
+    }
+    if (p.underground) { this.notice('Return aboveground to work here.'); return false; }
+    if (!this.targetInReach(t)) { this.notice('Move closer to the selected ground.'); return false; }
+    if (kind === 'search') {
+      const key = areaKey(t.x, t.y), progress = world.searchProgress.get(key) || 0;
+      this.action = { kind, x: t.x, y: t.y, key, elapsed: progress, total: CONFIG.searchSeconds };
+      return true;
+    }
+    if (kind === 'refuge') {
+      if (!this.inventory.shovel) { this.notice('A digging tool is required.'); return false; }
+      if (!world.canRefuge(t.x, t.y)) { this.notice('A chamber needs level soil and a clear apron around its entrance.'); return false; }
+      const key = 'refuge:' + tileKey(t.x, t.y);
+      const job = this.jobs.get(key) || { kind, x: t.x, y: t.y, key, elapsed: 0, total: CONFIG.refugeSeconds };
+      this.jobs.set(key, job); this.action = job; return true;
+    }
+    if (kind === 'dig') {
+      if (!this.inventory.shovel) { this.notice('A digging tool is required.'); return false; }
+      const base = world.baseTile(t.x, t.y), floor = base.height - base.soilDepth;
+      if (t.material !== 'soil' || t.height <= floor + 0.025) { this.notice('The shovel cannot cut this material any further.'); return false; }
+      const key = 'dig:' + tileKey(t.x, t.y);
+      let job = this.jobs.get(key);
+      if (!job || job.elapsed >= job.total || Math.abs(t.height - job.appliedHeight) > 0.04) {
+        const endHeight = Math.max(floor, t.height - 0.9);
+        job = { kind, key, x: t.x, y: t.y, elapsed: 0,
+          total: (t.height - endHeight) / 0.9 * CONFIG.digSeconds,
+          startHeight: t.height, endHeight, appliedHeight: t.height };
+      }
+      this.jobs.set(key, job); this.action = job; return true;
+    }
+    return false;
+  }
+  cancelAction() {
+    if (this.action?.kind === 'sleep') return false;
+    if (this.action) this.notice('Work interrupted. Progress retained.');
+    this.action = null; return true;
+  }
+  placeDynamite(target) {
+    if (this.status !== 'running' || this.player.underground || this.action?.kind === 'sleep') return false;
+    if (!this.inventory.dynamite) { this.notice('No dynamite carried.'); return false; }
+    if (!target || !this.targetInReach(target)) { this.notice('Move within reach of the selected ground.'); return false; }
+    this.inventory.dynamite--;
+    this.blasts.push({ x: Math.floor(target.x) + 0.5, y: Math.floor(target.y) + 0.5,
+      remaining: CONFIG.fuseSeconds, id: this.elapsed + ':' + this.blasts.length });
+    this.notice('Fuse lit · ' + CONFIG.fuseSeconds + ' seconds.'); return true;
+  }
+  placeDecoy() {
+    if (!this.inventory.decoy || this.player.underground || this.action?.kind === 'sleep'
+      || this.world.getTile(this.player.x, this.player.y).wet) return false;
+    this.inventory.decoy--;
+    this.decoys.push({ x: this.player.x, y: this.player.y, id: this.elapsed });
+    this.walker.path = []; this.notice('Device placed.'); return true;
+  }
+  explode(blast) {
+    const radius = CONFIG.blastRadius, cx = Math.floor(blast.x), cy = Math.floor(blast.y);
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      const distance = Math.hypot(dx, dy);
+      if (distance > radius) continue;
+      const t = this.world.getTile(cx + dx, cy + dy);
+      const power = 1 - distance / (radius + 0.6);
+      const cut = (t.material === 'bedrock' ? 0.95 : t.material === 'stone' ? 1.1 : 1.25) * power;
+      this.world.edit(t.x, t.y, { height: t.height - cut, density: Math.max(0, t.density - 85 * power) });
+      const key = 'dig:' + tileKey(t.x, t.y); this.jobs.delete(key);
+      if (this.action?.key === key) this.action = null;
+    }
+    this.effects.push({ x: blast.x, y: blast.y, at: this.elapsed });
+    this.notice('The ground gives way.');
+  }
   advance(dt, input = REST) {
     if (this.status !== 'running' || !Number.isFinite(dt) || dt <= 0) return;
-    if (dt > CONFIG.awayThreshold) {
-      // RAF is suspended in hidden tabs. Account for the whole gap in O(1),
-      // treating absent input as rest, rather than pausing pursuit.
-      this.advanceResting(dt + this.accumulator);
-      this.accumulator = 0;
-      return;
-    }
     this.accumulator += dt;
-    while (this.accumulator + 1e-12 >= CONFIG.fixedStep && this.status === 'running') {
+    while (this.accumulator + 1e-10 >= CONFIG.fixedStep && this.status === 'running') {
       this.step(CONFIG.fixedStep, input);
       this.accumulator = Math.max(0, this.accumulator - CONFIG.fixedStep);
     }
     if (this.status === 'caught') this.accumulator = 0;
   }
-
   step(dt, input) {
-    const p = this.player, w = this.walker;
-    const p0 = { x: p.x, y: p.y }, w0 = { x: w.x, y: w.y };
-    const stamina0 = p.stamina;
-    const distance = p.update(input, dt);
-    w.update(p.x, p.y, dt);
-    const hit = sweptContact(p0, p, w0, w, p.radius + w.radius);
-    const fraction = hit === null ? 1 : hit;
-    if (hit !== null) {
-      p.x = p0.x + (p.x - p0.x) * fraction;
-      p.y = p0.y + (p.y - p0.y) * fraction;
-      w.x = w0.x + (w.x - w0.x) * fraction;
-      w.y = w0.y + (w.y - w0.y) * fraction;
-      p.stamina = stamina0 + (p.stamina - stamina0) * fraction;
-      this.status = 'caught';
-    }
-    this.elapsed += dt * fraction;
-    this.travelled += distance * fraction;
-  }
-
-  advanceResting(seconds) {
-    const timeToCatch = stationaryCatchTime(this.player, this.walker);
-    const duration = Math.min(seconds, timeToCatch);
-    this.player.update(REST, duration);
-    this.walker.update(this.player.x, this.player.y, duration);
-    this.elapsed += duration;
-    if (seconds >= timeToCatch) this.status = 'caught';
-  }
-}
-
-// world.js
-
-
-
-const BIOMES = Object.freeze({
-  grass: { name: 'Grassland', color: '#8e9e73' },
-  forest: { name: 'Forest', color: '#48664c' },
-  rock: { name: 'Rocky ground', color: '#929686' },
-  foothills: { name: 'Foothills', color: '#7d8970' },
-  mountain: { name: 'Mountain range', color: '#657667' },
-  peak: { name: 'High peaks', color: '#bbc5b0' },
-  water: { name: 'Lake', color: '#476e81' },
-  river: { name: 'River', color: '#4b788b' },
-  stream: { name: 'Stream', color: '#608c99' },
-  shallowWater: { name: 'Shallows', color: '#7eaaa7' },
-});
-
-function hashSeed(value) {
-  let hash = 2166136261;
-  for (const char of String(value)) {
-    hash ^= char.codePointAt(0);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-}
-
-function coordinateRandom(x, y, salt) {
-  let h = Math.imul(x | 0, 374761393) ^ Math.imul(y | 0, 668265263) ^ salt;
-  h = Math.imul(h ^ (h >>> 13), 1274126177);
-  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
-}
-
-function segmentDistance(x, y, a, b) {
-  const dx = b.x - a.x, dy = b.y - a.y;
-  const lengthSquared = dx * dx + dy * dy;
-  const t = lengthSquared === 0 ? 0 : Math.max(0,
-    Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / lengthSquared));
-  return Math.hypot(x - a.x - t * dx, y - a.y - t * dy);
-}
-
-class World {
-  constructor({ seed = CONFIG.defaultSeed, tileSize = CONFIG.tileSize,
-    chunkSize = CONFIG.chunkSize } = {}) {
-    this.seed = String(seed);
-    this.tileSize = tileSize;
-    this.chunkSize = chunkSize;
-    this.chunks = new Map();
-    this.salt = hashSeed(seed);
-    // Instance-local permutations: constructing another world cannot reseed this one.
-    this.elevationNoise = createNoise(hashSeed(this.seed + ':elevation'));
-    this.moistureNoise = createNoise(hashSeed(this.seed + ':moisture'));
-    this.riverNoise = createNoise(hashSeed(this.seed + ':rivers'));
-  }
-
-  getChunkKey(x, y) { return x + ',' + y; }
-
-  sampleFields(x, y) {
-    return {
-      elevation: 0.48
-        + 0.40 * this.elevationNoise.perlin2(x * 0.009 + 13.7, y * 0.009 - 22.3)
-        + 0.18 * this.elevationNoise.perlin2(x * 0.028 - 71.2, y * 0.028 + 45.8),
-      moisture: 0.5
-        + 0.75 * this.moistureNoise.perlin2(x * 0.018 + 111.3, y * 0.018 - 43.7)
-        + 0.22 * this.moistureNoise.perlin2(x * 0.061 - 21.1, y * 0.061 + 8.9),
-    };
-  }
-
-  riverNode(band, index) {
-    const x = index * 24;
-    const phase = coordinateRandom(band, 0, this.salt) * Math.PI * 2;
-    return { x, y: band * 224 + 100
-      + Math.sin(x * 0.015 + phase) * 22
-      + this.riverNoise.perlin2(x * 0.008 + 35.7, band * 7.13 + 18.2) * 38 };
-  }
-
-  riverY(band, x) {
-    const i = Math.floor(x / 24);
-    const a = this.riverNode(band, i), b = this.riverNode(band, i + 1);
-    return a.y + (b.y - a.y) * (x - a.x) / 24;
-  }
-
-  tributary(band, cell) {
-    const random = coordinateRandom(cell, band, this.salt ^ 9173);
-    if (random < 0.2) return null;
-    const joinX = cell * 160 + 35 + random * 85;
-    const join = { x: joinX, y: this.riverY(band, joinX) };
-    const source = { x: joinX - 38 + random * 70, y: join.y - 52 - random * 32 };
-    const control = { x: source.x + (random < 0.6 ? -30 : 30), y: join.y - 22 };
-    const points = [];
-    for (let i = 0; i <= 6; i++) {
-      const t = i / 6, u = 1 - t;
-      points.push({ x: u * u * source.x + 2 * u * t * control.x + t * t * join.x,
-        y: u * u * source.y + 2 * u * t * control.y + t * t * join.y });
-    }
-    return points;
-  }
-
-  waterType(x, y) {
-    let shallow = false, stream = false, river = false, lake = false;
-    const nearestBand = Math.floor((y - 100) / 224);
-    for (let band = nearestBand - 1; band <= nearestBand + 1; band++) {
-      const nodeIndex = Math.floor(x / 24);
-      const width = 1.7 + (this.riverNoise.perlin2(x * 0.006, band + 0.4) + 1) * 0.7;
-      for (let i = nodeIndex - 1; i <= nodeIndex + 1; i++) {
-        const distance = segmentDistance(x, y, this.riverNode(band, i), this.riverNode(band, i + 1));
-        if (distance <= width) river = true;
-        else if (distance <= width + 0.8) shallow = true;
-      }
-
-      const cell = Math.floor(x / 160);
-      for (let c = cell - 1; c <= cell + 1; c++) {
-        const points = this.tributary(band, c);
-        if (!points) continue;
-        for (let i = 1; i < points.length; i++) {
-          const distance = segmentDistance(x, y, points[i - 1], points[i]);
-          if (distance <= 0.8) stream = true;
-          else if (distance <= 1.45) shallow = true;
+    const p = this.player, w = this.walker, p0 = { x: p.x, y: p.y }, w0 = { x: w.x, y: w.y };
+    const sleeping = this.action?.kind === 'sleep';
+    if (!this.concealed()) w.lastKnown = { x: p.x, y: p.y };
+    p.food = Math.max(0, p.food - dt);
+    if (!sleeping) p.fatigue = Math.min(100, p.fatigue + dt / CONFIG.fatigueSeconds * 100);
+    const moved = p.update(input, dt, this.world, this.inventory, sleeping);
+    this.travelled += moved;
+    if (moved > 1e-8 && this.action && !sleeping) this.cancelAction();
+    this.elapsed += dt;
+    if (this.action) {
+      const a = this.action; a.elapsed = Math.min(a.total, a.elapsed + dt);
+      if (a.kind === 'sleep') p.fatigue = Math.max(0, a.fatigueBefore
+        - sleepRecovery(a.elapsed / CONFIG.hourSeconds, a.sheltered));
+      if (a.kind === 'search') this.world.searchProgress.set(a.key, a.elapsed);
+      if (a.kind === 'dig') {
+        const height = a.startHeight + (a.endHeight - a.startHeight) * a.elapsed / a.total;
+        if (Math.abs(height - a.appliedHeight) >= 0.025 || a.elapsed >= a.total - 1e-8) {
+          this.world.edit(a.x, a.y, { height: Math.min(this.world.getTile(a.x, a.y).height, height) });
+          a.appliedHeight = this.world.getTile(a.x, a.y).height;
         }
       }
-
-      const lakeCell = Math.floor(x / 320);
-      for (let c = lakeCell - 1; c <= lakeCell + 1; c++) {
-        const random = coordinateRandom(c, band, this.salt ^ 81727);
-        if (random > 0.48) continue;
-        const cx = c * 320 + 70 + random * 260;
-        const cy = this.riverY(band, cx); // Lake intersects its river.
-        const radiusX = 9 + random * 16, radiusY = 6 + random * 12;
-        const distance = Math.hypot((x - cx) / radiusX, (y - cy) / radiusY);
-        if (distance < 1) lake = true;
-        else if (distance < 1.14) shallow = true;
+      if (a.elapsed >= a.total - 1e-8) {
+        if (a.kind === 'search') {
+          this.world.completeSearch(a.x, a.y, this.elapsed, this.inventory.fishing > 0);
+          const n = this.world.visibleFinds().filter(f => areaKey(f.x, f.y) === a.key).length;
+          this.notice(n ? 'Area explored · ' + n + (n === 1 ? ' find revealed.' : ' finds revealed.') : 'Area explored · nothing to collect.');
+        } else if (a.kind === 'refuge') {
+          this.world.refuges.set(tileKey(a.x, a.y), { x: a.x, y: a.y, kind: 'dug', name: 'Dug refuge' });
+          this.jobs.delete(a.key); this.notice('Chamber complete. Enter from its opening.');
+        } else if (a.kind === 'sleep') this.notice('Awake.');
+        else { this.jobs.delete(a.key); this.notice('Excavation complete.'); }
+        this.action = null;
       }
     }
-    // Specialized water precedes banks; none of these categories is unreachable.
-    if (lake) return 'water';
-    if (river) return 'river';
-    if (stream) return 'stream';
-    return shallow ? 'shallowWater' : null;
-  }
-
-  getTileType(worldX, worldY) {
-    const x = Math.floor(worldX), y = Math.floor(worldY);
-    const water = this.waterType(x + 0.5, y + 0.5);
-    if (water) return water;
-    const { elevation, moisture } = this.sampleFields(x + 0.5, y + 0.5);
-    // Height takes precedence independently of forest moisture.
-    if (elevation > 0.74) return 'peak';
-    if (elevation > 0.65) return 'mountain';
-    if (elevation > 0.57) return 'foothills';
-    if (moisture > 0.57) return 'forest';
-    if (elevation > 0.53 && moisture < 0.43) return 'rock';
-    return 'grass';
-  }
-
-  loadChunk(chunkX, chunkY) {
-    const key = this.getChunkKey(chunkX, chunkY);
-    if (this.chunks.has(key)) return this.chunks.get(key);
-    const tiles = [];
-    for (let y = 0; y < this.chunkSize; y++) {
-      for (let x = 0; x < this.chunkSize; x++) {
-        const wx = chunkX * this.chunkSize + x, wy = chunkY * this.chunkSize + y;
-        tiles.push({ x: wx, y: wy, type: this.getTileType(wx, wy) });
-      }
+    for (const b of this.blasts) b.remaining -= dt;
+    const detonating = this.blasts.filter(b => b.remaining <= 1e-8);
+    this.blasts = this.blasts.filter(b => b.remaining > 1e-8);
+    for (const blast of detonating) this.explode(blast);
+    w.update(this, dt);
+    p.stamina = Math.min(p.stamina, p.maxStamina());
+    if (p.food <= 0) p.stamina = 0;
+    if (!this.concealed()
+      && this.world.canTraverse(w.x, w.y, p.x, p.y)
+      && sweptContact(p0, p, w0, w, p.radius + w.radius) !== null) {
+      this.status = 'caught'; this.action = null;
     }
-    const chunk = { chunkX, chunkY, tiles, bitmap: null };
-    this.chunks.set(key, chunk);
-    return chunk;
-  }
-
-  unloadChunk(x, y) { this.chunks.delete(this.getChunkKey(x, y)); }
-  clearCache() { this.chunks.clear(); }
-
-  getVisibleChunks(playerX, playerY, width = 800, height = 600) {
-    const span = this.chunkSize;
-    const minX = Math.floor((playerX - width / (2 * this.tileSize)) / span);
-    const maxX = Math.floor((playerX + width / (2 * this.tileSize)) / span);
-    const minY = Math.floor((playerY - height / (2 * this.tileSize)) / span);
-    const maxY = Math.floor((playerY + height / (2 * this.tileSize)) / span);
-    for (const [key, chunk] of this.chunks) {
-      if (chunk.chunkX < minX - 1 || chunk.chunkX > maxX + 1
-        || chunk.chunkY < minY - 1 || chunk.chunkY > maxY + 1) this.chunks.delete(key);
+    if (this.world.revision !== this.containmentRevision) {
+      this.containmentRevision = this.world.revision; this.checkContainment();
     }
-    const visible = [];
-    for (let y = minY; y <= maxY; y++) {
-      for (let x = minX; x <= maxX; x++) {
-        visible.push(this.loadChunk(x, y));
-      }
-    }
-    return visible;
+    this.effects = this.effects.filter(e => this.elapsed - e.at < 1.5);
   }
+  checkContainment() {
+    if (!this.world.edits.size) return false;
+    const c = this.world.component(this.walker.x, this.walker.y, 4096);
+    if (c.closed && !c.keys.has(tileKey(this.player.x, this.player.y))) {
+      if (!this.victory) { this.victory = true; this.notice('The Walker is contained.'); }
+      this.walker.enclosure = c.cells.length ? c.cells : [{ x: Math.floor(this.walker.x), y: Math.floor(this.walker.y) }];
+      this.walker.path = []; return true;
+    }
+    return false;
+  }
+  canSave() { return this.status === 'running' && this.player.underground && !!this.world.refugeAt(this.player.x, this.player.y); }
+  serialize() {
+    return copyState({ version: CONFIG.version, seed: this.seed, elapsed: this.elapsed, travelled: this.travelled,
+      player: { ...this.player }, walker: this.walker.serialize(), world: this.world.serialize(),
+      inventory: this.inventory, action: this.action, jobs: [...this.jobs], blasts: this.blasts,
+      decoys: this.decoys, victory: this.victory, accumulator: this.accumulator });
+  }
+  checkpoint() {
+    if (!this.canSave()) { this.notice('Saving requires an underground refuge or natural cave.'); return null; }
+    const snapshot = this.serialize(); this.lastSave = copyState(snapshot); this.savedAt = this.elapsed;
+    return snapshot;
+  }
+  restore(snapshot, { checkpoint = true } = {}) {
+    if (!Game.validSnapshot(snapshot, checkpoint)) throw new Error('This is not a valid refuge checkpoint.');
+    this.seed = snapshot.seed; this.world = new World({ seed: this.seed, terrain: this.terrain });
+    this.world.restore(snapshot.world); Object.assign(this.player, snapshot.player);
+    this.walker.restore(snapshot.walker); this.inventory = { ...snapshot.inventory };
+    this.elapsed = snapshot.elapsed; this.travelled = snapshot.travelled; this.accumulator = snapshot.accumulator || 0;
+    this.jobs = new Map(copyState(snapshot.jobs || [])); this.action = copyState(snapshot.action);
+    if (this.action?.key && this.jobs.has(this.action.key)) this.action = this.jobs.get(this.action.key);
+    this.blasts = copyState(snapshot.blasts || []); this.decoys = copyState(snapshot.decoys || []);
+    this.victory = !!snapshot.victory; this.status = 'running'; this.effects = []; this.notices = [];
+    this.containmentRevision = this.world.revision;
+    if (checkpoint) { this.lastSave = copyState(snapshot); this.savedAt = snapshot.elapsed; }
+  }
+  static validSnapshot(s, requireRefuge = true) {
+    if (!s || s.version !== CONFIG.version || typeof s.seed !== 'string' || !s.seed.length || s.seed.length > 64
+      || !s.player || !s.walker || !s.world || !s.inventory
+      || !Number.isFinite(s.elapsed) || s.elapsed < 0 || s.elapsed > 1e9) return false;
+    const point = p => p && [p.x, p.y].every(n => Number.isFinite(n) && Math.abs(n) < 1e7);
+    const coordinate = k => typeof k === 'string' && /^-?\d+,-?\d+$/.test(k);
+    const safeKeys = (o, keys) => o && Object.keys(o).every(k => keys.includes(k));
+    if (!point(s.player) || !point(s.walker)
+      || !safeKeys(s.player, ['x','y','radius','stamina','fatigue','food','underground','heading','state','exhausted'])
+      || !safeKeys(s.walker, ['x','y','lastKnown','path','planKey','planRevision','phase','mode','orbitTarget',
+        'enclosure','componentKey','targetClosed','distanceWalked','footPhase'])) return false;
+    if (typeof s.player.underground !== 'boolean' || typeof s.player.exhausted !== 'boolean'
+      || !Number.isFinite(s.player.heading) || s.player.radius !== CONFIG.player.radius
+      || !['resting','occupied','underground','swimming','running','walking','blocked'].includes(s.player.state)
+      || !['pursuing','circling','decoy'].includes(s.walker.mode)) return false;
+    if (![s.player.food, s.player.fatigue, s.player.stamina].every(n => Number.isFinite(n) && n >= 0)) return false;
+    if (s.player.fatigue > 100 || s.player.stamina > 100) return false;
+    for (const [k, v] of Object.entries(s.inventory))
+      if (!Object.hasOwn(ITEMS, k) || k === 'food' || !Number.isInteger(v) || v < 0 || v > 1e9) return false;
+    if (!Object.keys(ITEMS).filter(k => k !== 'food').every(k => Object.hasOwn(s.inventory,k))) return false;
+    if (!point(s.walker.lastKnown) || !Array.isArray(s.walker.path) || s.walker.path.length > 100000
+      || !s.walker.path.every(point) || !Number.isFinite(s.walker.phase)
+      || !Number.isFinite(s.walker.footPhase) || !Number.isFinite(s.walker.distanceWalked)
+      || !Number.isFinite(s.walker.planRevision) || typeof s.walker.planKey !== 'string'
+      || typeof s.walker.componentKey !== 'string' || typeof s.walker.targetClosed !== 'boolean'
+      || (s.walker.orbitTarget !== null && !point(s.walker.orbitTarget))
+      || (s.walker.enclosure !== null && (!Array.isArray(s.walker.enclosure)
+        || s.walker.enclosure.length > 100000 || !s.walker.enclosure.every(point)))) return false;
+    for (const name of ['edits', 'refuges', 'searched', 'searchProgress', 'collected', 'resources'])
+      if (!Array.isArray(s.world[name]) || s.world[name].length > 100000) return false;
+    if (!Number.isInteger(s.world.revision) || s.world.revision < 0) return false;
+    const pairs = a => a.every(e => Array.isArray(e) && e.length === 2 && coordinate(e[0]));
+    if (!['edits','refuges','searchProgress','resources'].every(k => pairs(s.world[k]))) return false;
+    if (!s.world.searched.every(coordinate) || !s.world.collected.every(k => typeof k === 'string' && k.length < 150)) return false;
+    if (!s.world.edits.every(([,e]) => safeKeys(e,['height','density'])
+      && Object.values(e).every(Number.isFinite) && (e.density === undefined || (e.density >= 0 && e.density <= 100)))) return false;
+    if (!s.world.refuges.every(([k,r]) => point(r) && tileKey(r.x,r.y) === k && r.kind === 'dug'
+      && typeof r.name === 'string' && r.name.length < 150)) return false;
+    if (!s.world.searchProgress.every(([,v]) => Number.isFinite(v) && v >= 0 && v <= CONFIG.searchSeconds)) return false;
+    if (!s.world.resources.every(([k,r]) => point(r) && r.kind === 'food' && r.id === 'food:' + k
+      && Number.isFinite(r.amount) && r.amount >= 0 && Number.isFinite(r.availableAt)
+      && typeof r.present === 'boolean')) return false;
+    const validAction = a => a && ['search','dig','refuge','sleep'].includes(a.kind)
+      && Number.isFinite(a.total) && a.total > 0 && a.total <= 1e6
+      && Number.isFinite(a.elapsed) && a.elapsed >= 0 && a.elapsed <= a.total
+      && (a.kind === 'sleep' ? typeof a.sheltered === 'boolean' && Number.isFinite(a.fatigueBefore)
+        && a.fatigueBefore >= 0 && a.fatigueBefore <= 100 && a.total <= 8 * CONFIG.hourSeconds
+        : point(a) && typeof a.key === 'string')
+      && (a.kind !== 'dig' || [a.startHeight,a.endHeight,a.appliedHeight].every(Number.isFinite));
+    if ((s.action !== null && !validAction(s.action)) || !Array.isArray(s.jobs) || s.jobs.length > 100000
+      || !s.jobs.every(e => Array.isArray(e) && typeof e[0] === 'string' && validAction(e[1]))) return false;
+    if (!Array.isArray(s.blasts) || !Array.isArray(s.decoys) || s.blasts.length > 10000 || s.decoys.length > 10000
+      || !s.blasts.every(b => point(b) && Number.isFinite(b.remaining) && b.remaining >= 0 && b.remaining <= CONFIG.fuseSeconds)
+      || !s.decoys.every(point) || !Number.isFinite(s.travelled) || s.travelled < 0
+      || !Number.isFinite(s.accumulator) || s.accumulator < 0 || s.accumulator > 1) return false;
+    if (requireRefuge) {
+      if (!s.player.underground) return false;
+      try {
+        const world = new World({ seed: s.seed }); world.restore(s.world);
+        if (!world.refugeAt(s.player.x, s.player.y)) return false;
+      } catch { return false; }
+    }
+    return true;
+  }
+}
 
-  makeBitmap(chunk) {
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = this.chunkSize * this.tileSize;
+return { Game };
+})();
+__modules["render.js"] = (() => {
+const { CONFIG, ITEMS, tileKey } = __modules["config.js"];
+const { BIOMES, fieldRandom } = __modules["world.js"];
+const { worldToScreen, edgeIndicator } = __modules["geometry.js"];
+class Renderer {
+  constructor(canvas) {
+    this.canvas = canvas; this.ctx = canvas.getContext('2d', { alpha: false });
+    this.width = 1; this.height = 1; this.dpr = 1; this.scale = CONFIG.tileSize;
+    this.cache = new Map(); this.revision = -1; this.worldRef = null;
+    this.selection = null; this.previewBlast = false;
+  }
+  resize() {
+    const rect = this.canvas.getBoundingClientRect();
+    this.width = Math.max(1, rect.width); this.height = Math.max(1, rect.height);
+    this.dpr = Math.max(1, window.devicePixelRatio || 1);
+    const scale = Math.max(17, Math.min(CONFIG.tileSize, Math.min(this.width, this.height) / 10));
+    if (scale !== this.scale) { this.scale = scale; this.cache.clear(); }
+    this.canvas.width = Math.round(this.width * this.dpr); this.canvas.height = Math.round(this.height * this.dpr);
+  }
+  at(x, y, player) { return worldToScreen(x, y, player.x, player.y, this.width, this.height, this.scale); }
+  fromScreen(x, y, player) {
+    return { x: Math.floor(player.x + (x - this.width / 2) / this.scale),
+      y: Math.floor(player.y + (y - this.height / 2) / this.scale) };
+  }
+  paintChunk(world, cx, cy) {
+    const s = this.scale, span = 12, canvas = document.createElement('canvas');
+    canvas.width = canvas.height = Math.ceil(s * span);
     const ctx = canvas.getContext('2d', { alpha: false });
-    for (let i = 0; i < chunk.tiles.length; i++) {
-      const tile = chunk.tiles[i];
-      const x = (i % this.chunkSize) * this.tileSize;
-      const y = Math.floor(i / this.chunkSize) * this.tileSize;
-      const s = this.tileSize;
-      const variation = coordinateRandom(tile.x, tile.y, this.salt);
-      ctx.fillStyle = this.getTileColor(tile.type);
-      ctx.fillRect(x, y, s, s);
-      ctx.fillStyle = variation > 0.5 ? '#ffffff06' : '#10251b06';
-      ctx.fillRect(x, y, s, s);
-      ctx.lineWidth = 1;
-      if (tile.type === 'forest') {
-        for (let tree = 0; tree < 3; tree++) {
-          const tx = x + s * (0.2 + tree * 0.27);
-          const ty = y + s * (0.33 + ((tree + Math.floor(variation * 3)) % 3) * 0.17);
-          ctx.fillStyle = '#203c32';
-          ctx.fillRect(tx - 1, ty + 5, 2, 7);
-          ctx.beginPath(); ctx.moveTo(tx, ty - 10);
-          ctx.lineTo(tx - 7, ty + 7); ctx.lineTo(tx + 7, ty + 7); ctx.closePath(); ctx.fill();
-          ctx.fillStyle = '#78906a'; ctx.fillRect(tx, ty - 3, 1, 6);
+    for (let j = 0; j < span; j++) for (let i = 0; i < span; i++) {
+      const t = world.getTile(cx * span + i, cy * span + j), x = i * s, y = j * s;
+      const r = fieldRandom(t.x, t.y, world.salt);
+      ctx.fillStyle = BIOMES[t.type].color; ctx.fillRect(x, y, s + 1, s + 1);
+      ctx.fillStyle = r > 0.5 ? '#ffffff08' : '#132c1f09'; ctx.fillRect(x, y, s, s);
+      if (t.wet) {
+        ctx.strokeStyle = t.deep ? '#adccca3a' : '#d8e6ca67'; ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.moveTo(x + s * 0.14, y + s * (0.28 + r * 0.12));
+        ctx.lineTo(x + s * 0.45, y + s * (0.28 + r * 0.12));
+        ctx.moveTo(x + s * 0.57, y + s * 0.68); ctx.lineTo(x + s * 0.83, y + s * 0.68); ctx.stroke();
+        if (!t.deep) { ctx.fillStyle = '#546e5f45'; ctx.fillRect(x + s * 0.4, y + s * 0.51, s * 0.1, s * 0.05); }
+      } else if (t.type === 'forest' || t.type === 'denseForest') {
+        const count = t.type === 'denseForest' ? 4 : 2;
+        for (let k = 0; k < count; k++) {
+          const tx = x + s * (0.2 + (k % 2) * 0.46 + r * 0.08);
+          const ty = y + s * (0.15 + Math.floor(k / 2) * 0.39);
+          ctx.fillStyle = '#193d2c35'; ctx.beginPath(); ctx.ellipse(tx + s * 0.07, ty + s * 0.33, s * 0.17, s * 0.08, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#243d2b'; ctx.fillRect(tx - 0.6, ty + s * 0.16, 1.2, s * 0.17);
+          ctx.beginPath(); ctx.moveTo(tx, ty - s * 0.03); ctx.lineTo(tx - s * 0.16, ty + s * 0.24);
+          ctx.lineTo(tx + s * 0.16, ty + s * 0.24); ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = '#b2c08a66'; ctx.lineWidth = 0.6; ctx.beginPath();
+          ctx.moveTo(tx, ty + s * 0.02); ctx.lineTo(tx, ty + s * 0.18); ctx.stroke();
         }
-      } else if (['mountain', 'peak', 'foothills'].includes(tile.type)) {
-        const h = tile.type === 'foothills' ? 7 : 15;
-        ctx.strokeStyle = tile.type === 'peak' ? '#eef0dba0' : '#c1cbb280';
-        ctx.beginPath(); ctx.moveTo(x + 10, y + 31);
-        ctx.lineTo(x + 24, y + 31 - h); ctx.lineTo(x + 38, y + 31); ctx.stroke();
-        if (tile.type === 'peak') {
-          ctx.beginPath(); ctx.moveTo(x + 18, y + 22); ctx.lineTo(x + 24, y + 16);
-          ctx.lineTo(x + 30, y + 22); ctx.stroke();
-        }
-      } else if (['water', 'river', 'stream', 'shallowWater'].includes(tile.type)) {
-        ctx.strokeStyle = '#b8d7d146';
-        ctx.beginPath(); ctx.moveTo(x + 10 + variation * 7, y + 19);
-        ctx.lineTo(x + 25 + variation * 7, y + 19);
-        ctx.moveTo(x + 23, y + 33); ctx.lineTo(x + 34, y + 33); ctx.stroke();
-      } else if (tile.type === 'rock') {
-        ctx.fillStyle = '#525e5460';
-        ctx.fillRect(x + 14, y + 24, 8, 4); ctx.fillRect(x + 31, y + 15, 5, 3);
+      } else if (t.material !== 'soil') {
+        ctx.fillStyle = '#4b605458'; ctx.beginPath();
+        ctx.moveTo(x + s * 0.24, y + s * 0.63); ctx.lineTo(x + s * 0.42, y + s * 0.38);
+        ctx.lineTo(x + s * 0.62, y + s * 0.6); ctx.lineTo(x + s * 0.54, y + s * 0.72); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#dce0caa0'; ctx.lineWidth = 0.8; ctx.beginPath();
+        ctx.moveTo(x + s * 0.24, y + s * 0.62); ctx.lineTo(x + s * 0.42, y + s * 0.38);
+        ctx.lineTo(x + s * 0.53, y + s * 0.49); ctx.stroke();
       } else {
-        ctx.fillStyle = '#d5ddae48';
-        ctx.fillRect(x + 10 + variation * 20, y + 15, 2, 3);
-        ctx.fillStyle = '#4e6e4640';
-        ctx.fillRect(x + 33, y + 32 - variation * 13, 2, 4);
+        ctx.fillStyle = '#dae2ac55'; ctx.fillRect(x + s * (0.18 + r * 0.4), y + s * 0.31, 1, s * 0.08);
+        ctx.fillStyle = '#4b724b40'; ctx.fillRect(x + s * 0.76, y + s * (0.6 - r * 0.15), 1, s * 0.08);
       }
+      if (!t.wet) {
+        for (const [dx, dy, sx, sy, ex, ey] of [[1, 0, x + s, y, x + s, y + s], [0, 1, x, y + s, x + s, y + s]]) {
+          const n = world.getTile(t.x + dx, t.y + dy), delta = t.height - n.height;
+          if (Math.abs(delta) > 0.2) {
+            ctx.strokeStyle = Math.abs(delta) > CONFIG.maxWalkerSlope ? '#213c2d9c' : '#e2e4c74d';
+            ctx.lineWidth = Math.abs(delta) > CONFIG.maxWalkerSlope ? 2 : 0.8;
+            ctx.beginPath(); ctx.moveTo(sx - 1, sy - 1); ctx.lineTo(ex - 1, ey - 1); ctx.stroke();
+          }
+        }
+      }
+      ctx.strokeStyle = '#1e3b2110'; ctx.lineWidth = 0.5; ctx.strokeRect(x, y, s, s);
     }
     return canvas;
   }
-
-  render(ctx, playerX, playerY, width, height) {
-    const chunks = this.getVisibleChunks(playerX, playerY, width, height);
-    for (const chunk of chunks) {
-      if (!chunk.bitmap) chunk.bitmap = this.makeBitmap(chunk);
-      const point = worldToScreen(chunk.chunkX * this.chunkSize, chunk.chunkY * this.chunkSize,
-        playerX, playerY, width, height, this.tileSize);
-      ctx.drawImage(chunk.bitmap, Math.round(point.x), Math.round(point.y));
+  draw(game) {
+    const ctx = this.ctx, p = game.player, world = game.world, s = this.scale;
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0); ctx.imageSmoothingEnabled = false;
+    if (this.worldRef !== world || this.revision !== world.revision) {
+      this.cache.clear(); this.worldRef = world; this.revision = world.revision;
     }
-  }
-
-  getTileColor(type) { return BIOMES[type]?.color || BIOMES.grass.color; }
-}
-
-// hud.js
-
-
-
-function formatDuration(seconds) {
-  const tenths = Math.floor(Math.max(0, seconds) * 10 + 1e-8);
-  return String(Math.floor(tenths / 600)).padStart(2, '0') + ':'
-    + String(Math.floor(tenths / 10) % 60).padStart(2, '0') + '.' + tenths % 10;
-}
-
-class HUD {
-  constructor(root) {
-    this.nodes = {};
-    for (const id of ['survivalTime', 'walkerGap', 'catchLabel', 'catchTime', 'catchNote',
-      'playerState', 'paceNote', 'playerCoords', 'walkerCoords', 'staminaValue',
-      'staminaMeter', 'staminaFill', 'biomeName', 'runStatus', 'runSummary', 'announcer']) {
-      this.nodes[id] = root.querySelector('#' + id);
+    ctx.fillStyle = '#8c9c76'; ctx.fillRect(0, 0, this.width, this.height);
+    const minX = Math.floor(p.x - this.width / s / 2) - 1, maxX = Math.ceil(p.x + this.width / s / 2) + 1;
+    const minY = Math.floor(p.y - this.height / s / 2) - 1, maxY = Math.ceil(p.y + this.height / s / 2) + 1;
+    const keep = new Set();
+    for (let cy = Math.floor(minY / 12); cy <= Math.floor(maxY / 12); cy++)
+      for (let cx = Math.floor(minX / 12); cx <= Math.floor(maxX / 12); cx++) {
+        const key = cx + ',' + cy; keep.add(key);
+        if (!this.cache.has(key)) this.cache.set(key, this.paintChunk(world, cx, cy));
+        const a = this.at(cx * 12, cy * 12, p);
+        ctx.drawImage(this.cache.get(key), a.x, a.y, s * 12, s * 12);
+      }
+    for (const key of this.cache.keys()) if (!keep.has(key)) this.cache.delete(key);
+    for (let ay = Math.floor(minY / 3); ay <= Math.floor(maxY / 3); ay++)
+      for (let ax = Math.floor(minX / 3); ax <= Math.floor(maxX / 3); ax++) {
+        const a = this.at(ax * 3 + 1.5, ay * 3 + 1.5, p);
+        if (world.clueAt(ax * 3, ay * 3)) {
+          ctx.strokeStyle = '#d9d6ac'; ctx.lineWidth = 1.3; ctx.beginPath();
+          ctx.moveTo(a.x - 5, a.y + 3); ctx.lineTo(a.x + 4, a.y - 3);
+          ctx.moveTo(a.x - 3, a.y - 4); ctx.lineTo(a.x + 2, a.y + 4); ctx.stroke();
+          ctx.fillStyle = '#3e543568'; ctx.fillRect(a.x + 6, a.y + 3, 2, 2);
+        } else if (world.searched.has(ax + ',' + ay)) {
+          ctx.strokeStyle = '#f0efc12e'; ctx.lineWidth = 0.8; ctx.beginPath();
+          ctx.arc(a.x, a.y, 2, 0, Math.PI * 2); ctx.stroke();
+        }
+      }
+    const mouths = [...world.refuges.values(), ...world.cavePoints(p.x, p.y, Math.max(this.width, this.height) / s)];
+    for (const r of mouths) {
+      const a = this.at(r.x + 0.5, r.y + 0.5, p);
+      ctx.fillStyle = '#243d31'; ctx.beginPath(); ctx.ellipse(a.x, a.y + 2, s * 0.31, s * 0.19, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = r.kind === 'dug' ? '#dacb8d' : '#b5bba1'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(a.x, a.y - 1, s * 0.3, Math.PI, 0); ctx.stroke();
+      ctx.strokeStyle = '#bdc79f'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(a.x - 3, a.y - 1); ctx.lineTo(a.x - 3, a.y + 8);
+      ctx.moveTo(a.x + 3, a.y - 1); ctx.lineTo(a.x + 3, a.y + 8);
+      ctx.moveTo(a.x - 3, a.y + 3); ctx.lineTo(a.x + 3, a.y + 3); ctx.stroke();
     }
-    this.lastUpdate = -Infinity;
-    this.lastBiome = '';
-    this.lastStatus = '';
-  }
-
-  text(id, value) {
-    if (this.nodes[id].textContent !== value) this.nodes[id].textContent = value;
-  }
-
-  update(game, world, now, force = false) {
-    if (!force && now - this.lastUpdate < 75) return;
-    this.lastUpdate = now;
-    const p = game.player, w = game.walker;
-    this.text('survivalTime', formatDuration(game.elapsed));
-    // textContent avoids treating seeds or coordinates as markup.
-    this.text('walkerGap', gapBetween(p, w).toFixed(1) + ' tiles');
-    const moving = p.state !== 'resting';
-    this.text('catchLabel', moving ? 'Catch if you stop' : 'Time to catch');
-    this.text('catchTime', stationaryCatchTime(p, w).toFixed(1) + 's');
-    this.text('catchNote', moving ? 'Assumes you stop now' : 'While you remain still');
-    const labels = { walking: 'Walking', running: 'Sprinting', resting: 'Resting' };
-    this.text('playerState', game.status === 'caught' ? 'Caught' : labels[p.state]);
-    this.text('paceNote', p.exhausted ? 'Release sprint to use it again'
-      : p.state === 'running' ? 'Stamina drains'
-      : p.state === 'walking' ? 'Stamina recovers slowly' : 'Stamina recovers quickly');
-    this.text('playerCoords', p.x.toFixed(1) + ', ' + p.y.toFixed(1));
-    this.text('walkerCoords', w.x.toFixed(1) + ', ' + w.y.toFixed(1));
-    const percent = Math.round(p.stamina / CONFIG.player.maxStamina * 100);
-    this.text('staminaValue', percent + '%');
-    this.nodes.staminaMeter.setAttribute('aria-valuenow', percent);
-    this.nodes.staminaFill.style.height = percent + '%';
-    this.nodes.staminaFill.style.backgroundColor = percent < 25 ? '#f1a18b' : '#f1e7bc';
-    const tile = Math.floor(p.x) + ',' + Math.floor(p.y);
-    if (tile !== this.lastBiome) {
-      this.text('biomeName', BIOMES[world.getTileType(p.x, p.y)].name);
-      this.lastBiome = tile;
+    for (const f of world.visibleFinds()) {
+      const a = this.at(f.x + 0.5, f.y + 0.5, p);
+      ctx.fillStyle = '#f5e7b7'; ctx.strokeStyle = '#54673e'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(a.x, a.y, s * 0.24, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#415737'; ctx.font = Math.round(s * 0.38) + 'px Georgia';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(ITEMS[f.kind].icon, a.x, a.y);
     }
-    if (game.status !== this.lastStatus) {
-      this.lastStatus = game.status;
-      this.text('runStatus', game.status === 'running' ? 'Pursuit active'
-        : game.status === 'caught' ? 'Pursuit ended' : 'Awaiting departure');
-      this.text('announcer', game.status === 'running' ? 'Run started. The walker is approaching.'
-        : game.status === 'caught' ? 'The walker caught you. Walk again to restart.' : '');
-      if (game.status === 'caught') {
-        this.text('runSummary', 'You survived ' + formatDuration(game.elapsed) + ' and travelled '
-          + game.travelled.toFixed(1) + ' tiles. The walker kept its pace.');
+    for (const d of game.decoys) {
+      const a = this.at(d.x, d.y, p);
+      ctx.strokeStyle = '#eed784'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(a.x, a.y, 5, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 0.7; ctx.beginPath(); ctx.arc(a.x, a.y, 10 + (game.elapsed % 1) * 10, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
+    }
+    for (const b of game.blasts) {
+      const a = this.at(b.x, b.y, p);
+      ctx.fillStyle = '#a74633'; ctx.fillRect(a.x - 5, a.y - 5, 10, 10);
+      ctx.fillStyle = '#fff0c8'; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText(Math.ceil(b.remaining) + 's', a.x, a.y - 9);
+    }
+    if (this.selection && !p.underground) {
+      const a = this.at(this.selection.x, this.selection.y, p);
+      ctx.strokeStyle = game.targetInReach(this.selection) ? '#f1e8b7' : '#f1e8b766'; ctx.lineWidth = 1.5;
+      ctx.strokeRect(a.x + 2, a.y + 2, s - 4, s - 4);
+      if (this.previewBlast) {
+        ctx.fillStyle = '#be5e3e26'; ctx.strokeStyle = '#f0bd8888'; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.arc(a.x + s / 2, a.y + s / 2, CONFIG.blastRadius * s, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
       }
     }
+    if (p.underground) {
+      ctx.fillStyle = '#1d332749'; ctx.fillRect(0, 0, this.width, this.height);
+    }
+    this.drawWalker(game);
+    const center = { x: this.width / 2, y: this.height / 2 };
+    ctx.fillStyle = '#193e33'; ctx.strokeStyle = '#f7eed0'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(center.x, center.y, Math.max(6, p.radius * s), 0, Math.PI * 2); ctx.fill();
+    if (p.underground || (game.inventory.diving && world.getTile(p.x, p.y).deep)) ctx.setLineDash([2, 2]);
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.save(); ctx.translate(center.x, center.y); ctx.rotate(p.heading);
+    ctx.fillStyle = '#f6efce'; ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(-1, -2); ctx.lineTo(-1, 2); ctx.closePath(); ctx.fill(); ctx.restore();
+    if (p.underground) {
+      ctx.fillStyle = '#f4ebc8'; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.font = '8px monospace';
+      ctx.fillText('BELOW GROUND', center.x, center.y + 15);
+    }
+    for (const effect of game.effects) {
+      const a = this.at(effect.x, effect.y, p), age = game.elapsed - effect.at;
+      ctx.strokeStyle = '#f8d19b'; ctx.globalAlpha = Math.max(0, 1 - age / 1.5); ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(a.x, a.y, (0.2 + age) * s, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
+    }
+  }
+  drawWalker(game) {
+    const ctx = this.ctx, w = game.walker, a = this.at(w.x, w.y, game.player), r = Math.max(8, w.radius * this.scale);
+    if (a.x + r >= 0 && a.x - r <= this.width && a.y + r >= 0 && a.y - r <= this.height) {
+      ctx.fillStyle = '#24352933'; ctx.beginPath(); ctx.ellipse(a.x + 2, a.y + r * 0.8, r, r * 0.45, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#a84837'; ctx.strokeStyle = '#f5dfbe'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(a.x, a.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#f1c89e'; ctx.beginPath(); ctx.arc(a.x, a.y - 1.5, 2.1, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#a8483780'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(a.x, a.y, r + 4 + Math.sin(w.distanceWalked * 3) * 1.1, 0, Math.PI * 2); ctx.stroke();
+    } else {
+      const arrow = edgeIndicator(a.x - this.width / 2, a.y - this.height / 2, this.width, this.height,
+        { left: 24, right: 24, top: 65, bottom: 30 });
+      if (!arrow) return;
+      ctx.save(); ctx.translate(arrow.x, arrow.y); ctx.rotate(arrow.angle);
+      ctx.fillStyle = '#f3e4c4ec'; ctx.beginPath(); ctx.arc(0, 0, 13, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#a54b38'; ctx.beginPath(); ctx.moveTo(8, 0); ctx.lineTo(-5, -5);
+      ctx.lineTo(-2, 0); ctx.lineTo(-5, 5); ctx.closePath(); ctx.fill(); ctx.restore();
+    }
   }
 }
 
-// input.js
+return { Renderer };
+})();
+__modules["hud.js"] = (() => {
+const { CONFIG, ITEMS, sleepRecovery } = __modules["config.js"];
+const { BIOMES } = __modules["world.js"];
+class HUD {
+  constructor(root, controls) {
+    this.root = root; this.controls = controls; this.lastUpdate = -Infinity; this.lastInventory = '';
+    this.lastNotice = ''; this.toastUntil = 0; this.victoryDismissed = false; this.notesSeed = '';
+    const bind = (id, fn) => root.getElementById(id).addEventListener('click', fn);
+    bind('searchBtn', () => controls.act('search'));
+    bind('refugeBtn', () => controls.act('refuge'));
+    bind('digBtn', () => controls.act('dig'));
+    bind('sleepBtn', () => controls.act('sleep', Number(this.el('sleepHours').value)));
+    bind('interactBtn', () => controls.interact());
+    bind('decoyBtn', () => controls.decoy());
+    bind('blastBtn', () => controls.blast());
+    bind('cancelAction', () => controls.cancel());
+    bind('saveBtn', () => controls.save());
+    bind('loadBtn', () => controls.load());
+    bind('centerTarget', () => controls.center());
+    bind('exportBtn', () => controls.exportCheckpoint());
+    bind('importBtn', () => this.el('importFile').click());
+    this.el('importFile').addEventListener('change', e => controls.importCheckpoint(e.target.files?.[0]));
+    bind('exportNotes', () => controls.exportNotes(this.el('notes').value));
+    bind('dismissVictory', () => { this.victoryDismissed = true; this.el('victory').hidden = true; });
+    this.el('notes').addEventListener('input', () => controls.notes(this.el('notes').value));
+    this.el('notes').addEventListener('focus', () => controls.clearInput());
+    for (const button of root.querySelectorAll('[data-tab]')) button.addEventListener('click', () => {
+      for (const b of root.querySelectorAll('[data-tab]')) b.classList.toggle('active', b === button);
+      for (const id of ['actions', 'inventory', 'notes']) this.el('panel-' + id).hidden = id !== button.dataset.tab;
+      controls.clearInput();
+    });
+    for (const button of root.querySelectorAll('[data-speed]')) button.addEventListener('click', () => controls.speed(Number(button.dataset.speed)));
+    this.el('blastBtn').addEventListener('pointerenter', () => controls.preview(true));
+    this.el('blastBtn').addEventListener('pointerleave', () => controls.preview(false));
+    this.el('sleepHours').addEventListener('input', () => this.update(controls.game(), performance.now(), true));
+  }
+  el(id) { return this.root.getElementById(id); }
+  setNotes(seed, text) {
+    this.notesSeed = seed; this.el('notes').value = text; this.el('notesStatus').textContent = 'Player-written notes';
+  }
+  update(game, now, force = false) {
+    if (!force && now - this.lastUpdate < 100) return;
+    this.lastUpdate = now;
+    const p = game.player, world = game.world, action = game.action;
+    const target = this.controls.target(), t = world.getTile(target.x, target.y);
+    const running = game.status === 'running', sleeping = action?.kind === 'sleep';
+    const hour = game.elapsed / CONFIG.hourSeconds + 8;
+    this.el('clock').textContent = 'DAY ' + String(Math.floor(hour / 24) + 1).padStart(2, '0') + ' · '
+      + String(Math.floor(hour % 24)).padStart(2, '0') + ':' + String(Math.floor(hour * 60 % 60)).padStart(2, '0');
+    this.el('coordinates').textContent = 'E ' + p.x.toFixed(1) + ' · N ' + (-p.y).toFixed(1);
+    this.el('gap').textContent = 'DISTANCE ' + Math.hypot(p.x - game.walker.x, p.y - game.walker.y).toFixed(1);
+    this.el('seedLabel').textContent = world.seed;
+    this.el('terrainLabel').textContent = p.underground ? 'BELOW GROUND' : BIOMES[world.getTile(p.x, p.y).type].name.toUpperCase();
+    this.el('staminaText').textContent = Math.floor(p.stamina) + ' / ' + Math.floor(p.maxStamina());
+    this.el('staminaMeter').value = p.stamina; this.el('foodMeter').value = Math.min(CONFIG.foodCapacityDisplay, p.food);
+    this.el('foodText').textContent = (p.food / CONFIG.hourSeconds).toFixed(1) + ' h';
+    this.el('fatigueText').textContent = Math.round(p.fatigue) + '%'; this.el('fatigueMeter').value = p.fatigue;
+    this.el('selectedName').textContent = BIOMES[t.type].name;
+    this.el('selectedPosition').textContent = t.x + ', ' + t.y;
+    const degrees = Math.atan(world.slopeAt(t.x, t.y)) * 180 / Math.PI;
+    this.el('selectedDetails').textContent = t.material.toUpperCase() + ' · ELEVATION ' + t.height.toFixed(2)
+      + '\nDENSITY ' + Math.round(t.density) + '% · SLOPE ' + Math.round(degrees) + '°'
+      + (t.wet ? ' · DEPTH ' + t.depth.toFixed(2) + ' · FLOW ' + (t.current >= CONFIG.maxWalkerCurrent ? 'SWIFT' : 'GENTLE') : '');
+    this.el('selectedDetails').style.whiteSpace = 'pre-line';
+    this.el('targetDistance').textContent = game.targetInReach(t) ? 'Selected ground is within reach.' : 'Move closer to work on this ground.';
+    const unavailable = !running || sleeping;
+    this.el('searchBtn').disabled = unavailable || p.underground || !game.targetInReach(t);
+    this.el('refugeBtn').disabled = unavailable || p.underground || !game.inventory.shovel || !world.canRefuge(t.x, t.y) || !game.targetInReach(t);
+    this.el('digBtn').disabled = unavailable || p.underground || !game.inventory.shovel || t.material !== 'soil'
+      || t.height <= world.baseTile(t.x, t.y).height - world.baseTile(t.x, t.y).soilDepth + 0.025 || !game.targetInReach(t);
+    this.el('blastBtn').disabled = unavailable || p.underground || !game.inventory.dynamite || !game.targetInReach(t);
+    this.el('decoyBtn').disabled = unavailable || p.underground || !game.inventory.decoy || world.getTile(p.x, p.y).wet;
+    const refuge = world.refugeAt(p.x, p.y);
+    this.el('interactBtn').disabled = unavailable || (!p.underground && !refuge && game.nearbyFinds().length === 0);
+    this.el('interactBtn').firstChild.textContent = p.underground ? 'Surface ' : refuge ? 'Enter ' : 'Collect ';
+    this.el('decoyCount').textContent = game.inventory.decoy ? game.inventory.decoy + ' carried' : 'None carried';
+    this.el('dynamiteCount').textContent = '8-second fuse · ' + game.inventory.dynamite + ' carried';
+    const hours = Number(this.el('sleepHours').value), preview = game.sleepPreview(hours);
+    this.el('sleepHoursLabel').textContent = hours + (hours === 1 ? ' hour' : ' hours');
+    this.el('sleepPreview').textContent = 'Fatigue ' + Math.round(p.fatigue) + '% → ' + Math.round(preview.fatigue) + '%';
+    const foodAfter = Math.max(0, p.food - hours * CONFIG.hourSeconds);
+    this.el('sleepStats').textContent = 'Stamina cap ' + Math.round(preview.maxStamina)
+      + ' · pace ' + Math.round(preview.speed * (foodAfter ? 1 : 0.55) * 100) + '%'
+      + ' · ' + (foodAfter / CONFIG.hourSeconds).toFixed(1) + ' h food at wake'
+      + (preview.sheltered ? ' · sheltered' : '');
+    this.el('sleepBtn').disabled = unavailable || (world.getTile(p.x, p.y).wet && !p.underground);
+    this.el('sleepHours').disabled = sleeping;
+    this.el('saveBtn').disabled = !game.canSave();
+    const hasCheckpoint = !!game.lastSave || this.controls.hasCheckpoint();
+    this.el('loadBtn').disabled = !hasCheckpoint || sleeping || !running;
+    this.el('exportBtn').disabled = !hasCheckpoint; this.el('importBtn').disabled = sleeping;
+    this.el('saveStatus').textContent = game.savedAt === null ? (hasCheckpoint ? 'Checkpoint available in this world.' : 'No checkpoint in this world.')
+      : 'Checkpoint · ' + (game.savedAt / CONFIG.hourSeconds).toFixed(1) + ' expedition hours';
+    this.el('actionCard').hidden = !action;
+    if (action) {
+      this.el('actionTitle').textContent = ({ search: 'Exploring the area', refuge: 'Excavating a chamber', dig: 'Lowering the ground', sleep: 'Sleeping' })[action.kind];
+      this.el('actionTime').textContent = action.kind === 'sleep'
+        ? (action.elapsed / CONFIG.hourSeconds).toFixed(1) + ' / ' + (action.total / CONFIG.hourSeconds).toFixed(1) + ' h'
+        : Math.ceil(Math.max(0, action.total - action.elapsed)) + 's remaining';
+      this.el('actionProgress').value = action.elapsed / action.total;
+      this.el('cancelAction').hidden = sleeping; this.el('committedLabel').hidden = !sleeping;
+    }
+    for (const b of this.root.querySelectorAll('[data-speed]')) {
+      b.classList.toggle('active', Number(b.dataset.speed) === this.controls.timeScale()); b.disabled = !action;
+    }
+    const signature = JSON.stringify(game.inventory);
+    if (signature !== this.lastInventory) {
+      this.lastInventory = signature; const list = this.el('inventoryList'); list.replaceChildren();
+      let count = 0;
+      for (const [key, amount] of Object.entries(game.inventory)) if (amount > 0) {
+        count++; const item = ITEMS[key], row = this.root.createElement('div'); row.className = 'inventory-item';
+        const icon = this.root.createElement('span'); icon.textContent = item.icon;
+        const body = this.root.createElement('div'), title = this.root.createElement('strong'), desc = this.root.createElement('p'), qty = this.root.createElement('small');
+        title.textContent = item.name; desc.textContent = item.description; qty.textContent = '× ' + amount;
+        body.append(qty, title, desc); row.append(icon, body); list.append(row);
+      }
+      if (!count) { const empty = this.root.createElement('p'); empty.className = 'panel-foot'; empty.textContent = 'Your pack is empty.'; list.append(empty); }
+      this.el('kitCount').textContent = count;
+    }
+    const notice = game.notices.at(-1);
+    const noticeKey = notice ? notice.at + ':' + notice.text : '';
+    if (noticeKey && noticeKey !== this.lastNotice) {
+      this.lastNotice = noticeKey; this.toastUntil = now + 3600; this.el('toast').textContent = notice.text;
+    }
+    this.el('toast').classList.toggle('visible', running && now < this.toastUntil);
+    this.el('victory').hidden = !game.victory || this.victoryDismissed;
+    if (!game.victory) this.victoryDismissed = false;
+  }
+}
+
+return { HUD };
+})();
+__modules["input.js"] = (() => {
 const MOVEMENT = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD',
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight']);
 
@@ -880,176 +1507,180 @@ class Input {
   }
 }
 
-// main.js
-
-
-
-
-
-
-const stage = document.getElementById('gameStage');
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d', { alpha: false });
-const startScreen = document.getElementById('startScreen');
-const gameOver = document.getElementById('gameOver');
-const startButton = document.getElementById('startBtn');
-const restartButton = document.getElementById('restartBtn');
-const seed = new URL(location.href).searchParams.get('seed')?.trim().slice(0, 64) || CONFIG.defaultSeed;
-
-const world = new World({ seed });
-const game = new Game();
-const hud = new HUD(document);
-const input = new Input(document, () => game.status === 'running');
-let width = 1, height = 1, dpr = 1;
-let lastFrame = performance.now();
-let shownStatus = '';
-
-const seedLink = document.getElementById('seedLink');
-const seedURL = new URL(location.href);
-seedURL.searchParams.set('seed', seed);
-seedLink.textContent = seed;
-seedLink.href = seedURL.href;
-seedLink.title = 'Reopen this world with seed: ' + seed;
-
-function resize() {
-  const rect = canvas.getBoundingClientRect();
-  width = Math.max(1, rect.width);
-  height = Math.max(1, rect.height);
-  dpr = Math.max(1, window.devicePixelRatio || 1);
-  canvas.width = Math.round(width * dpr);
-  canvas.height = Math.round(height * dpr);
-  draw();
+return { Input };
+})();
+__modules["main.js"] = (() => {
+const { CONFIG, ITEMS } = __modules["config.js"];
+const { Game } = __modules["game.js"];
+const { HUD } = __modules["hud.js"];
+const { Input } = __modules["input.js"];
+const { Renderer } = __modules["render.js"];
+const root = document, canvas = root.getElementById('gameCanvas');
+const initialSeed = new URL(location.href).searchParams.get('seed')?.trim().slice(0, 64) || CONFIG.defaultSeed;
+const game = new Game({ seed: initialSeed });
+const renderer = new Renderer(canvas);
+let selected = null, timeScale = 1, lastFrame = performance.now(), shownStatus = '';
+const input = new Input(root, () => game.status === 'running' && game.action?.kind !== 'sleep');
+const keyFor = seed => 'constant-walker:v3:checkpoint:' + seed;
+const notesKey = seed => 'constant-walker:v3:notes:' + seed;
+function stored(seed) {
+  try {
+    const raw = localStorage.getItem(keyFor(seed));
+    if (!raw) return null;
+    const data = JSON.parse(raw); return Game.validSnapshot(data) ? data : null;
+  } catch { return null; }
 }
-
-function circle(x, y, radius, color, innerColor) {
-  ctx.fillStyle = color;
-  ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = innerColor;
-  ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.arc(x, y, radius - 1.5, 0, Math.PI * 2); ctx.stroke();
+function readNotes() { try { return localStorage.getItem(notesKey(game.seed)) || ''; } catch { return ''; } }
+function download(name, text, type = 'application/json') {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = root.createElement('a'); a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
-
-function drawPlayer() {
-  const p = game.player;
-  circle(width / 2, height / 2, p.radius * world.tileSize, '#223e37', '#f6f0d6');
-  ctx.save();
-  ctx.translate(width / 2, height / 2); ctx.rotate(p.heading);
-  ctx.fillStyle = '#f6f0d6';
-  ctx.beginPath(); ctx.moveTo(6, 0); ctx.lineTo(1, -2); ctx.lineTo(1, 2); ctx.closePath(); ctx.fill();
-  ctx.restore();
+function currentTarget() { return selected || { x: Math.floor(game.player.x), y: Math.floor(game.player.y) }; }
+function resetView() {
+  input.clear(); selected = null; timeScale = 1; lastFrame = performance.now(); renderer.cache.clear();
+  hud.lastInventory = ''; hud.lastNotice = ''; hud.victoryDismissed = false; hud.setNotes(game.seed, readNotes());
+  root.getElementById('seedInput').value = game.seed;
+  try { const url = new URL(location.href); url.searchParams.set('seed', game.seed); history.replaceState(null, '', url); } catch {}
+  updateOverlay(); hud.update(game, performance.now(), true); renderer.draw(game);
 }
-
-function drawWalker() {
-  const w = game.walker, p = game.player;
-  const point = worldToScreen(w.x, w.y, p.x, p.y, width, height, world.tileSize);
-  const radius = w.radius * world.tileSize;
-  if (point.x + radius >= 0 && point.x - radius <= width
-    && point.y + radius >= 0 && point.y - radius <= height) {
-    circle(point.x, point.y, radius, '#cd4d3e', '#ffe0c9');
-    return;
-  }
-  const arrow = edgeIndicator(point.x - width / 2, point.y - height / 2,
-    width, height, { left: 80, right: 35, top: 76, bottom: 48 });
-  if (!arrow) return;
-  ctx.save();
-  ctx.translate(arrow.x, arrow.y);
-  ctx.fillStyle = '#21392ee6';
-  ctx.beginPath(); ctx.arc(0, 0, 17, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = '#f4e4c942'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.arc(0, 0, 16.5, 0, Math.PI * 2); ctx.stroke();
-  ctx.rotate(arrow.angle);
-  ctx.fillStyle = '#f0735b';
-  ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(-6, -7);
-  ctx.lineTo(-3, 0); ctx.lineTo(-6, 7); ctx.closePath(); ctx.fill();
-  ctx.restore();
+function begin() {
+  game.seed = root.getElementById('seedInput').value.trim().slice(0, 64) || CONFIG.defaultSeed;
+  game.reset(true); resetView(); canvas.focus({ preventScroll: true });
 }
-
-function draw() {
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.imageSmoothingEnabled = false;
-  ctx.fillStyle = '#8e9e73'; ctx.fillRect(0, 0, width, height);
-  world.render(ctx, game.player.x, game.player.y, width, height);
-  drawWalker();
-  drawPlayer();
+function continueGame() {
+  const seed = root.getElementById('seedInput').value.trim().slice(0, 64) || CONFIG.defaultSeed;
+  const snapshot = stored(seed);
+  if (!snapshot) return;
+  try { game.restore(snapshot); resetView(); canvas.focus({ preventScroll: true }); }
+  catch { game.notice('This checkpoint could not be opened.'); }
 }
-
+function save() {
+  const snapshot = game.checkpoint(); if (!snapshot) return false;
+  try {
+    localStorage.setItem(keyFor(game.seed), JSON.stringify(snapshot)); game.notice('Checkpoint saved.');
+  } catch { game.notice('Checkpoint kept for this session. Export a backup to keep it.'); }
+  hud.update(game, performance.now(), true); return true;
+}
+function load() {
+  if (game.action?.kind === 'sleep' && game.status === 'running') return;
+  const snapshot = game.lastSave || stored(game.seed);
+  if (!snapshot) { game.reset(true); resetView(); return; }
+  try { game.restore(snapshot); resetView(); canvas.focus({ preventScroll: true }); }
+  catch { game.notice('This checkpoint could not be opened.'); }
+}
+function act(kind, hours) {
+  const result = game.startAction(kind, currentTarget(), hours);
+  if (result) input.clear(); hud.update(game, performance.now(), true); return result;
+}
+const hud = new HUD(root, {
+  game: () => game, target: currentTarget, timeScale: () => timeScale,
+  clearInput: () => input.clear(), act, save, load,
+  interact: () => { input.clear(); game.interact(); hud.update(game, performance.now(), true); },
+  cancel: () => { game.cancelAction(); timeScale = 1; },
+  center: () => { selected = null; renderer.selection = currentTarget(); hud.update(game, performance.now(), true); },
+  decoy: () => { game.placeDecoy(); hud.update(game, performance.now(), true); },
+  blast: () => { game.placeDynamite(currentTarget()); hud.update(game, performance.now(), true); },
+  preview: enabled => { renderer.previewBlast = enabled; },
+  speed: n => { if (game.action && [1, 5, 20].includes(n)) timeScale = n; },
+  hasCheckpoint: () => !!stored(game.seed),
+  notes: value => {
+    try { localStorage.setItem(notesKey(game.seed), value); root.getElementById('notesStatus').textContent = 'Notes kept'; }
+    catch { root.getElementById('notesStatus').textContent = 'Export to keep these notes'; }
+  },
+  exportNotes: value => download('Constant_Walker_Notes.txt', value, 'text/plain'),
+  exportCheckpoint: () => {
+    const snapshot = game.lastSave || stored(game.seed);
+    if (snapshot) download('Constant_Walker_Checkpoint.json', JSON.stringify(snapshot, null, 2));
+  },
+  importCheckpoint: async file => {
+    if (!file || game.action?.kind === 'sleep') return;
+    try {
+      if (file.size > 12 * 1024 * 1024) throw new Error('size');
+      const data = JSON.parse(await file.text());
+      if (!Game.validSnapshot(data)) throw new Error('format');
+      game.restore(data); resetView();
+      try { localStorage.setItem(keyFor(game.seed), JSON.stringify(data)); } catch {}
+      game.notice('Checkpoint imported.');
+    } catch { game.notice('That file is not a valid refuge checkpoint.'); }
+    root.getElementById('importFile').value = '';
+  },
+});
+root.getElementById('seedInput').value = initialSeed;
+function updateContinue() {
+  const seed = root.getElementById('seedInput').value.trim() || CONFIG.defaultSeed;
+  root.getElementById('continueBtn').hidden = !stored(seed);
+}
 function updateOverlay() {
   if (shownStatus === game.status) return;
   shownStatus = game.status;
-  startScreen.hidden = game.status !== 'ready';
-  gameOver.hidden = game.status !== 'caught';
-  canvas.inert = game.status !== 'running';
-  for (const button of document.querySelectorAll('[data-control]')) {
-    button.disabled = game.status !== 'running';
-  }
+  root.getElementById('startScreen').hidden = game.status !== 'ready';
+  root.getElementById('gameOver').hidden = game.status !== 'caught';
   if (game.status === 'caught') {
-    input.clear();
-    restartButton.focus({ preventScroll: true });
+    input.clear(); timeScale = 1;
+    const hasSave = !!game.lastSave || stored(game.seed);
+    root.getElementById('caughtText').textContent = hasSave
+      ? 'Unsaved expedition progress is lost. Your written notes remain.'
+      : 'No refuge checkpoint has been made yet.';
+    root.getElementById('restartBtn').textContent = hasSave ? 'Return to last refuge' : 'Restart expedition';
+    root.getElementById('restartBtn').focus({ preventScroll: true });
   }
+  if (game.status === 'ready') updateContinue();
+  for (const button of root.querySelectorAll('[data-control]')) button.disabled = game.status !== 'running';
 }
-
-function startRun() {
-  input.clear();
-  game.reset(true);
-  world.clearCache();
-  lastFrame = performance.now();
-  updateOverlay();
-  hud.update(game, world, lastFrame, true);
-  draw();
-  canvas.focus({ preventScroll: true });
-}
-
-function advanceTo(now) {
-  const dt = Math.max(0, (now - lastFrame) / 1000);
-  lastFrame = now;
-  if (dt > CONFIG.awayThreshold) input.clear();
-  game.advance(dt, input.read());
-}
-
-// One authoritative RAF chain for the lifetime of the page; restart never adds one.
+root.getElementById('startBtn').addEventListener('click', begin);
+root.getElementById('continueBtn').addEventListener('click', continueGame);
+root.getElementById('restartBtn').addEventListener('click', load);
+root.getElementById('newRunBtn').addEventListener('click', () => {
+  input.clear(); game.status = 'ready'; shownStatus = ''; updateOverlay();
+});
+root.getElementById('seedInput').addEventListener('input', updateContinue);
+root.querySelector('.wordmark').addEventListener('click', e => e.preventDefault());
+const dialog = root.getElementById('helpDialog');
+root.getElementById('helpBtn').addEventListener('click', () => { input.clear(); dialog.showModal(); });
+for (const id of ['closeHelp', 'closeHelpBottom']) root.getElementById(id).addEventListener('click', () => dialog.close());
+canvas.addEventListener('pointerdown', event => {
+  if (game.status !== 'running') return;
+  const rect = canvas.getBoundingClientRect();
+  selected = renderer.fromScreen(event.clientX - rect.left, event.clientY - rect.top, game.player);
+  renderer.selection = selected; hud.update(game, performance.now(), true); canvas.focus({ preventScroll: true });
+});
+window.addEventListener('keydown', event => {
+  if (event.target?.closest?.('input,textarea,select,[contenteditable="true"]') || event.ctrlKey || event.metaKey || event.altKey || event.repeat) return;
+  if (game.status !== 'running' || dialog.open) return;
+  if (event.code === 'KeyQ') { event.preventDefault(); act('search'); }
+  if (event.code === 'KeyE') { event.preventDefault(); input.clear(); game.interact(); }
+  if (event.code === 'Escape') { game.cancelAction(); timeScale = 1; }
+});
+window.addEventListener('blur', () => input.clear());
+document.addEventListener('visibilitychange', () => { input.clear(); lastFrame = performance.now(); });
+function resize() { renderer.resize(); renderer.draw(game); }
+new ResizeObserver(resize).observe(root.getElementById('gameStage'));
+window.addEventListener('resize', resize);
 function frame(now) {
-  advanceTo(now);
-  if (dpr !== Math.max(1, window.devicePixelRatio || 1)) resize();
-  if (game.status === 'running' || shownStatus !== game.status) {
-    hud.update(game, world, now, shownStatus !== game.status);
-    updateOverlay();
-    draw();
+  const dt = Math.max(0, Math.min(0.15, (now - lastFrame) / 1000)); lastFrame = now;
+  if (!document.hidden) {
+    if (!game.action) timeScale = 1;
+    const movement = input.read();
+    if (game.action?.kind !== 'sleep' && (movement.x || movement.y)) timeScale = 1;
+    game.advance(dt * timeScale, movement);
   }
+  renderer.selection = currentTarget();
+  if (renderer.dpr !== Math.max(1, window.devicePixelRatio || 1)) renderer.resize();
+  updateOverlay(); hud.update(game, now); renderer.draw(game);
   requestAnimationFrame(frame);
 }
-
-startButton.addEventListener('click', startRun);
-restartButton.addEventListener('click', startRun);
-window.addEventListener('blur', () => {
-  advanceTo(performance.now());
-  input.clear();
-});
-document.addEventListener('visibilitychange', () => {
-  advanceTo(performance.now());
-  input.clear();
-  hud.update(game, world, performance.now(), true);
-  updateOverlay();
-  draw();
-});
-window.addEventListener('pagehide', () => {
-  advanceTo(performance.now());
-  input.clear();
-});
-// Keep keyboard focus inside the active dialog without offering an in-run pause.
-document.addEventListener('keydown', event => {
-  if (event.key === 'Tab' && game.status !== 'running') {
-    event.preventDefault();
-    (game.status === 'ready' ? startButton : restartButton).focus();
-  }
-});
-
-new ResizeObserver(resize).observe(stage);
-window.addEventListener('resize', resize);
-updateOverlay();
-resize();
-hud.update(game, world, performance.now(), true);
-startButton.focus({ preventScroll: true });
+if (new URL(location.href).searchParams.has('test')) {
+  window.__CW_TEST__ = { game, renderer, begin, save, load, act,
+    select: target => { selected = target; renderer.selection = target; },
+    refresh: () => { shownStatus = ''; updateOverlay(); hud.update(game, performance.now(), true); renderer.draw(game); },
+    get timeScale() { return timeScale; } };
+}
+resize(); hud.setNotes(game.seed, readNotes()); updateOverlay(); hud.update(game, performance.now(), true);
 requestAnimationFrame(frame);
+
+return { game };
+})();
+})();
 </script>
-</body>
-</html>
+</body></html>

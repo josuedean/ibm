@@ -1,78 +1,83 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#182921">
-  <meta name="description" content="Explore an endless wilderness. Keep your distance from a pursuer that never stops.">
-  <title>The Constant Walker</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='%23d45b45'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./styles.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#192b27">
+<title>The Constant Walker · v0.3.1</title>
+<meta name="cw-build" content="0.3.1">
+<link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <div class="app">
-    <header class="masthead">
-      <div class="brand">
-        <span class="brand-symbol" aria-hidden="true"><i></i></span>
-        <div><p class="eyebrow">A wilderness. An inevitability.</p><h1>The Constant Walker<span class="version">PROTOTYPE 0.2</span></h1></div>
+<header class="masthead">
+  <a class="wordmark" href="#" aria-label="The Constant Walker"><span class="brand-mark">↗</span><span>THE CONSTANT WALKER<small>PROTOTYPE v0.3.1 · FIELD EXPEDITION</small></span></a>
+  <div class="header-right"><span class="live-dot"></span><span id="clock">DAY 01 · 08:00</span><button id="helpBtn" class="icon-button" aria-label="Show controls">?</button></div>
+</header>
+<main class="expedition">
+  <section class="map-column" aria-label="Expedition map">
+    <div class="map-topline"><span id="coordinates">E 0.5 · N −0.5</span><span id="gap">DISTANCE —</span></div>
+    <div id="gameStage" class="stage">
+      <canvas id="gameCanvas" tabindex="0" aria-label="Terrain map. Move with WASD or arrow keys. Click ground to select a tool target."></canvas>
+      <div class="map-stamp"><span>FIELD MAP</span><small id="seedLabel">constant-walker</small></div>
+      <div class="compass" aria-hidden="true">N<span>↑</span></div>
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div id="victory" class="victory" hidden><span>◎</span><div><strong>The Walker is contained.</strong><small>The expedition has achieved its objective.</small></div><button id="dismissVictory" aria-label="Dismiss containment message">×</button></div>
+      <div id="actionCard" class="action-card" hidden>
+        <div class="action-heading"><span id="actionTitle">Exploring</span><span id="actionTime"></span></div>
+        <progress id="actionProgress" max="1" value="0"></progress>
+        <div class="action-bottom"><button id="cancelAction" class="text-button">Stop work</button><span id="committedLabel" hidden>UNINTERRUPTED SLEEP</span><div class="speed-switch" aria-label="Time speed"><button data-speed="1" class="active">1×</button><button data-speed="5">5×</button><button data-speed="20">20×</button></div></div>
       </div>
-      <div class="pursuit-status"><span class="status-dot" aria-hidden="true"></span><span id="runStatus">Awaiting departure</span></div>
-    </header>
-
-    <section id="hud" class="hud" aria-label="Run information">
-      <div class="stat"><span class="stat-label">Time survived</span><strong id="survivalTime">00:00.0</strong><span class="stat-note">Every second counts</span></div>
-      <div class="stat"><span class="stat-label">Distance to walker</span><strong id="walkerGap">41.9 <small>tiles</small></strong><span class="stat-note">Between collision edges</span></div>
-      <div class="stat catch-stat"><span id="catchLabel" class="stat-label">Time to catch</span><strong id="catchTime">23.3<small>s</small></strong><span id="catchNote" class="stat-note">While you remain still</span></div>
-      <div class="stat state-stat"><span class="stat-label">Your pace</span><strong id="playerState">Resting</strong><span id="paceNote" class="stat-note">Stamina recovers quickly</span></div>
-    </section>
-
-    <main id="gameStage" class="game-stage">
-      <canvas id="gameCanvas" tabindex="0" aria-label="Game world. Move with W A S D or arrow keys. Hold Shift to sprint. Release movement keys to rest. The walker is a red circle or a red arrow."></canvas>
-      <div class="map-label" aria-hidden="true"><span class="map-cross">+</span><div><span class="eyebrow">Current terrain</span><span id="biomeName">Grassland</span></div></div>
-      <div class="north-mark" aria-hidden="true"><span>N</span><span>↑</span></div>
-      <div class="stamina">
-        <span class="eyebrow">Stamina</span><span id="staminaValue">100%</span>
-        <div id="staminaMeter" class="stamina-meter" role="meter" aria-label="Stamina" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div id="staminaFill"></div></div>
+      <div class="touch-pad" aria-label="Touch movement">
+        <button data-control="up" aria-label="Move north">↑</button>
+        <button data-control="left" aria-label="Move west">←</button>
+        <button data-control="down" aria-label="Move south">↓</button>
+        <button data-control="right" aria-label="Move east">→</button>
+        <button data-control="sprint" aria-label="Sprint">RUN</button>
       </div>
-      <div class="terrain-note">Open terrain · all biomes traversable</div>
-      <div class="map-key" aria-label="Map key"><span><i class="player-key"></i>You</span><span><i class="walker-key"></i>Walker</span></div>
-
-      <div id="startScreen" class="overlay" role="dialog" aria-modal="true" aria-labelledby="startTitle" aria-describedby="startDescription">
-        <div class="overlay-card">
-          <span class="eyebrow">The pursuit begins with you</span>
-          <h2 id="startTitle">The world is vast.<br>The walker never stops.</h2>
-          <p id="startDescription">Walk to keep your distance. Sprint to make room.<br class="desktop-break"> Stop to recover, but keep an eye on the red arrow.</p>
-          <div class="control-guide"><span><kbd>W A S D</kbd> / <kbd>↑ ← ↓ →</kbd> Move</span><span><kbd>Shift</kbd> Sprint</span><span>Release keys to rest</span></div>
-          <button id="startBtn" class="primary-button" type="button">Begin the walk <span aria-hidden="true">↗</span></button>
-          <p class="fine-print">Once started, pursuit continues when you leave the tab.</p>
+      <div id="startScreen" class="veil">
+        <div class="intro-card">
+          <span class="eyebrow">THE CONSTANT WALKER · PROTOTYPE v0.3.1</span>
+          <h1>Keep moving.</h1>
+          <p>Something is following you.<br>Find your way through the landscape.</p>
+          <div class="control-grid"><span><kbd>W A S D</kbd> Move</span><span><kbd>SHIFT</kbd> Sprint</span><span><kbd>Q</kbd> Explore</span><span><kbd>E</kbd> Interact</span></div>
+          <label class="seed-field">WORLD SEED<input id="seedInput" maxlength="64" autocomplete="off" value="constant-walker"></label>
+          <button id="startBtn" class="primary wide">Begin expedition <span>↗</span></button>
+          <button id="continueBtn" class="secondary wide" hidden>Continue checkpoint</button>
+          <small class="intro-foot">Click ground to select it. Use the field kit for other actions.</small>
         </div>
       </div>
-
-      <div id="gameOver" class="overlay" role="dialog" aria-modal="true" aria-labelledby="caughtTitle" aria-describedby="runSummary" hidden>
-        <div class="overlay-card caught-card">
-          <span class="eyebrow">The distance ran out</span>
-          <h2 id="caughtTitle">The walker caught you.</h2>
-          <p id="runSummary"></p>
-          <button id="restartBtn" class="primary-button" type="button">Walk again <span aria-hidden="true">↗</span></button>
-          <p class="fine-print">Same world. A fresh start.</p>
-        </div>
+      <div id="gameOver" class="veil" hidden>
+        <div class="intro-card caught-card"><span class="eyebrow">CONTACT</span><h1>It caught you.</h1><p id="caughtText">Return to your last checkpoint.</p><button id="restartBtn" class="primary wide">Return to last refuge</button><button id="newRunBtn" class="text-button wide">New expedition</button></div>
       </div>
-      <p id="announcer" class="sr-only" aria-live="polite"></p>
-    </main>
-
-    <div class="touch-controls" aria-label="Touch controls">
-      <div class="dpad"><button data-control="up" aria-label="Move north" type="button">↑</button><button data-control="left" aria-label="Move west" type="button">←</button><button data-control="down" aria-label="Move south" type="button">↓</button><button data-control="right" aria-label="Move east" type="button">→</button></div>
-      <span>Hold a direction to move.<br>Release to rest.</span>
-      <button data-control="sprint" class="sprint-button" type="button">Hold to<br>sprint</button>
     </div>
-
-    <footer class="footer">
-      <div class="coordinates"><span>You <b id="playerCoords">0.0, 0.0</b></span><span>Walker <b id="walkerCoords">30.0, −30.0</b></span></div>
-      <div class="keyboard-hint"><kbd>WASD</kbd> Move <span>·</span> <kbd>Shift</kbd> Sprint <span>·</span> Stay still to rest</div>
-      <span class="seed-label">World <a id="seedLink" href="?seed=constant-walker">constant-walker</a></span>
-    </footer>
-  </div>
-  <noscript>This game needs JavaScript. Enable it, then reload this page.</noscript>
-  <script type="module" src="./main.js"></script>
-</body>
-</html>
+    <div class="map-footer"><span id="terrainLabel">GRASSLAND</span><span>WASD MOVE <i>·</i> SHIFT SPRINT <i>·</i> Q EXPLORE <i>·</i> E INTERACT</span></div>
+    <div class="vitals">
+      <div class="vital"><div><span>STAMINA</span><strong id="staminaText">100 / 100</strong></div><progress id="staminaMeter" max="100" value="100"></progress></div>
+      <div class="vital food"><div><span>PROVISIONS</span><strong id="foodText">24.0 h</strong></div><progress id="foodMeter" max="1800" value="1440"></progress></div>
+      <div class="vital fatigue"><div><span>FATIGUE</span><strong id="fatigueText">0%</strong></div><progress id="fatigueMeter" max="100" value="0"></progress></div>
+    </div>
+  </section>
+  <aside class="field-panel">
+    <nav class="panel-tabs" aria-label="Field panel"><button data-tab="actions" class="active">Field kit</button><button data-tab="inventory">Inventory <span id="kitCount">0</span></button><button data-tab="notes">Notes</button></nav>
+    <section id="panel-actions" class="panel-body">
+      <div class="section-label"><span>01 / YOUR SURROUNDINGS</span><button id="centerTarget" class="text-button">Here ↙</button></div>
+      <div class="terrain-card"><div><h2 id="selectedName">Grassland</h2><span id="selectedPosition">0, 0</span></div><p id="selectedDetails">SOIL · ELEVATION 0.20</p><div id="targetDistance" class="muted">Select nearby ground on the map.</div></div>
+      <div class="button-pair"><button id="searchBtn" class="primary">Explore area <kbd>Q</kbd></button><button id="interactBtn" class="secondary">Interact <kbd>E</kbd></button></div>
+      <div class="section-label space-top">02 / EQUIPMENT ACTIONS</div>
+      <div class="tool-actions">
+        <button id="refugeBtn" class="tool-button"><span>⌂</span><div><strong>Excavate a refuge</strong><small>20 seconds · shovel</small></div><span>↗</span></button>
+        <button id="digBtn" class="tool-button"><span>↧</span><div><strong>Lower selected ground</strong><small>Resumable work · shovel</small></div><span>↗</span></button>
+        <button id="decoyBtn" class="tool-button"><span>◉</span><div><strong>Place a decoy</strong><small id="decoyCount">None carried</small></div><span>↗</span></button>
+        <button id="blastBtn" class="tool-button danger"><span>✳</span><div><strong>Place dynamite</strong><small id="dynamiteCount">8-second fuse · none carried</small></div><span>↗</span></button>
+      </div>
+      <div class="section-label space-top">03 / RECOVERY</div>
+      <div class="sleep-card"><div class="sleep-title"><h3>Plan your sleep</h3><strong id="sleepHoursLabel">6 hours</strong></div><input id="sleepHours" aria-label="Sleep duration in world hours" type="range" min="0.5" max="8" value="6" step="0.5"><div id="sleepPreview" class="sleep-preview">Fatigue 0% → 0%</div><div id="sleepStats" class="muted"></div><button id="sleepBtn" class="secondary wide">Begin uninterrupted sleep</button><small>Sleep cannot be interrupted once started.</small></div>
+      <div class="checkpoint-card"><button id="saveBtn" class="primary">Save checkpoint</button><button id="loadBtn" class="secondary">Load</button><small id="saveStatus">No checkpoint in this world.</small></div>
+      <details class="backup"><summary>Checkpoint backup</summary><button id="exportBtn" class="text-button">Export checkpoint ↓</button><button id="importBtn" class="text-button">Import checkpoint ↑</button><input id="importFile" type="file" accept=".json,application/json" hidden></details>
+    </section>
+    <section id="panel-inventory" class="panel-body" hidden><div class="section-label">EQUIPMENT & SUPPLIES</div><div id="inventoryList"></div><p class="panel-foot">Everything you carry stays with you. Food reserves are shown below the map.</p></section>
+    <section id="panel-notes" class="panel-body notes-panel" hidden><div class="section-label">YOUR FIELD NOTES</div><textarea id="notes" aria-label="Player-written field notes" placeholder="Write what you notice. Record a place, a pattern, a question…"></textarea><div class="notes-footer"><span id="notesStatus">Player-written notes</span><button id="exportNotes" class="text-button">Export ↓</button></div><p class="panel-foot">Time continues while you write.</p></section>
+  </aside>
+</main>
+<dialog id="helpDialog"><button id="closeHelp" class="dialog-close" aria-label="Close controls">×</button><span class="eyebrow">CONTROLS</span><h2>Out in the field</h2><dl><dt>WASD / arrows</dt><dd>Move</dd><dt>Shift</dt><dd>Sprint</dd><dt>Q</dt><dd>Explore the selected area</dd><dt>E</dt><dd>Collect nearby finds / enter or leave</dd><dt>Click map</dt><dd>Select ground for an action</dd><dt>Esc</dt><dd>Stop work; sleep remains committed</dd></dl><p>Use the field kit to work, rest, or write. Time controls are available during long actions.</p><button id="closeHelpBottom" class="primary wide">Back to the expedition</button></dialog>
+<script type="module" src="./main.js"></script>
+</body></html>
